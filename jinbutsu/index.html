@@ -21,6 +21,30 @@
     --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  /* ---- a colour per rung ----
+     Andrew: "Add some colour to the background of each app." Each
+     rung tints the page, so a student who looks up knows which
+     activity is on screen without reading the bar, and a teacher
+     walking the room can see from the back which tab a laptop is on.
+
+     The colours carry the shape of the unit rather than being
+     decoration: the games are warm, reading and comprehension are
+     blue, grammar is the purple this app already uses for grammar,
+     and the two writing rungs are green. Tints only, a few percent
+     off the paper, because the text has to stay the most legible
+     thing on the page. */
+  body[data-rung="katch"]    { --bg:#fbf1e6 }
+  body[data-rung="kotoba"]   { --bg:#fdf3e3 }
+  body[data-rung="yomu"]     { --bg:#eaf0f7 }
+  body[data-rung="toi"]      { --bg:#eaf0f7 }
+  body[data-rung="yaku"]     { --bg:#e9eef6 }
+  body[data-rung="hayaku"]   { --bg:#e9eef6 }
+  body[data-rung="bunpou"]   { --bg:#f3eef7 }
+  body[data-rung="roulette"] { --bg:#f3eef7 }
+  body[data-rung="nyuu"]     { --bg:#eef1f5 }
+  body[data-rung="tsukuru"]  { --bg:#eaf5ec }
+  body[data-rung="jibun"]    { --bg:#e8f4ea }
+  body[data-rung="kuraberu"] { --bg:#eef1f5 }
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--font);
        font-size:16px;line-height:1.5;display:flex;flex-direction:column;
@@ -361,6 +385,29 @@
      scrolled to. Pressing Start scrolls the screen up for you, because
      the first thing a student does is press Start and the next thing
      they need is all of the screen. */
+  /* ---- つくる: the gaps and the phrase bank ---- */
+  .bq{font-size:17px;line-height:1.45;margin:0 0 4px}
+  .slots{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;
+       padding:14px;border-radius:12px;background:var(--paper);
+       border:1.5px solid var(--line-soft);min-height:64px;margin:0 0 14px}
+  .slot{min-width:86px;min-height:46px;border:2px dashed var(--line);
+       border-radius:10px;background:transparent;cursor:pointer;
+       font-family:var(--jp);font-size:20px;padding:6px 12px;color:var(--ink);
+       display:flex;align-items:center;justify-content:center}
+  .slot.full{border-style:solid;border-color:var(--deep);background:#f4f8fd}
+  .slot.over{border-color:var(--ok);background:#eefaf0}
+  .slot .num{font-family:var(--font);font-size:13px;color:var(--muted)}
+  .bank{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .chip{border:1.5px solid var(--line);border-radius:10px;background:var(--paper);
+       cursor:grab;font-family:var(--jp);font-size:20px;padding:8px 13px;
+       color:var(--ink)}
+  .chip.picked{border-color:var(--deep);background:#eaf2fb;box-shadow:0 0 0 2px #cfe0f2}
+  .chip.used{opacity:.32;cursor:default;border-style:dashed}
+  .chip:active{cursor:grabbing}
+  @media (max-width:560px){
+    .slot,.chip{font-size:17px}
+    .slot{min-width:70px;min-height:42px}
+  }
   body.gamefull main{overflow-y:auto;overscroll-behavior:contain}
   body.gamefull .arcadewrap{flex:none;overflow:visible}
   body.gamefull .foot{position:sticky;bottom:0;z-index:3;margin-top:0;
@@ -427,9 +474,9 @@
 <nav class="steps" id="steps"></nav>
 <div class="whobar" id="whobar"></div>
 <main id="main"></main>
-<script src="data/kiji.js?v=20261024c"></script>
-<script src="data/audio.js?v=20261024c"></script>
-<script src="app.js?v=20261024c"></script>
-<div class="build" aria-hidden="true">build 2026-10-24c</div>
+<script src="data/kiji.js?v=20261029a"></script>
+<script src="data/audio.js?v=20261029a"></script>
+<script src="app.js?v=20261029a"></script>
+<div class="build" aria-hidden="true">build 2026-10-29a</div>
 </body>
 </html>

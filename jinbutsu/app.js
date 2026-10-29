@@ -1713,7 +1713,23 @@
     };
   }
 
+  /* ---- the order of the rungs ----
+     Andrew: "I like the catch the kanji game for engagement. Maybe we
+     can start with that?" It leads now, and the rest follows one
+     ladder rather than three: play, then meet the words, then read,
+     then take the article apart, then the grammar behind it, then
+     produce.
+
+     Producing is itself a ladder, which is the other thing Andrew
+     asked for: "I think writing a paragraph is a bit daunting for
+     students ... I'm not saying to get rid of the pure writing tab.
+     Keep that but have an easier option." つくる builds the
+     paragraph out of a bank of phrases; じぶんで asks for it from
+     nothing. にゅうりょく sits in front of both, because that is
+     where a student first has to type Japanese. */
   var STEPS = [
+    { id:"katch", ja:"ことばキャッチ", en:"Catch it", whole:true,
+      grp:{ ja:"ウォームアップ", en:"warm up" } },
     { id:"kotoba", ja:"ことば",   en:"The words" },
     { id:"yomu",   ja:"よむ",     en:"Read it" },
     { id:"toi",    ja:"しつもん", en:"Questions" },
@@ -1721,8 +1737,8 @@
     { id:"hayaku", ja:"はやく",   en:"Read it again" },
     { id:"bunpou", ja:"ぶんぽう", en:"Grammar", whole:true },
     { id:"roulette", ja:"ルーレット", en:"Spin a pattern", whole:true },
-    { id:"katch", ja:"ことばキャッチ", en:"Catch the kanji", whole:true },
     { id:"nyuu", ja:"にゅうりょく", en:"Japanese keyboard", whole:true },
+    { id:"tsukuru", ja:"つくる", en:"Build it", whole:true },
     { id:"jibun",  ja:"じぶんで", en:"Write your own", whole:true },
     { id:"kuraberu", ja:"くらべる", en:"All six", whole:true }
   ];
@@ -1731,15 +1747,20 @@
   function tag(){ return STEPS[at].id + ":" + P().id; }
 
   function paintSteps(){
-    var lastWhole = false;
+    /* The heading above a run of rungs says what that run is for.
+       It used to assume the first rung was a per-person one; the game
+       leads now, so the heading follows each change of group instead,
+       and a rung may name its own. */
+    var lastGrp = null;
     $("steps").innerHTML = STEPS.map(function(s,i){
       var all = s.whole
         ? S.done[s.id] : K.people.every(function(p){ return S.done[s.id+":"+p.id]; });
+      var g = s.grp || (s.whole ? { ja:"ユニット", en:"the whole unit" }
+                                : { ja:"この人", en:"this person" });
       var head = "";
-      if (!i) head = '<span class="grp">この人<em>this person</em></span>';
-      else if (s.whole && !lastWhole)
-        head = '<span class="grp">ユニット<em>the whole unit</em></span>';
-      lastWhole = !!s.whole;
+      if (!lastGrp || lastGrp.ja !== g.ja)
+        head = '<span class="grp">' + esc(g.ja) + '<em>' + esc(g.en) + '</em></span>';
+      lastGrp = g;
       return head + '<button data-i="'+i+'"'+(i===at?' aria-current="step"':'')
         + '><b>'+esc(s.ja)+'</b><i'+(all?' class="done"':'')+'>'
         + esc(s.en)+(all?" ✓":"")+'</i></button>';
@@ -1825,6 +1846,8 @@
   new MutationObserver(howto).observe($("main"), { childList: true });
 
   function draw(){
+    /* the rung tints the page: see the colour block in index.html */
+    document.body.dataset.rung = STEPS[at].id;
     paintToggles(); paintSteps();
     /* The game runs on its own clock and its own audio. Leaving the rung
        has to stop both, or さくらさくら follows you round the app. */
@@ -1880,6 +1903,7 @@
   function kbump(v, n){
     S.wrote["k:" + v.ja] = Math.max(0, kstate(v) + n); save();
   }
+  var kAuto = false;
   DRAW.kotoba = function(){
     var p = P(), all = wordsFor(p);
     var unmet = all.filter(function(v){ return kstate(v) < 1; });
@@ -1927,11 +1951,22 @@
       + '<p class="hint" style="margin-top:8px">' + (kAt+1) + ' of ' + pool.length
       + '</p></div>';
     wireSay();
-    say(v.ja);
+    /* ---- it used to speak the moment the app opened ----
+       Andrew: "When the app opens, it immediately sounds out the word
+       on the first page of the ことば tab." It did: ことば is the
+       first rung, みる is its first phase, and this line ran on every
+       paint. A page that talks before anybody has touched it is a
+       page a teacher cannot open quietly in a room.
+
+       So it speaks when the student turns to a word, not when the
+       page draws one. Pressing "I have met it" sets the flag, so
+       walking the list still reads each word aloud as it arrives. */
+    if (kAuto){ kAuto = false; say(v.ja); }
     $("got").onclick = function(){
       if (kstate(v) < 1) kbump(v, 1);
       kAt++;
       if (kAt >= pool.length){ kPhase = "erabu"; kAt = 0; }
+      kAuto = true;
       draw();
     };
   }
@@ -3059,6 +3094,212 @@
     }
   };
 
+  /* ================= つくる, the paragraph you build =================
+     Andrew: "I think writing a paragraph is a bit daunting for
+     students. Why not have them build from a word or phrase bank to
+     fit English prompt and slowly build their paragraph by dragging
+     and dropping, or clicking on one and then the matching location
+     in the sentence. There needs to be a pool of words for this. I'm
+     not saying to get rid of the pure writing tab. Keep that but have
+     an easier option."
+
+     So this is じぶんで with the blank page taken away. Same twelve
+     prompts, same order, same paragraph at the end; the difference is
+     that the Japanese is already on the table and the job is to put
+     it in the right order.
+
+     The phrases are not invented. Every chunk is cut out of the model
+     sentence the unit already carries, at the full-width spaces
+     Andrew writes between phrases and after each 、. Nothing in the
+     tray is a word this unit has not taught.
+
+     The tray also holds three phrases from other sentences, so the
+     task is choosing, not just ordering. They are drawn from the
+     prompts around this one, which is where a plausible wrong answer
+     comes from.
+
+     Two ways to place a chunk, because a Year 9 room has both
+     laptops and touchscreens: drag it, or tap it and then tap the
+     slot. Tapping a filled slot sends that chunk back to the tray. */
+  function cutUp(model){
+    var out = [];
+    String(model || "").split(/\u3000/).forEach(function(part){
+      if (!part) return;
+      /* keep 、 on the end of the phrase it closes */
+      var run = "", i;
+      for (i = 0; i < part.length; i++){
+        run += part[i];
+        if (part[i] === "\u3001"){ out.push(run); run = ""; }
+      }
+      if (run) out.push(run);
+    });
+    /* a one-chunk sentence is not a build, so peel the polite ending */
+    if (out.length < 2 && out.length){
+      var m = out[0].match(/^(.*?)((?:で|ま)す。?)$/);
+      if (m && m[1]) out = [m[1], m[2]];
+    }
+    return out;
+  }
+  var tsAt = 0;
+  DRAW.tsukuru = function(){
+    var F = (K.frame || []).filter(function(f){ return f.model; });
+    if (!F.length){ $("main").innerHTML = '<div class="rule">No sentences to build.</div>'; return; }
+    tsAt = ((tsAt % F.length) + F.length) % F.length;
+    var f = F[tsAt], want = cutUp(f.model);
+    var placed = want.map(function(){ return null; });
+
+    /* three decoys from the sentences either side of this one */
+    var near = [];
+    [-2, -1, 1, 2].forEach(function(d){
+      var g = F[(tsAt + d + F.length) % F.length];
+      if (g) cutUp(g.model).forEach(function(c){ near.push(c); });
+    });
+    var decoys = shuffle(near.filter(function(c){
+      return want.indexOf(c) < 0;
+    })).slice(0, 3);
+    var tray = shuffle(want.concat(decoys));
+    /* placed holds indices into tray, never the text. Two gaps can
+       legitimately want the same phrase, and matching on text greys
+       out both copies the moment one is used. */
+    var pick = null;
+    var okCount = F.filter(function(_, i){ return S.done["ts:" + i]; }).length;
+
+    $("main").innerHTML =
+        '<div class="rule"><b>Build it</b>Read the English. Drag each phrase '
+      + 'into place, or tap a phrase and then tap the gap it belongs in. '
+      + 'Tap a phrase you have placed to send it back. Three of the phrases '
+      + 'below belong to other sentences.</div>'
+      + '<div class="work"><div class="col">'
+      + '<div class="bq en"><b>' + (tsAt + 1) + '.</b> ' + esc(f.en) + '</div>'
+      + (f.note ? '<p class="hint" style="margin-bottom:10px">' + esc(f.note) + '</p>' : '')
+      + '<div class="slots" id="bs"></div>'
+      + '<div class="bank" id="bk"></div>'
+      + '<div id="bfb" class="fbslot"></div>'
+      + '</div></div>'
+      + foot('<span class="score" id="bsc"><b>' + okCount + '</b> of ' + F.length + '</span>'
+        + '<span class="sp"></span>'
+        + '<button class="btn ghost sm" id="bprev">Back</button>'
+        + '<button class="btn ghost sm" id="bmodel">Show how '
+        + esc(whoName(f.from)) + ' says it</button>'
+        + '<button class="btn sm" id="bcheck">Check it</button>'
+        + '<button class="btn ghost sm" id="bnext">Next</button>');
+
+    $("bprev").onclick = function(){ tsAt--; draw(); };
+    $("bnext").onclick = function(){ tsAt++; draw(); };
+    $("bmodel").onclick = function(){
+      $("bfb").innerHTML = '<div class="mark"><b>' + esc(whoName(f.from))
+        + '&rsquo;s own sentence</b><span class="jp">' + ruby(f.model) + '</span> '
+        + saybtn(f.model) + '</div>';
+      wireSay();
+    };
+    $("bcheck").onclick = check;
+
+    paintSlots(); paintBank();
+
+    function paintSlots(){
+      $("bs").innerHTML = placed.map(function(ti, i){
+        return '<button class="slot' + (ti === null ? "" : " full") + '" data-s="' + i + '">'
+          + (ti === null ? '<span class="num">' + (i + 1) + '</span>' : ruby(tray[ti]))
+          + '</button>';
+      }).join("");
+      each($("bs"), "[data-s]", function(b){
+        var i = +b.dataset.s;
+        b.onclick = function(){
+          if (placed[i] !== null){ placed[i] = null; paintSlots(); paintBank(); return; }
+          if (pick !== null){ drop(pick, i); }
+        };
+        b.ondragover = function(ev){ ev.preventDefault(); b.classList.add("over"); };
+        b.ondragleave = function(){ b.classList.remove("over"); };
+        b.ondrop = function(ev){
+          ev.preventDefault(); b.classList.remove("over");
+          var t = ev.dataTransfer.getData("text/plain");
+          if (t !== "") drop(+t, i);
+        };
+      });
+    }
+    function paintBank(){
+      $("bk").innerHTML = tray.map(function(c, i){
+        var used = placed.indexOf(i) >= 0;
+        return '<button class="chip' + (used ? " used" : "")
+          + (pick === i ? " picked" : "") + '" data-c="' + i + '" draggable="'
+          + (used ? "false" : "true") + '">' + ruby(c) + '</button>';
+      }).join("");
+      each($("bk"), "[data-c]", function(b){
+        var i = +b.dataset.c;
+        b.onclick = function(){
+          if (b.classList.contains("used")) return;
+          pick = (pick === i ? null : i);
+          paintBank();
+          /* tapped a chip with one gap left to fill: put it there */
+          var open = placed.indexOf(null);
+          if (pick !== null && open >= 0
+              && placed.filter(function(x){ return x === null; }).length === 1)
+            drop(pick, open);
+        };
+        b.ondragstart = function(ev){ ev.dataTransfer.setData("text/plain", String(i)); };
+      });
+    }
+    function drop(ti, si){
+      /* What stops one chip filling two gaps is the "used" class in
+         paintBank: a placed chip is not clickable and not draggable,
+         so this is never reached with a chip that is already down.
+         Kept as the backstop for whichever of those two ever slips,
+         not as the rule itself: the rule is in paintBank, and that is
+         what the browser check drives. */
+      var had = placed.indexOf(ti);
+      if (had >= 0) placed[had] = null;
+      placed[si] = ti;
+      pick = null;
+      $("bfb").innerHTML = "";
+      paintSlots(); paintBank();
+    }
+    function check(){
+      if (placed.indexOf(null) >= 0){
+        $("bfb").innerHTML = '<div class="mark no"><b>Not finished</b>'
+          + 'Fill every gap, then check it.</div>';
+        return;
+      }
+      var got = placed.map(function(ti){ return tray[ti]; }).join(""),
+          wantS = want.join("");
+      if (got === wantS){
+        var fresh = !S.done["ts:" + tsAt];
+        S.done["ts:" + tsAt] = 1; save();
+        if (fresh) award(2);
+        ninja($("bfb"));
+        $("bfb").innerHTML = '<div class="mark yes"><b>That is the sentence</b>'
+          + '<span class="jp">' + ruby(f.model) + '</span> ' + saybtn(f.model)
+          + '<p>Now write it yourself in じぶんで, with your own words '
+          + 'in place of ' + esc(whoName(f.from)) + '&rsquo;s.</p></div>';
+        wireSay();
+        paintSteps();
+        $("bsc").innerHTML = '<b>'
+          + F.filter(function(_, i){ return S.done["ts:" + i]; }).length
+          + '</b> of ' + F.length;
+        if (F.every(function(_, i){ return S.done["ts:" + i]; }) && !S.done["tsukuru"]){
+          S.done["tsukuru"] = 1; award(5); save(); paintSteps();
+        }
+        return;
+      }
+      /* say how far along it is right, rather than just "no" */
+      var upto = 0;
+      while (upto < want.length && tray[placed[upto]] === want[upto]) upto++;
+      $("bfb").innerHTML = '<div class="mark no"><b>Not yet</b>'
+        + (upto ? 'The first ' + upto + (upto === 1 ? ' phrase is' : ' phrases are')
+                  + ' right. Look at gap ' + (upto + 1) + '.'
+                : 'Start again from gap 1.')
+        + '</div>';
+    }
+    /* a seam for the check */
+    window.KIJI_BUILD = {
+      want: function(){ return want.slice(); },
+      tray: function(){ return tray.slice(); },
+      placed: function(){
+        return placed.map(function(ti){ return ti === null ? null : tray[ti]; });
+      },
+      at: function(){ return tsAt; }
+    };
+  };
+
   DRAW.jibun = function(){
     var F = K.frame || [];
     var okCount = F.filter(function(_, i){ return S.done["jb:" + i]; }).length;
@@ -3179,8 +3420,62 @@
      word drills. The kanji fall bare: furigana on a falling word would
      make it a kana-reading game, which is a different and easier one. */
   var GAME = null, onResize = null;
+  /* ---- what falls out of the sky ----
+     Andrew: "Perhaps it should also have other options instead of
+     kanji - like the year 7 megasentence."
+
+     Four sets, all drawn from this unit and all asked in English,
+     because what the game drills is recognising the Japanese on
+     sight. ひと is the one that is particular to this app: the six
+     people fall by name and the question is what each of them was,
+     which is the article's own content rather than a word list. */
+  var CATCH = "kanji";
+  var CATCHERS = [
+    { id: "kanji", ja: "かんじ",  en: "the unit's kanji" },
+    { id: "kotoba", ja: "ことば", en: "the unit's words" },
+    { id: "hito",  ja: "ひと",       en: "the six people, by what they were" },
+    { id: "kata",  ja: "ぶんぽう", en: "the grammar patterns" }
+  ];
+  /* ---- one English, one falling word ----
+     The prompt is English, so two items glossed alike give the
+     question two right answers and the game marks one of them wrong.
+     さむらい and 侍[さむらい] are both "samurai" on the unit list,
+     which is correct as a word list and unusable as a question. The
+     first spelling the list gives is the one that falls, so the data
+     keeps deciding which form the unit prefers, not this function. */
+  function oneEach(list){
+    var seen = {};
+    return list.filter(function(x){
+      if (!x.en || seen[x.en]) return false;
+      seen[x.en] = 1; return true;
+    });
+  }
+  function catchPool(kind){
+    if (kind === "kotoba")
+      return oneEach((K.vocab || []).map(function(v){ return { ja: v.ja, en: v.en }; }));
+    if (kind === "hito")
+      return oneEach((K.people || []).map(function(x){ return { ja: x.name_ja, en: x.what_en }; }));
+    if (kind === "kata"){
+      /* The falling face comes from grammar[].pat, the form the unit
+         prints, not from patterns[].ends, which is a list of things
+         that *count as* the pattern when marking. Two of those lists
+         both start ことが, so using them would drop the same word
+         for two different questions and make one of them unanswerable.
+         Deduped anyway, because a list that gains an entry later
+         should not be able to bring the bug back. */
+      var seenFace = {};
+      return oneEach((K.grammar || []).filter(function(g){
+        if (!g.pat || !g.title_en) return false;
+        var face = plain(g.pat).replace(/[\u3000\s]/g, "");
+        if (seenFace[face]) return false;
+        seenFace[face] = 1; return true;
+      }).map(function(g){ return { ja: g.pat, en: g.title_en }; }));
+    }
+    return oneEach(K.kanji || []);
+  }
   DRAW.katch = function(){
-    var pool = (K.kanji || []).filter(function(w){ return w.en; });
+    var pool = catchPool(CATCH);
+    if (!pool.length){ CATCH = "kanji"; pool = catchPool("kanji"); }
     $("main").innerHTML =
         '<div class="rule"><b>Catch the kanji</b>Read the word above the '
       + 'screen, then catch the one falling word that means it. Let the '
@@ -3194,20 +3489,36 @@
       + '</div>'
       + foot('<span class="score" id="asc"></span>'
         + '<span class="sp"></span>'
+        + CATCHERS.map(function(c){
+            return '<button class="btn sm ' + (c.id === CATCH ? "" : "ghost")
+              + '" data-set="' + c.id + '" title="' + esc(c.en) + '">'
+              + c.ja + '</button>';
+          }).join("")
         + '<button class="btn sm" id="go">Start</button>');
+    each($("main"), "[data-set]", function(b){
+      b.onclick = function(){ CATCH = b.dataset.set; draw(); };
+    });
     function tally(){
       var n = 0;
       pool.forEach(function(w){ if (S.done["catch:" + plain(w.ja)]) n++; });
       $("asc").innerHTML = '<b>' + n + '</b> of ' + pool.length + ' caught';
       return n;
     }
+    /* a seam for the check */
+    window.KIJI_CATCH = {
+      set:  function(){ return CATCH; },
+      pool: function(){ return pool.map(function(w){ return plain(w.ja); }); },
+      /* the English too: a set with one gloss on two words is the real
+         bug here, and the faces alone cannot show it */
+      asks: function(){ return pool.map(function(w){ return w.en; }); }
+    };
     tally();
     if (GAME) GAME.stop();
     GAME = arcade({
       canvas: $("arc"),
       words: pool,
       tune: K.tune,
-      best: S.arcade || 0,
+      best: (S.arcadeBy && S.arcadeBy[CATCH]) || 0,
       /* The kanji stay here, because this rung exists to drill them:
          Andrew's kana rule would take 21 of the 30 topic kanji off the
          screen and leave a reading game with nothing to read. What the
@@ -3224,12 +3535,13 @@
       onCatch: function(w){
         var key = "catch:" + plain(w.ja);
         if (!S.done[key]){ S.done[key] = 1; award(1); save(); }
-        if (tally() >= 10 && !S.done["katch"]){
+        if (tally() >= Math.min(10, pool.length) && !S.done["katch"]){
           S.done["katch"] = 1; award(4); save(); paintSteps();
         }
       },
       onOver: function(score){
-        if (score > (S.arcade || 0)){ S.arcade = score; save(); }
+        S.arcadeBy = S.arcadeBy || {};
+        if (score > (S.arcadeBy[CATCH] || 0)){ S.arcadeBy[CATCH] = score; save(); }
       }
     });
     document.body.classList.add("gamefull");
