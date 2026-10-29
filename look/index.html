@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>見てみて · Have a Look</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%80%3C/text%3E%3C/svg%3E">
+<style>
+  /* ============================================================
+     見てみて · Have a Look — for Andrew, not for students. A short,
+     skimmable entry point into everything live, built the way Liam
+     actually navigates: broad strokes first, detail later, nothing
+     forced in order. Six cards, real deep links where the target
+     app supports them, an honest "then click X" where it doesn't.
+     Ticks are personal and local (localStorage only) — not a report
+     back to anyone, just so a second visit remembers where he was.
+     ============================================================ */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --okbg:#eef5ee; --amber:#8a6d1e; --band:#f5f0e6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.55;min-height:100vh;padding:16px}
+  .wrap{max-width:760px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:26px 26px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{font-size:22px;font-family:var(--font)}
+  .subtitle{color:var(--muted);margin-top:4px;font-size:14px}
+  .intro{font-size:14px;color:var(--ink);margin:16px 0 22px;max-width:62ch}
+  .intro b{color:var(--accent)}
+  .progress{font-size:12.5px;color:var(--muted);font-weight:700;margin-bottom:14px}
+
+  .cards{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+  .card{border:1px solid var(--line-soft);border-radius:10px;background:var(--band);
+       padding:14px 16px;display:flex;gap:14px;align-items:flex-start}
+  .card.done{border-color:var(--correct);background:var(--okbg)}
+  .cktick{flex:none;width:26px;height:26px;border-radius:7px;border:2px solid var(--line);
+       background:var(--paper);cursor:pointer;font-size:14px;color:var(--correct);font-weight:800;
+       line-height:1;margin-top:1px}
+  .card.done .cktick{border-color:var(--correct)}
+  .cbody{flex:1;min-width:0}
+  .cname{font-family:var(--font);font-size:16.5px}
+  .chook{font-size:13.5px;color:var(--muted);margin:3px 0 9px}
+  .clinks{display:flex;gap:8px;flex-wrap:wrap}
+  .clink{font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;
+       border:1px solid var(--line);border-radius:7px;padding:5px 11px;background:var(--paper)}
+  .clink:hover{border-color:var(--accent)}
+  .cstep{font-size:12px;color:var(--muted);align-self:center}
+
+  .vision{border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:10px;
+       background:#faf6ea;padding:18px 20px;margin-top:6px}
+  .vision h2{font-family:var(--font);font-size:16px;margin-bottom:8px}
+  .vision p{font-size:13.5px;color:var(--ink);margin-bottom:10px;max-width:64ch}
+  .vision p:last-child{margin-bottom:0}
+  .vision .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;
+       text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+
+  .buildtag{margin-top:20px;font-size:10px;color:var(--muted);opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="container">
+    <h1>見てみて</h1>
+    <p class="subtitle">Have a look — nine things, whenever, in any order</p>
+
+    <p class="intro">No need to work through these in a line, or all of them.
+      Skim, click whatever looks interesting, skip the rest. A few of these
+      overlap on purpose — different attempts at the same idea (see Q5) — so
+      if two things feel similar, that's expected at this stage, not a
+      mistake. Tick one off if you want a reminder next time you look;
+      that's just for you, it doesn't go anywhere or get reported to anyone.</p>
+
+    <p class="progress" id="progress"></p>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="vision">
+      <span class="tag">whenever a couple of these have caught your eye</span>
+      <h2>The bigger question</h2>
+      <p>Every one of these is one tool. The thing neither of us knows is how
+        it would actually run in your room — a composite Year 10, 11 and 12
+        class is a real constraint that shapes everything.</p>
+      <p>One shape Liam's been wondering about, just as a starting point, not
+        a suggestion: could you teach one broad skill explicitly to the whole
+        class at once — a skill that happens to link a Unit&nbsp;1 topic, a
+        Unit&nbsp;3 topic and a Year&nbsp;10 Semester&nbsp;1 topic together —
+        and then let the room split into differentiated pathways through the
+        app afterwards, each year level going as deep as it actually needs?
+        Or does your room work completely differently?</p>
+      <p>That call is genuinely yours. Talk it through with your Claude
+        however it comes out — even half-formed — and whatever it turns into
+        can go straight into the job queue for Liam's side to build.</p>
+    </div>
+
+    <div class="buildtag">見てみて build 2026-09-16 · for Andrew, not for students</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const ITEMS = [
+  { key:"read", name:"すらすら · Reading speed", hook:"Built this week, straight from what you said about students needing to read by themselves. Three short rounds against a clock: one character at a time, a real sign that flashes up and goes, and building a word from its sounds. It ends by telling you what you mixed up, not a score. Two minutes is enough to have a view, and there are four questions waiting on you about it.",
+    href:"../read/", step:"play one round of はやよみ, then read what it says you mixed up" },
+  { key:"mission", name:"ミッション：日本 · Mission: Japan", hook:"A spy text-adventure: get the ramen recipe out of Tokyo. Every conversation is a Japanese task, every character has their own life, and a Year 7 meets VCE grammar with a way through. Changed most since you last looked.",
+    href:"../mission/", step:"take the Tourist kit, clear immigration, find the pickles · try the reading control in the menu" },
+  { key:"yomimono", name:"よみもの · Reading Room", hook:"Real stories from Aozora Bunko, chapter by chapter, with a notebook and tap-the-sentence-that-shows-it tasks. Old tales with a cultural note that says the strange value plainly.",
+    href:"../yomimono/", step:"open the Authentic shelf" },
+  { key:"fuse", name:"単元の道 · Unit Walk", hook:"Build a kanji by fusing it from its parts, right inside the word it belongs to — not shown separately, not a tile to copy.",
+    href:"../walk/#unit:u92", step:"opens on たべることとけんこう · once there, pick 料理 to build" },
+  { key:"vocab", name:"ことばのホーム · Vocab Hub", hook:"The same word showing up in two different years, with a door to each — 番組 lives in both Year 10 and VCE.",
+    href:"../vocab/#unit:tsuushin", step:"opens on the VCE media unit's shelf" },
+  { key:"levelup", name:"レベルアップの壁 · Level Up Wall", hook:"One task, answered at nine different levels from Prep to Year 12 — worth a look with your composite class in mind.",
+    href:"../levelup/", step:"then use the rung rail across the top" },
+  { key:"kanji3", name:"三つの漢字の考え方 · Three takes on kanji", hook:"Kanji Factory sorts parts into meaning/sound bins; Word Lab groups by family. Two different bets on the same problem, both live (Q5 asks you to compare them).",
+    href:"../kanji/", step:"then also open Word Lab" },
+  { key:"lever", name:"文法ハブ · Grammar Hub, and the lever", hook:"The scaffolding idea the whole site is built on: pull down for more support, let go and it eases back to Japanese. The front page now fits a laptop screen without scrolling, as you asked.",
+    href:"../grammar/#te-form-b2-core", step:"try pulling the lever on the right" },
+  { key:"oral", name:"話す練習 · Oral Practice", hook:"The 47 oral exam questions with audio, three tiers — a completely different mode from everything above: listening and speaking, not building.",
+    href:"../oral/", step:"" },
+];
+const $=(id)=>document.getElementById(id);
+const KEY="haveALook.done";
+const done=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ return {}; } };
+const setDone=(d)=>{ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} };
+function paint(){
+  const d=done();
+  const n=ITEMS.filter((i)=>d[i.key]).length;
+  $("progress").textContent = n===0 ? "" : "you've had a look at "+n+" of "+ITEMS.length;
+  $("cards").innerHTML = ITEMS.map((it)=>{
+    const on=!!d[it.key];
+    return '<div class="card'+(on?" done":"")+'">'+
+      '<button class="cktick" data-k="'+it.key+'">'+(on?"✓":"")+'</button>'+
+      '<div class="cbody"><div class="cname">'+it.name+'</div>'+
+      '<div class="chook">'+it.hook+'</div>'+
+      '<div class="clinks"><a class="clink" href="'+it.href+'" target="_blank" rel="noopener">open it →</a>'+
+      (it.step?'<span class="cstep">'+it.step+'</span>':'')+'</div></div></div>';
+  }).join("");
+  document.querySelectorAll(".cktick").forEach((b)=>{
+    b.onclick=()=>{ const d2=done(); d2[b.dataset.k]=!d2[b.dataset.k]; setDone(d2); paint(); };
+  });
+}
+paint();
+</script>
+</body>
+</html>

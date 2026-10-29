@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>よみもの · Reading Room</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E">
+<style>
+  /* Same suite palette as the Grammar Hub. PROOF OF CONCEPT: a reading room.
+     Read a story with furigana, open the notebook when a word is unknown,
+     tap the coloured phrases for the grammar that powers them, then three
+     task shapes: quick read (comprehension), find the evidence (tap the
+     sentence), and ideas (open answers the computer never grades).
+     Both stories are ORIGINAL retellings of traditional folk tales at a
+     controlled level; every sentence needs a teacher's check. */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --note:#7a4a21; --note-bg:#f3e7d8;      /* the notebook */
+    --gram:#1f6f78; --gram-bg:#dceef0;      /* a grammar move in the text */
+    --pick:#7a5cad; --pick-bg:#ece4f6;      /* a tappable sentence, selected */
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);
+       min-height:100vh;padding:16px;display:flex;justify-content:center;align-items:flex-start;color:var(--ink)}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       max-width:760px;width:100%;padding:26px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);position:relative}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+  .btn{padding:11px 18px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .btn-small{padding:6px 12px;font-size:13px}
+  .actions{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .back{background:none;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:8px}
+  .idea{font-size:12.5px;color:var(--muted);text-align:center;max-width:520px;margin:0 auto 14px;line-height:1.55}
+
+  /* ---- story cards ---- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:8px 0}
+  .card{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:16px;cursor:pointer;
+        text-align:left;transition:border-color .12s ease}
+  .card:hover{border-color:var(--accent)}
+  .card .tier{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;border-radius:9px;
+        padding:2px 9px;border:1px solid var(--gram);color:var(--gram);background:var(--gram-bg);margin-bottom:8px}
+  .card h3{font-family:var(--font);font-size:22px;margin:0 0 2px}
+  .card h3 rt{font-size:10px;color:var(--muted);font-weight:400}
+  .card .en{font-size:13px;color:var(--muted)}
+  .card .meta{font-size:11.5px;color:var(--muted);margin-top:8px}
+
+  /* ---- reader ---- */
+  .readbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .readbar .title{font-family:var(--font);font-size:20px}
+  .readbar .title rt{font-size:10px;color:var(--muted)}
+  .story{font-family:var(--font);font-size:21px;line-height:2.3;padding:6px 4px}
+  .story rt{font-size:10px;color:var(--muted);font-weight:400}
+  .story.noruby rt{display:none}
+  .sent{display:inline}
+  .sent.pickable{cursor:pointer;border-radius:6px;padding:2px 3px;transition:background .1s}
+  .sent.pickable:hover{background:var(--pick-bg)}
+  .sent.picked{background:var(--pick-bg);box-shadow:0 0 0 2px var(--pick)}
+  .sent.correct{background:var(--okbg);box-shadow:0 0 0 2px var(--correct)}
+  .sent.incorrect{background:var(--badbg);box-shadow:0 0 0 2px var(--wrong)}
+  .gm{border-bottom:3px solid var(--gram);cursor:pointer;background:transparent}
+  .gm:hover,.gm.open{background:var(--gram-bg)}
+  .story.tasking .gm{border-bottom-color:transparent;cursor:inherit;background:transparent}
+  .gnote{display:none;margin:12px 0 4px;border-left:3px solid var(--gram);background:var(--gram-bg);
+         border-radius:10px;padding:11px 14px;font-size:13.5px;line-height:1.6;font-family:var(--font)}
+  .gnote.show{display:block}
+  .gnote b{font-family:var(--font)}
+  .readhint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
+
+  /* ---- notebook ---- */
+  .nb-btn{position:sticky;top:10px;float:right;z-index:3;border:1px solid var(--note);color:var(--note);
+          background:var(--note-bg);border-radius:20px;padding:7px 13px;font-size:13px;font-weight:700;cursor:pointer}
+  .notebook{display:none;border:1px solid var(--note);background:var(--note-bg);border-radius:12px;padding:14px 16px;margin:10px 0 16px}
+  .notebook.show{display:block}
+  .notebook h4{font-size:13px;color:var(--note);letter-spacing:.04em;margin-bottom:8px}
+  .nb-row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line)}
+  .nb-row:first-of-type{border-top:0}
+  .nb-w{font-family:var(--font);font-size:19px;cursor:pointer;min-width:120px}
+  .nb-w rt{font-size:9.5px;color:var(--muted)}
+  .nb-def{font-size:13px;color:var(--ink);flex:1;min-width:160px}
+  .nb-k{font-size:12px;color:var(--muted);flex-basis:100%;display:none;line-height:1.55;padding-left:6px}
+  .nb-k.show{display:block}
+  .nb-k b{color:var(--note);font-family:var(--font)}
+  .nb-more{font-size:11px;color:var(--note);font-weight:700;cursor:pointer;background:none;border:0}
+  .nb-hint{font-size:11px;color:var(--muted);margin-top:8px}
+  .hl{background:var(--note-bg);box-shadow:0 0 0 2px var(--note);border-radius:4px}
+
+  /* ---- tasks ---- */
+  .task-prompt{font-family:var(--font);font-size:17px;text-align:center;margin:14px 0 10px;line-height:1.6}
+  .task-kind{display:block;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px;margin:0 auto}
+  .option{font-size:14.5px;font-weight:600;text-align:left;padding:12px 14px;border-radius:10px;
+       border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+  .option[data-sel="1"]{border-color:var(--accent)}
+  .option.correct{background:var(--okbg);border-color:var(--correct);color:var(--correct)}
+  .option.incorrect{background:var(--badbg);border-color:var(--wrong);color:var(--wrong)}
+  @media(max-width:480px){.options{grid-template-columns:1fr}}
+  textarea{width:100%;max-width:560px;display:block;margin:0 auto;min-height:88px;font:inherit;font-size:15px;
+       padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+  .openhint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:6px;max-width:520px;margin-left:auto;margin-right:auto}
+  .feedback{font-size:14px;line-height:1.6;margin-top:12px;padding:12px;border-radius:10px;min-height:20px;color:var(--muted);text-align:center}
+  .feedback.good{background:var(--okbg);color:#234e2c}
+  .feedback.bad{background:var(--badbg);color:#7a2020}
+  .feedback.neutral{background:var(--gram-bg);color:var(--ink)}
+  .progress{text-align:center;font-size:11px;color:var(--muted);margin-top:10px}
+  .story.small{font-size:17px;line-height:2.1;border:1px solid var(--line-soft);border-radius:10px;padding:10px 12px;background:var(--bg);margin-top:10px}
+
+  /* ---- report ---- */
+  .big-stat{font-family:var(--font);font-size:40px;font-weight:700;color:var(--accent);text-align:center}
+  .stat-label{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .open-out{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px auto;max-width:560px;font-size:13.5px;line-height:1.55}
+  .open-out b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .honest{font-size:11.5px;color:var(--muted);max-width:560px;margin:10px auto;line-height:1.55;text-align:center}
+  .namebox{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .namebox input{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+  /* ---- levels: the suite's band ladder, with the VIC label beside it ---- */
+  .card .tier{border-color:var(--gram);color:var(--gram);background:var(--gram-bg)}
+  .card .tier.vce{border-color:var(--note);color:var(--note);background:var(--note-bg)}
+  .card .needs{font-size:12px;color:var(--ink);margin-top:8px;line-height:1.5}
+  .card .needs b{color:var(--muted);font-weight:700}
+  .card .beyond{font-size:11.5px;color:var(--note);margin-top:6px;font-weight:700}
+  .star{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--note);
+        border:1px solid var(--note);background:var(--note-bg);border-radius:8px;padding:0 7px;line-height:1.6;vertical-align:middle;margin-left:6px}
+  .lvl-btn{display:block;margin:0 auto 12px;background:none;border:1px solid var(--line);border-radius:20px;
+        padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
+  .lvl-btn:hover{color:var(--accent);border-color:var(--accent)}
+  .guide{display:none;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:14px 16px;margin:0 0 16px;font-size:13px;line-height:1.6}
+  .guide.show{display:block}
+  .guide h4{font-size:13px;letter-spacing:.04em;color:var(--muted);margin-bottom:8px}
+  .guide table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .guide th,.guide td{text-align:left;vertical-align:top;padding:6px 8px;border-top:1px solid var(--line-soft)}
+  .guide th{color:var(--muted);font-size:11px;letter-spacing:.04em;border-top:0}
+  .guide td.b{white-space:nowrap;font-weight:700}
+  .guide .rule{margin-top:12px;padding:10px 12px;border-left:3px solid var(--note);background:var(--note-bg);border-radius:8px}
+  .guide .rule b{color:var(--note)}
+  .rbar-lvl{font-size:11.5px;color:var(--muted);flex-basis:100%;margin-top:-4px}
+  .chapnav{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line-soft);
+        border-radius:10px;background:var(--bg);padding:8px 10px;margin:0 0 10px}
+  .chtitle{font-family:var(--font);font-size:15px}
+  .chtitle small{font-family:var(--font);font-size:12px;color:var(--muted)}
+  .card .tier.auth{border-color:var(--ink);color:var(--ink);background:var(--bg)}
+  .story.auth{max-height:56vh;overflow:auto;border:1px solid var(--line-soft);border-radius:10px;padding:8px 12px;background:var(--paper)}
+  .nb-read{font-family:var(--font);font-size:11.5px;color:var(--muted);font-weight:400}
+  .nb-scope{font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  .attrib{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 4px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px}
+  .card .long{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;border-radius:9px;
+        padding:2px 9px;border:1px solid var(--muted);color:var(--muted)}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);opacity:.45;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="jt-tap" data-jt="title">よみもの</h1>
+  <p class="subtitle jt-tap" data-jt="subtitle">Read a story, open the notebook when you need it, then show what you understood</p>
+  <span class="poc"><b>Proof of concept</b> for review. Six original retellings levelled on the same ladder as the Grammar Hub, plus an authentic shelf: eight real texts from Aozora Bunko, verbatim (楠山正雄's storybooks, 鈴木三重吉's Kojiki tales, Akutagawa's 蜘蛛の糸), with a word list per chapter and three graded checks at the end of each: quick read, fill the gap, tap the sentence that shows it. Anything marked ★ is beyond the Victorian Curriculum for that level: great to know, never required. The Japanese is a draft for a teacher to check before any class reads it.</span>
+
+  <!-- PICK -->
+  <div class="screen active" id="pick">
+    <p class="idea">Pick a story at your level, or one above it. Read it with the furigana on or off. The notebook has the key words; open it only when you need it. Then three short rounds: quick read, find the evidence, and your own ideas.</p>
+    <button class="lvl-btn" id="guideBtn">What do the levels mean?</button>
+    <div class="guide" id="guide"></div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <!-- READ -->
+  <div class="screen" id="read">
+    <button class="back" id="backBtn">← stories</button>
+    <div class="readbar">
+      <div class="title" id="rTitle"></div>
+      <div>
+        <button class="btn btn-small btn-ghost" id="rubyBtn">furigana off</button>
+        <button class="btn btn-small nb-btn" id="nbBtn">📓 ノート</button>
+      </div>
+      <div class="rbar-lvl" id="rLevel"></div>
+    </div>
+    <div class="chapnav" id="chapnav" style="display:none"></div>
+    <div class="notebook" id="notebook"></div>
+    <div class="attrib" id="culture" style="display:none"></div>
+    <div class="story" id="story"></div>
+    <div class="gnote" id="gnote"></div>
+    <div class="attrib" id="attrib" style="display:none"></div>
+    <p class="readhint">Tap a phrase with a line under it to see the grammar that powers it. Tap a notebook word to light it up in the story.</p>
+    <div class="actions"><button class="btn btn-primary" id="toTasks">I have read it</button></div>
+  </div>
+
+  <!-- TASK -->
+  <div class="screen" id="task">
+    <button class="back" id="backBtn2">← stories</button>
+    <div id="taskArea"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="btn btn-ghost btn-small" id="peekBtn">show the story</button>
+      <button class="btn btn-primary" id="checkBtn" disabled>Check</button>
+      <button class="btn btn-primary" id="nextBtn" style="display:none">Next</button>
+    </div>
+    <div class="story small" id="peek" style="display:none"></div>
+    <p class="progress" id="progress"></p>
+  </div>
+
+  <!-- REPORT -->
+  <div class="screen" id="report">
+    <div class="big-stat" id="stat"></div>
+    <p class="stat-label" id="statLabel">right first try on quick read and find the evidence. Missed ones came back until you got them.</p>
+    <div id="openOut"></div>
+    <p class="honest">Your ideas are passed on exactly as you wrote them. The computer does not mark them; your teacher reads them.</p>
+    <div class="namebox"><input id="nameIn" placeholder="first name (optional)" maxlength="30"><button class="btn btn-small" id="copyBtn">Copy my row</button><span id="copied" style="font-size:12px;color:var(--muted)"></span></div>
+    <div class="actions">
+      <button class="btn" id="againBtn">Read it again</button>
+      <button class="btn btn-primary" id="homeBtn">Stories</button>
+    </div>
+  </div>
+</div>
+
+<div class="build-tag">Yomimono PoC 2026-09-06d</div>
+
+<script src="lever.js"></script>
+<script src="library.js"></script>
+<script>
+/* ============================================================
+   CONTENT — five original retellings, each a draft for review.
+   band: which rung of the suite's ladder the story sits on.
+   needs: an honest one-line statement of what a reader must
+   already have. sentences: one entry per sentence, ruby markup;
+   grammar moves written inline as {{phrase|key}} and resolved
+   against `moves` (a string, or {t, star:true} when the move is
+   beyond the band). notebook: {w, def, k (kanji note), star}.
+   quick: comprehension MCQs. evidence: tap the sentence (index).
+   ideas: open prompts, never graded.
+   ============================================================ */
+/* The level ladder is the Grammar Hub's own band ladder
+   (collab/research/DESIGN_BAND_LADDER.md), so a level means the same thing
+   in every tool. The right-hand column is the Victorian Curriculum's own
+   language for what a reader has at that band (VIC_F10_JAPANESE.md §3). */
+const BAND_META = {
+  words:      {head:"Words",      vic:"VIC Levels 3 and 4",  cur:"VIC", has:"Hiragana with the chart to help, some simple katakana, a few frequently used kanji. Set phrases and simple sentences."},
+  sentences:  {head:"Sentences",  vic:"VIC Levels 5 and 6",  cur:"VIC", has:"Hiragana and familiar katakana, familiar kanji. Modelled sentence patterns in ます, present and past."},
+  choices:    {head:"Choices",    vic:"VIC Levels 7 and 8",  cur:"VIC", has:"Kana assumed, no chart. Some kanji. Sequencing ideas with the て-form; choosing the right particle and structure."},
+  links:      {head:"Links",      vic:"VIC Levels 9 and 10", cur:"VIC", has:"A range of kanji, compounds and multiple readings. Complex sentences, a variety of tenses, cohesion across a text."},
+  paragraphs: {head:"Paragraphs", vic:"VCE Units 1 and 2",   cur:"VCE", has:"Plain-form narration and extended recount. This is how real Japanese storybooks are written."},
+  authentic:  {head:"Authentic",  vic:"Aozora Bunko, public domain", cur:"AUTH", has:"Real Japanese storybooks written for Japanese children, from 青空文庫 (Aozora Bunko), verbatim. Above every VIC level. Read one chapter at a time with that chapter's word list; every chapter ends with graded tasks: quick read, fill the gap from the chapter's word list, and tap the sentence that shows it."}
+};
+const BAND_ORDER = ["words","sentences","choices","links","paragraphs","authentic"];
+const STAR_RULE = "<b>★ means beyond the Victorian Curriculum for that level.</b> It is there so you can read the real story if you want to. Learning it is a bonus, never a test. Nothing marked ★ is required knowledge for the Victorian Curriculum at that level.";
+
+const STORIES = [
+{ id:"inu", band:"words", needs:"Hiragana. です and ます. Three katakana letters in the dog's name. No kanji at all.",
+  title:"いぬのポチ", titleRuby:"いぬのポチ", en:"Pochi the Dog",
+  sentences:[
+    "これは いぬです。",
+    "なまえは ポチです。",
+    "ポチは ちいさいです。しろいです。",
+    "あさ、ポチは {{ごはんを たべます|wo}}。",
+    "ひる、ポチは こうえんで あそびます。",
+    "よる、{{ポチは ほしを みます|wa}}。",
+    "そして、ねます。",
+    "おやすみ、ポチ。"
+  ],
+  moves:{
+    wa:"<b>は says who the sentence is about.</b> ポチは: as for Pochi. Almost every sentence in this story starts by naming who it is about, then says something about them.",
+    wo:"<b>を marks the thing that gets eaten.</b> ごはんを たべます. The thing comes first, then を, then what happens to it. Try it: ほしを みます."
+  },
+  notebook:[
+    {w:"いぬ", def:"a dog"},
+    {w:"なまえ", def:"a name"},
+    {w:"ちいさい", def:"small"},
+    {w:"しろい", def:"white"},
+    {w:"あさ・ひる・よる", def:"morning, midday, night"},
+    {w:"ごはん", def:"a meal, rice"},
+    {w:"たべる", def:"to eat"},
+    {w:"こうえん", def:"a park"},
+    {w:"あそぶ", def:"to play"},
+    {w:"ほし", def:"a star"},
+    {w:"みる", def:"to look at"},
+    {w:"ねる", def:"to sleep"},
+    {w:"おやすみ", def:"good night"}
+  ],
+  quick:[
+    {q:"What colour is Pochi?", a:"White", opts:["White","Black","Brown","Grey"], why:"しろいです。 しろい is white."},
+    {q:"Where does Pochi play at midday?", a:"In the park", opts:["In the park","At home","At school","By the river"], why:"こうえんで あそびます。 こうえん is a park."},
+    {q:"What does Pochi look at at night?", a:"The stars", opts:["The stars","The moon","The TV","The door"], why:"ほしを みます。 ほし is a star."}
+  ],
+  evidence:[
+    {q:"Tap the sentence that tells you Pochi's size.", a:2, why:"ちいさいです: small. The sentence also tells you the colour."},
+    {q:"Tap the sentence that says where Pochi plays.", a:4, why:"こうえんで: in the park. で marks where something happens."}
+  ],
+  ideas:[
+    {q:"What does a pet you know do at night? Try it in Japanese: 〜は 〜を 〜ます。 English is fine too."}
+  ]
+},
+{ id:"usagi", band:"sentences", needs:"Hiragana and a little katakana. ます, ました and ませんでした. Eight kanji, all with furigana. The moral at the end uses two moves beyond this level, marked ★.",
+  title:"うさぎとかめ", titleRuby:"うさぎとかめ", en:"The Rabbit and the Tortoise",
+  sentences:[
+    "うさぎとかめが、かけっこをしました。",
+    "うさぎは、はやいです。かめは、おそいです。",
+    "「よーい、どん！」うさぎは、はやく<ruby>走<rt>はし</rt></ruby>りました。",
+    "かめは、ゆっくり、ゆっくり<ruby>歩<rt>ある</rt></ruby>きました。",
+    "うさぎは、<ruby>木<rt>き</rt></ruby>の<ruby>下<rt>した</rt></ruby>で{{ねました|masita}}。",
+    "かめは、{{<ruby>休<rt>やす</rt></ruby>みませんでした|masendesita}}。ゆっくり、ゆっくり<ruby>歩<rt>ある</rt></ruby>きました。",
+    "かめは、ゴールにつきました。",
+    "うさぎは、<ruby>目<rt>め</rt></ruby>をさましました。「あっ、かめがいない！」",
+    "うさぎは、<ruby>走<rt>はし</rt></ruby>りました。でも、かめが<ruby>一番<rt>いちばん</rt></ruby>でした。",
+    "かめは<ruby>言<rt>い</rt></ruby>いました。「ゆっくりでも、{{<ruby>休<rt>やす</rt></ruby>まないで<ruby>歩<rt>ある</rt></ruby>くと|naideto}}、つきますよ。」"
+  ],
+  moves:{
+    masita:"<b>ました is the past of ます.</b> ねます (sleeps) becomes ねました (slept). Every verb in this story that has already happened ends in ました.",
+    masendesita:"<b>ませんでした: did not.</b> 休みます (rests), 休みません (does not rest), 休みませんでした (did not rest). Three forms of one verb.",
+    naideto:{star:true, t:"<b>Two moves in one line, both beyond this level.</b> 休まないで (without resting) puts ないで on a verb to mean without doing it. 歩くと (if you keep walking) uses と for a natural result. You can read the moral without them: slow and steady gets there."}
+  },
+  notebook:[
+    {w:"うさぎ", def:"a rabbit"},
+    {w:"かめ", def:"a tortoise, a turtle"},
+    {w:"かけっこ", def:"a running race"},
+    {w:"はやい・おそい", def:"fast, slow"},
+    {w:"よーい、どん！", def:"ready, go! The call that starts a race."},
+    {w:"<ruby>走<rt>はし</rt></ruby>る", def:"to run", k:"<b>走</b> has 土 on top and a running foot underneath. The foot is also in 足."},
+    {w:"ゆっくり", def:"slowly"},
+    {w:"<ruby>歩<rt>ある</rt></ruby>く", def:"to walk", k:"<b>歩</b> is 止 (stop) over a second foot: one foot stops while the other moves. That is a step."},
+    {w:"<ruby>木<rt>き</rt></ruby>の<ruby>下<rt>した</rt></ruby>", def:"under a tree", k:"<b>木</b> is a tree with branches and roots. <b>下</b> points down."},
+    {w:"ねる", def:"to sleep"},
+    {w:"<ruby>休<rt>やす</rt></ruby>む", def:"to rest", k:"<b>休</b> = 人 (a person) leaning on 木 (a tree). Resting, in one picture."},
+    {w:"ゴール", def:"the finish line, from the English word goal"},
+    {w:"つく", def:"to arrive"},
+    {w:"<ruby>目<rt>め</rt></ruby>をさます", def:"to wake up (literally, to wake your eyes)", star:true},
+    {w:"<ruby>一番<rt>いちばん</rt></ruby>", def:"first, number one", k:"<b>一番</b> = 一 (one) + 番 (number). Literally number one."},
+    {w:"<ruby>言<rt>い</rt></ruby>う", def:"to say"}
+  ],
+  quick:[
+    {q:"Which animal is fast?", a:"The rabbit", opts:["The rabbit","The tortoise","Both","Neither"], why:"うさぎは、はやいです。"},
+    {q:"Where did the rabbit sleep?", a:"Under a tree", opts:["Under a tree","At the finish line","In the park","By the river"], why:"木の下でねました。"},
+    {q:"What did the tortoise NOT do?", a:"Rest", opts:["Rest","Walk","Arrive","Talk"], why:"かめは、休みませんでした。"},
+    {q:"Who came first?", a:"The tortoise", opts:["The tortoise","The rabbit","It was a draw","The story does not say"], why:"かめが一番でした。"}
+  ],
+  evidence:[
+    {q:"Tap the sentence that tells you who won.", a:8, why:"かめが一番でした: the tortoise was first."},
+    {q:"Tap the sentence where the rabbit stops racing.", a:4, why:"木の下でねました: it slept under a tree. That is where the race is lost."},
+    {q:"Tap the sentence with the tortoise's advice.", a:9, why:"The last line is the moral, spoken by the winner."}
+  ],
+  ideas:[
+    {q:"The tortoise never stops. Is that the only reason it wins? What does the rabbit do wrong?"},
+    {q:"Say the moral in your own words. English or Japanese."}
+  ]
+},
+{ id:"momotaro", band:"choices", needs:"Kana with no chart. ます-form throughout. Some kanji, all with furigana. One move beyond this level, marked ★.",
+  title:"ももたろう", titleRuby:"ももたろう", en:"Momotaro, the Peach Boy",
+  sentences:[
+    "むかしむかし、おじいさんとおばあさんがいました。",
+    "おじいさんは<ruby>山<rt>やま</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きました。おばあさんは<ruby>川<rt>かわ</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きました。",
+    "<ruby>川<rt>かわ</rt></ruby>で、<ruby>大<rt>おお</rt></ruby>きなももが{{<ruby>流<rt>なが</rt></ruby>れてきました|tekuru}}。",
+    "おばあさんはももをうちに{{<ruby>持<rt>も</rt></ruby>って<ruby>帰<rt>かえ</rt></ruby>りました|tejoin}}。",
+    "おばあさんはももを<ruby>切<rt>き</rt></ruby>りました。<ruby>中<rt>なか</rt></ruby>から<ruby>男<rt>おとこ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>が<ruby>出<rt>で</rt></ruby>てきました。",
+    "<ruby>二人<rt>ふたり</rt></ruby>は<ruby>男<rt>おとこ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>を{{「ももたろう」とよびました|toyobu}}。",
+    "ももたろうは<ruby>大<rt>おお</rt></ruby>きくなりました。とても<ruby>強<rt>つよ</rt></ruby>くなりました。",
+    "ある<ruby>日<rt>ひ</rt></ruby>、ももたろうは<ruby>鬼<rt>おに</rt></ruby>の<ruby>島<rt>しま</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きました。",
+    "<ruby>犬<rt>いぬ</rt></ruby>とさるときじが{{<ruby>友<rt>とも</rt></ruby>だちになりました|ninaru}}。",
+    "<ruby>島<rt>しま</rt></ruby>で、ももたろうと<ruby>友<rt>とも</rt></ruby>だちは<ruby>鬼<rt>おに</rt></ruby>とたたかいました。",
+    "<ruby>鬼<rt>おに</rt></ruby>は「ごめんなさい」と<ruby>言<rt>い</rt></ruby>いました。",
+    "ももたろうはたからものを<ruby>持<rt>も</rt></ruby>って、うちに<ruby>帰<rt>かえ</rt></ruby>りました。おじいさんとおばあさんはとてもよろこびました。"
+  ],
+  moves:{
+    tekuru:{star:true, t:"<b>てくる: movement towards you.</b> 流れる is to flow. 流れてきました adds きました, so the peach flowed <i>towards</i> the old woman. The same ending turns 出る into 出てきました, came out towards us."},
+    tejoin:"<b>て-form joins two actions into one.</b> 持って (holding) + 帰りました (went home) = carried it home. Japanese chains the verbs where English uses one.",
+    toyobu:"<b>と marks the name you give.</b> 「ももたろう」とよびました: called him Momotaro. The quoted name sits before と, and よぶ does the naming.",
+    ninaru:"<b>になる: to become.</b> 友だちになりました = became friends. A noun + に + なる. The same pattern gives 大きくなりました with an adjective: 大きく + なる."
+  },
+  notebook:[
+    {w:"むかしむかし", def:"long, long ago. The way every folk tale begins."},
+    {w:"おじいさん・おばあさん", def:"an old man and an old woman, or grandpa and grandma."},
+    {w:"<ruby>山<rt>やま</rt></ruby>", def:"mountain", k:"<b>山</b> is a picture of three peaks. One of the first kanji, and it hides inside 島 below."},
+    {w:"<ruby>川<rt>かわ</rt></ruby>", def:"river", k:"<b>川</b> is three flowing lines. Pictographs like 山 and 川 are the easy ones to remember: they look like the thing."},
+    {w:"もも", def:"a peach"},
+    {w:"<ruby>流<rt>なが</rt></ruby>れる", def:"to flow. 流れてくる: to come flowing towards you"},
+    {w:"<ruby>持<rt>も</rt></ruby>って<ruby>帰<rt>かえ</rt></ruby>る", def:"to bring home (hold + return)"},
+    {w:"<ruby>切<rt>き</rt></ruby>る", def:"to cut"},
+    {w:"<ruby>男<rt>おとこ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>", def:"a boy", k:"<b>男</b> = 田 (rice field) + 力 (strength): the one whose strength works the field. 女の子 is a girl."},
+    {w:"よぶ", def:"to call, to name"},
+    {w:"<ruby>強<rt>つよ</rt></ruby>い", def:"strong. 強くなる: to become strong"},
+    {w:"ある<ruby>日<rt>ひ</rt></ruby>", def:"one day"},
+    {w:"<ruby>鬼<rt>おに</rt></ruby>", def:"an ogre, a demon. The villain of many folk tales."},
+    {w:"<ruby>島<rt>しま</rt></ruby>", def:"an island", k:"<b>島</b> = 山 (mountain) with 鳥 (bird) on top, squashed. A mountain in the sea where birds rest."},
+    {w:"<ruby>犬<rt>いぬ</rt></ruby>・さる・きじ", def:"a dog, a monkey and a pheasant: Momotaro's three friends"},
+    {w:"<ruby>友<rt>とも</rt></ruby>だちになる", def:"to become friends"},
+    {w:"たたかう", def:"to fight"},
+    {w:"たからもの", def:"treasure"},
+    {w:"よろこぶ", def:"to be glad, to rejoice"}
+  ],
+  quick:[
+    {q:"Where did the old woman find the peach?", a:"In the river", opts:["In the river","On the mountain","In the garden","At the market"], why:"川で、大きなももが流れてきました。 The peach came floating down the river."},
+    {q:"Who came out of the peach?", a:"A boy", opts:["A boy","A dog","An ogre","A bird"], why:"中から男の子が出てきました。"},
+    {q:"Which three animals became Momotaro's friends?", a:"A dog, a monkey and a pheasant", opts:["A dog, a monkey and a pheasant","A cat, a monkey and a crow","A dog, a fox and a pheasant","A horse, a monkey and a duck"], why:"犬とさるときじが友だちになりました。"},
+    {q:"What did the ogres say at the end of the fight?", a:"Sorry", opts:["Sorry","Go away","Thank you","Come back tomorrow"], why:"鬼は「ごめんなさい」と言いました。"},
+    {q:"How did the old couple feel when Momotaro came home?", a:"Very happy", opts:["Very happy","Very angry","A little sad","Surprised and scared"], why:"とてもよろこびました。 よろこぶ is to be glad."}
+  ],
+  evidence:[
+    {q:"Tap the sentence that shows HOW the old woman found the peach.", a:2, why:"The peach came flowing down the river towards her: 流れてきました."},
+    {q:"Tap the sentence where the boy gets his name.", a:5, why:"「ももたろう」とよびました: they called him Momotaro, named for the peach (もも)."},
+    {q:"Tap the sentence that shows the ogres giving up.", a:10, why:"「ごめんなさい」 is the ogres' surrender: they apologise."},
+    {q:"Tap the sentence that tells you how the story ends for the old couple.", a:11, why:"とてもよろこびました: they were overjoyed. The treasure came home, and so did the boy."}
+  ],
+  ideas:[
+    {q:"Momotaro does not fight alone. Who helps him, and why do you think the story gives him helpers?"},
+    {q:"The story starts with a peach and ends with treasure. What do you think the treasure is really for?"}
+  ]
+},
+{ id:"tsuru", band:"links", needs:"て-form chains, a relative clause, ないでください, てしまう. The passive and a few literary words are beyond Level 10, marked ★.",
+  title:"つるのおんがえし", titleRuby:"つるのおんがえし", en:"The Crane Returns a Kindness",
+  sentences:[
+    "むかし、<ruby>山<rt>やま</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に、まずしい<ruby>若者<rt>わかもの</rt></ruby>が<ruby>一人<rt>ひとり</rt></ruby>で<ruby>住<rt>す</rt></ruby>んでいました。",
+    "ある<ruby>冬<rt>ふゆ</rt></ruby>の<ruby>日<rt>ひ</rt></ruby>、<ruby>若者<rt>わかもの</rt></ruby>は<ruby>雪<rt>ゆき</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で、{{けがをした<ruby>一羽<rt>いちわ</rt></ruby>のつる|relclause}}を<ruby>見<rt>み</rt></ruby>つけました。",
+    "つるは、わなにかかっていました。<ruby>若者<rt>わかもの</rt></ruby>はつるを<ruby>助<rt>たす</rt></ruby>けて、<ruby>空<rt>そら</rt></ruby>にかえしました。",
+    "その<ruby>夜<rt>よる</rt></ruby>、<ruby>雪<rt>ゆき</rt></ruby>がたくさんふりました。だれかが<ruby>戸<rt>と</rt></ruby>をたたきました。",
+    "<ruby>戸<rt>と</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けると、<ruby>美<rt>うつく</rt></ruby>しい<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>が<ruby>立<rt>た</rt></ruby>っていました。「<ruby>道<rt>みち</rt></ruby>にまよいました。<ruby>今夜<rt>こんや</rt></ruby>、ここにとめてください。」",
+    "<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>若者<rt>わかもの</rt></ruby>の<ruby>家<rt>いえ</rt></ruby>にとまり、そのまま、<ruby>二人<rt>ふたり</rt></ruby>は<ruby>夫婦<rt>ふうふ</rt></ruby>になりました。",
+    "<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>言<rt>い</rt></ruby>いました。「わたしがはたを{{<ruby>織<rt>お</rt></ruby>っている<ruby>間<rt>あいだ</rt></ruby>|aida}}、{{<ruby>決<rt>けっ</rt></ruby>して<ruby>中<rt>なか</rt></ruby>を<ruby>見<rt>み</rt></ruby>ないでください|naide}}。」",
+    "<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は<ruby>三日三晩<rt>みっかみばん</rt></ruby>、<ruby>部屋<rt>へや</rt></ruby>から<ruby>出<rt>で</rt></ruby>ないで、はたを<ruby>織<rt>お</rt></ruby>りました。",
+    "できあがった<ruby>布<rt>ぬの</rt></ruby>は、とても<ruby>美<rt>うつく</rt></ruby>しくて、<ruby>町<rt>まち</rt></ruby>で<ruby>高<rt>たか</rt></ruby>く<ruby>売<rt>う</rt></ruby>れました。",
+    "<ruby>若者<rt>わかもの</rt></ruby>はうれしくて、<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>にもう<ruby>一度<rt>いちど</rt></ruby><ruby>織<rt>お</rt></ruby>ってほしいとたのみました。",
+    "<ruby>女<rt>おんな</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は、また<ruby>部屋<rt>へや</rt></ruby>に<ruby>入<rt>はい</rt></ruby>って、はたを<ruby>織<rt>お</rt></ruby>り<ruby>始<rt>はじ</rt></ruby>めました。",
+    "しかし、<ruby>若者<rt>わかもの</rt></ruby>は、<ruby>約束<rt>やくそく</rt></ruby>をわすれて、<ruby>部屋<rt>へや</rt></ruby>の<ruby>中<rt>なか</rt></ruby>を{{<ruby>見<rt>み</rt></ruby>てしまいました|teshimau}}。",
+    "<ruby>部屋<rt>へや</rt></ruby>の<ruby>中<rt>なか</rt></ruby>では、<ruby>一羽<rt>いちわ</rt></ruby>のつるが、<ruby>自分<rt>じぶん</rt></ruby>の<ruby>羽<rt>はね</rt></ruby>をぬいて、<ruby>布<rt>ぬの</rt></ruby>を<ruby>織<rt>お</rt></ruby>っていました。",
+    "つるは<ruby>若者<rt>わかもの</rt></ruby>に<ruby>言<rt>い</rt></ruby>いました。「わたしは、{{あなたに<ruby>助<rt>たす</rt></ruby>けられたつる|passive}}です。おんがえしを{{したかったのです|nodesu}}。」",
+    "「でも、あなたは<ruby>見<rt>み</rt></ruby>てしまいました。もう、ここには{{いられません|potential}}。」",
+    "つるは<ruby>空<rt>そら</rt></ruby>へ<ruby>飛<rt>と</rt></ruby>んでいきました。<ruby>若者<rt>わかもの</rt></ruby>は、いつまでも<ruby>空<rt>そら</rt></ruby>を<ruby>見<rt>み</rt></ruby>ていました。"
+  ],
+  moves:{
+    relclause:"<b>A whole clause describing a noun.</b> けがをした (was injured) sits in front of 一羽のつる and describes it: an injured crane. Japanese puts the describing clause BEFORE the noun, where English says <i>a crane that was injured</i>.",
+    aida:"<b>〜ている間: while.</b> 織っている (is weaving) + 間 = while I am weaving. The 間 turns an action into a stretch of time that something else happens inside.",
+    naide:"<b>ないでください: please do not.</b> 見ない (not look) + で + ください. Add 決して (never, absolutely) and it is a rule, not a request. This one sentence is the hinge of the whole story.",
+    teshimau:"<b>てしまう: did it, and regrets it.</b> 見ました would just report that he looked. 見てしまいました says he looked <i>and it cannot be undone</i>. The grammar carries the regret so the story does not have to say it.",
+    passive:{star:true, t:"<b>The passive: 助けられた.</b> 助ける is to help. 助けられる is to be helped. あなたに助けられたつる: the crane that was helped by you. The doer takes に."},
+    nodesu:"<b>のです: here is the reason.</b> したかった (wanted to do) + のです. The crane is explaining herself, not just stating a fact. In speech this often shrinks to んです.",
+    potential:{star:true, t:"<b>いられません: cannot stay.</b> いる (to be somewhere) becomes いられる (can be), then negative いられません. もう here means <i>no longer</i>."}
+  },
+  notebook:[
+    {w:"まずしい", def:"poor"},
+    {w:"<ruby>若者<rt>わかもの</rt></ruby>", def:"a young man, a young person", k:"<b>若</b> young + <b>者</b> person. 者 is the suffix for a person of a kind: 学者, 医者."},
+    {w:"<ruby>住<rt>す</rt></ruby>む", def:"to live somewhere. 住んでいました: was living"},
+    {w:"<ruby>雪<rt>ゆき</rt></ruby>", def:"snow", k:"<b>雪</b> = 雨 (rain) on top of ヨ, an old form of a hand or broom: rain you can sweep."},
+    {w:"けがをする", def:"to get hurt, to be injured"},
+    {w:"<ruby>一羽<rt>いちわ</rt></ruby>のつる", def:"one crane. 羽 (わ) is the counter for birds", k:"<b>羽</b> is two wings side by side. As a counter it counts birds: 一羽, 二羽, 三羽 (さんわ / さんば)."},
+    {w:"わなにかかる", def:"to be caught in a trap"},
+    {w:"<ruby>助<rt>たす</rt></ruby>ける", def:"to help, to rescue. 助けられる: to be helped", k:"<b>助</b> = 且 + 力 (strength). Strength added from the side."},
+    {w:"<ruby>空<rt>そら</rt></ruby>にかえす", def:"to return (something) to the sky, to set free"},
+    {w:"<ruby>戸<rt>と</rt></ruby>をたたく", def:"to knock at the door"},
+    {w:"<ruby>美<rt>うつく</rt></ruby>しい", def:"beautiful", k:"<b>美</b> = 羊 (sheep) + 大 (big). A big sheep was a fine thing: the classic mnemonic for beautiful."},
+    {w:"<ruby>道<rt>みち</rt></ruby>にまよう", def:"to lose your way"},
+    {w:"とめる・とまる", def:"to put someone up for the night; to stay the night"},
+    {w:"<ruby>夫婦<rt>ふうふ</rt></ruby>", def:"a married couple, husband and wife", star:true},
+    {w:"はたを<ruby>織<rt>お</rt></ruby>る", def:"to weave cloth on a loom", star:true},
+    {w:"<ruby>決<rt>けっ</rt></ruby>して〜ない", def:"never, absolutely not", star:true},
+    {w:"<ruby>三日三晩<rt>みっかみばん</rt></ruby>", def:"three days and three nights", star:true},
+    {w:"<ruby>布<rt>ぬの</rt></ruby>", def:"cloth"},
+    {w:"<ruby>売<rt>う</rt></ruby>れる", def:"to sell (well). 高く売れました: sold for a high price"},
+    {w:"たのむ", def:"to ask a favour, to request"},
+    {w:"<ruby>約束<rt>やくそく</rt></ruby>", def:"a promise", k:"<b>約束</b>: 約 to bind by agreement + 束 a bundle tied together. A promise ties two people."},
+    {w:"わすれる", def:"to forget"},
+    {w:"<ruby>羽<rt>はね</rt></ruby>をぬく", def:"to pull out feathers"},
+    {w:"おんがえし", def:"repaying a kindness", k:"<b>恩返し</b>: 恩 (a kindness owed) + 返し (giving back). The story's title is its theme."},
+    {w:"<ruby>飛<rt>と</rt></ruby>んでいく", def:"to fly away (fly + go)"},
+    {w:"いつまでも", def:"forever, endlessly"}
+  ],
+  quick:[
+    {q:"Where and how did the young man live?", a:"Alone in the mountains, and poor", opts:["Alone in the mountains, and poor","In a busy town with his family","By the sea as a fisherman","In a castle as a servant"], why:"山の中に、まずしい若者が一人で住んでいました。"},
+    {q:"What was wrong with the crane when he found it?", a:"It was hurt and caught in a trap", opts:["It was hurt and caught in a trap","It was lost in the snow","It could not find food","It was too old to fly"], why:"けがをした一羽のつる… わなにかかっていました。"},
+    {q:"What did the woman ask him never to do?", a:"Look into the room while she was weaving", opts:["Look into the room while she was weaving","Sell the cloth in town","Leave the house at night","Tell anyone she was there"], why:"わたしがはたを織っている間、決して中を見ないでください。"},
+    {q:"How long did she weave the first time?", a:"Three days and three nights", opts:["Three days and three nights","One night","A whole winter","Seven days"], why:"三日三晩、部屋から出ないで、はたを織りました。"},
+    {q:"Why could the crane not stay?", a:"He broke the promise and saw her true form", opts:["He broke the promise and saw her true form","She had run out of feathers","Winter was over","The cloth stopped selling"], why:"あなたは見てしまいました。もう、ここにはいられません。"}
+  ],
+  evidence:[
+    {q:"Tap the sentence that tells you the young man was poor.", a:0, why:"まずしい若者: a poor young man. One adjective sets up why the cloth money matters later."},
+    {q:"Tap the sentence where the woman sets the rule.", a:6, why:"決して中を見ないでください: never look inside. The whole story turns on this line."},
+    {q:"Tap the sentence that shows the young man breaking his promise.", a:11, why:"約束をわすれて、見てしまいました. The てしまう carries the regret."},
+    {q:"Tap the sentence that reveals what the cloth was made of.", a:12, why:"自分の羽をぬいて、布を織っていました: she was weaving with her own feathers."},
+    {q:"Tap the sentence where the crane explains why she came.", a:13, why:"おんがえしをしたかったのです: she wanted to repay the kindness. のです marks it as the reason."}
+  ],
+  ideas:[
+    {q:"The crane's gift has a cost. What does the cloth cost her, and what does that tell you about おんがえし in this story?"},
+    {q:"Why do you think the story punishes looking? What would be lost if he had never looked?"},
+    {q:"Find one place where the grammar carries a feeling the words do not say out loud. Which phrase, and what feeling?"}
+  ]
+},
+{ id:"urashima", band:"links", needs:"A long read: five chapters, 40 sentences. て-form chains, たり, そう, てはいけない, てしまう, のです. Polite and humble speech, the passive, and a few literary connectives are beyond Level 10, marked ★.",
+  title:"うらしまたろう", titleRuby:"うらしまたろう", en:"Urashima Taro and the Palace Under the Sea",
+  chapters:[
+    {t:"かめ", en:"The turtle", from:0, to:4},
+    {t:"りゅうぐうじょう", en:"The palace under the sea", from:5, to:11},
+    {t:"たのしい日々", en:"Happy days", from:12, to:19},
+    {t:"たまてばこ", en:"The box", from:20, to:25},
+    {t:"三百年", en:"Three hundred years", from:26, to:39}
+  ],
+  sentences:[
+    "むかしむかし、<ruby>海<rt>うみ</rt></ruby>の<ruby>近<rt>ちか</rt></ruby>くの<ruby>村<rt>むら</rt></ruby>に、{{うらしまたろうという<ruby>若<rt>わか</rt></ruby>い<ruby>漁師<rt>りょうし</rt></ruby>|toiu}}が<ruby>住<rt>す</rt></ruby>んでいました。",
+    "たろうは<ruby>毎日<rt>まいにち</rt></ruby>、<ruby>船<rt>ふね</rt></ruby>に<ruby>乗<rt>の</rt></ruby>って、<ruby>海<rt>うみ</rt></ruby>へ<ruby>魚<rt>さかな</rt></ruby>をとりに<ruby>行<rt>い</rt></ruby>きました。",
+    "ある<ruby>日<rt>ひ</rt></ruby>、<ruby>浜辺<rt>はまべ</rt></ruby>で、<ruby>子<rt>こ</rt></ruby>どもたちが<ruby>一匹<rt>いっぴき</rt></ruby>のかめをいじめていました。",
+    "「かわいそうに。やめなさい。」たろうはかめを<ruby>助<rt>たす</rt></ruby>けて、<ruby>海<rt>うみ</rt></ruby>にかえしました。",
+    "かめは、<ruby>海<rt>うみ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>へゆっくりと<ruby>消<rt>き</rt></ruby>えていきました。",
+    "<ruby>二、三日後<rt>にさんにちご</rt></ruby>、{{たろうが<ruby>船<rt>ふね</rt></ruby>で<ruby>魚<rt>さかな</rt></ruby>をとっていると|teiruto}}、<ruby>海<rt>うみ</rt></ruby>から<ruby>大<rt>おお</rt></ruby>きなかめが<ruby>顔<rt>かお</rt></ruby>を<ruby>出<rt>だ</rt></ruby>しました。",
+    "「たろうさん、<ruby>先日<rt>せんじつ</rt></ruby>はありがとうございました。おれいに、りゅうぐうじょうへ{{おつれします|keigo}}。」",
+    "たろうはかめの<ruby>背中<rt>せなか</rt></ruby>に<ruby>乗<rt>の</rt></ruby>りました。",
+    "かめは、<ruby>海<rt>うみ</rt></ruby>の<ruby>底<rt>そこ</rt></ruby>へ、どんどんもぐっていきました。",
+    "<ruby>海<rt>うみ</rt></ruby>の<ruby>底<rt>そこ</rt></ruby>には、<ruby>赤<rt>あか</rt></ruby>やあおや<ruby>金色<rt>きんいろ</rt></ruby>にかがやく、<ruby>美<rt>うつく</rt></ruby>しいお<ruby>城<rt>しろ</rt></ruby>がありました。",
+    "お<ruby>城<rt>しろ</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>で、おとひめさまがたろうを<ruby>待<rt>ま</rt></ruby>っていました。",
+    "「かめを<ruby>助<rt>たす</rt></ruby>けてくださって、ありがとうございます。どうぞ、ゆっくりしていってください。」",
+    "お<ruby>城<rt>しろ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>では、<ruby>毎日<rt>まいにち</rt></ruby>がお<ruby>祭<rt>まつ</rt></ruby>りのようでした。",
+    "{{<ruby>魚<rt>さかな</rt></ruby>たちがおどり|renyou}}、めずらしいごちそうがならびました。",
+    "たろうは、おとひめさまと{{<ruby>話<rt>はな</rt></ruby>したり、<ruby>庭<rt>にわ</rt></ruby>を<ruby>歩<rt>ある</rt></ruby>いたり、<ruby>歌<rt>うた</rt></ruby>を<ruby>聞<rt>き</rt></ruby>いたりしました|tari}}。",
+    "<ruby>春<rt>はる</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>にはさくらがさき、<ruby>夏<rt>なつ</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>にはせみが<ruby>鳴<rt>な</rt></ruby>いていました。",
+    "<ruby>秋<rt>あき</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>には<ruby>赤<rt>あか</rt></ruby>い<ruby>葉<rt>は</rt></ruby>が<ruby>落<rt>お</rt></ruby>ち、<ruby>冬<rt>ふゆ</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>には<ruby>雪<rt>ゆき</rt></ruby>がふっていました。",
+    "<ruby>楽<rt>たの</rt></ruby>しくて、たろうは<ruby>時間<rt>じかん</rt></ruby>のことを{{わすれてしまいました|teshimau}}。",
+    "けれども、ある<ruby>夜<rt>よる</rt></ruby>、たろうは<ruby>村<rt>むら</rt></ruby>の<ruby>母<rt>はは</rt></ruby>のことを<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>しました。",
+    "「<ruby>母<rt>はは</rt></ruby>はどうしているだろう。{{<ruby>帰<rt>かえ</rt></ruby>らなければ|nakereba}}。」",
+    "たろうはおとひめさまに<ruby>言<rt>い</rt></ruby>いました。「そろそろ、<ruby>村<rt>むら</rt></ruby>へ<ruby>帰<rt>かえ</rt></ruby>りたいです。」",
+    "おとひめさまは、<ruby>悲<rt>かな</rt></ruby>しそうな<ruby>顔<rt>かお</rt></ruby>をしました。",
+    "「それなら、これをお<ruby>持<rt>も</rt></ruby>ちください。」おとひめさまは、<ruby>美<rt>うつく</rt></ruby>しい<ruby>箱<rt>はこ</rt></ruby>をわたしました。",
+    "「これはたまてばこです。でも、<ruby>決<rt>けっ</rt></ruby>して<ruby>開<rt>あ</rt></ruby>けてはいけません。」",
+    "たろうは<ruby>箱<rt>はこ</rt></ruby>を<ruby>受<rt>う</rt></ruby>け<ruby>取<rt>と</rt></ruby>って、またかめの<ruby>背中<rt>せなか</rt></ruby>に<ruby>乗<rt>の</rt></ruby>りました。",
+    "かめは、たろうを<ruby>浜辺<rt>はまべ</rt></ruby>までつれて<ruby>帰<rt>かえ</rt></ruby>りました。",
+    "<ruby>浜辺<rt>はまべ</rt></ruby>に<ruby>立<rt>た</rt></ruby>つと、<ruby>何<rt>なに</rt></ruby>かがちがっていました。",
+    "<ruby>知<rt>し</rt></ruby>っている<ruby>家<rt>いえ</rt></ruby>が<ruby>一<rt>ひと</rt></ruby>つもありません。<ruby>知<rt>し</rt></ruby>っている<ruby>人<rt>ひと</rt></ruby>も、だれもいません。",
+    "たろうは、<ruby>通<rt>とお</rt></ruby>りかかった<ruby>老人<rt>ろうじん</rt></ruby>にたずねました。「うらしまたろうの<ruby>家<rt>いえ</rt></ruby>はどこですか。」",
+    "<ruby>老人<rt>ろうじん</rt></ruby>は<ruby>首<rt>くび</rt></ruby>をかしげました。「うらしまたろう？　それは、<ruby>三百年前<rt>さんびゃくねんまえ</rt></ruby>に<ruby>海<rt>うみ</rt></ruby>で<ruby>消<rt>き</rt></ruby>えた<ruby>漁師<rt>りょうし</rt></ruby>の<ruby>名前<rt>なまえ</rt></ruby>ですよ。」",
+    "たろうは、その<ruby>言葉<rt>ことば</rt></ruby>が<ruby>信<rt>しん</rt></ruby>じられませんでした。",
+    "お<ruby>城<rt>しろ</rt></ruby>での<ruby>三年<rt>さんねん</rt></ruby>は、<ruby>村<rt>むら</rt></ruby>では{{<ruby>三百年<rt>さんびゃくねん</rt></ruby>だったのです|noda}}。",
+    "<ruby>母<rt>はは</rt></ruby>も、<ruby>友<rt>とも</rt></ruby>だちも、もうだれもいません。",
+    "たろうは<ruby>浜辺<rt>はまべ</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>って、<ruby>箱<rt>はこ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つめました。",
+    "そして、<ruby>約束<rt>やくそく</rt></ruby>をわすれて、たまてばこを<ruby>開<rt>あ</rt></ruby>けてしまいました。",
+    "<ruby>箱<rt>はこ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>から、<ruby>白<rt>しろ</rt></ruby>いけむりが<ruby>立<rt>た</rt></ruby>ちのぼりました。",
+    "けむりがたろうをつつむと、たろうの<ruby>髪<rt>かみ</rt></ruby>は<ruby>白<rt>しろ</rt></ruby>くなり、<ruby>顔<rt>かお</rt></ruby>には{{しわがきざまれました|passive}}。",
+    "たろうは、<ruby>三百年分<rt>さんびゃくねんぶん</rt></ruby>の<ruby>年<rt>とし</rt></ruby>をとった、おじいさんになっていました。",
+    "<ruby>海<rt>うみ</rt></ruby>のほうから、かめの<ruby>声<rt>こえ</rt></ruby>が{{<ruby>聞<rt>き</rt></ruby>こえたような<ruby>気<rt>き</rt></ruby>がしました|youna}}。",
+    "たろうは、ずっと、<ruby>海<rt>うみ</rt></ruby>を<ruby>見<rt>み</rt></ruby>ていました。"
+  ],
+  moves:{
+    toiu:"<b>〜という: named, called.</b> うらしまたろうという若い漁師: a young fisherman called Urashima Taro. という sits between the name and the noun it names. You met と marking a name in ももたろう; this is its bigger cousin.",
+    teiruto:"<b>〜ていると: while doing X, something happened.</b> 魚をとっていると: while he was fishing, the turtle appeared. ている for the ongoing action, と for the thing that interrupts it.",
+    keigo:{star:true, t:"<b>おつれします: humble speech.</b> The turtle is speaking up to Taro, so つれる (take along) becomes お + つれ + します. Humble forms lower the speaker; you will meet them properly at VCE. Here, just notice the tone: the turtle is being very polite."},
+    renyou:{star:true, t:"<b>おどり、さき、落ち、なり: the stem as <i>and</i>.</b> 魚たちがおどり、ごちそうがならびました. Written Japanese often joins clauses with the verb stem instead of the て-form. It sounds more like a book. Four sentences in this chapter do it; find them."},
+    tari:"<b>たり〜たり〜する: things like X and Y.</b> 話したり、歩いたり、聞いたりしました: he did things like talking, walking and listening. A list of examples, not everything he did. Three たり here, which is as many as you will ever need.",
+    teshimau:"<b>てしまう: it happened, and it matters.</b> 時間のことをわすれてしまいました: he forgot about time, completely. The same てしまう comes back in chapter five when he opens the box. The story uses the grammar to rhyme.",
+    nakereba:{star:true, t:"<b>帰らなければ: I have to go back.</b> This is 帰らなければなりません with the end dropped, the way people actually think and speak. Inner speech in the plain form, inside a ます-form story: the narrator steps back and lets Taro think."},
+    noda:"<b>だったのです: so that is what happened.</b> 村では三百年だったのです: in the village it had been three hundred years. のです gives the explanation the reader has been waiting for. Compare おんがえしをしたかったのです in つるのおんがえし.",
+    passive:{star:true, t:"<b>きざまれました: were carved.</b> きざむ (to carve) in the passive, きざまれる. Wrinkles were carved into his face; nobody did it, time did. The passive lets the story leave the doer out."},
+    youna:{star:true, t:"<b>〜ような気がしました: it felt as if.</b> 聞こえたような気がしました: he felt as if he heard the turtle. ような (like, as if) plus 気がする (to have a feeling). The story will not say whether the voice was real. Neither should you."}
+  },
+  notebook:[
+    {w:"<ruby>漁師<rt>りょうし</rt></ruby>", def:"a fisherman", k:"<b>漁</b> = 氵 (water) + 魚 (fish). <b>師</b> is a master of a trade, as in 教師 (teacher)."},
+    {w:"<ruby>浜辺<rt>はまべ</rt></ruby>", def:"the beach, the shore"},
+    {w:"いじめる", def:"to bully, to torment"},
+    {w:"かわいそう", def:"poor thing, how sad"},
+    {w:"<ruby>助<rt>たす</rt></ruby>ける", def:"to help, to rescue"},
+    {w:"<ruby>消<rt>き</rt></ruby>えていく", def:"to disappear (away from the speaker)"},
+    {w:"<ruby>二、三日後<rt>にさんにちご</rt></ruby>", def:"two or three days later"},
+    {w:"<ruby>先日<rt>せんじつ</rt></ruby>", def:"the other day", star:true},
+    {w:"おれいに", def:"as thanks, in return", star:true},
+    {w:"おつれします", def:"I will take you (humble)", star:true},
+    {w:"<ruby>背中<rt>せなか</rt></ruby>", def:"the back (of a body)"},
+    {w:"<ruby>海<rt>うみ</rt></ruby>の<ruby>底<rt>そこ</rt></ruby>", def:"the bottom of the sea"},
+    {w:"<ruby>金色<rt>きんいろ</rt></ruby>にかがやく", def:"shining gold", star:true},
+    {w:"おとひめさま", def:"Princess Otohime, the lady of the palace"},
+    {w:"ごちそう", def:"a feast, fine food"},
+    {w:"ならぶ", def:"to be lined up"},
+    {w:"せみ", def:"a cicada (the insect that sings in summer)"},
+    {w:"<ruby>時間<rt>じかん</rt></ruby>のことをわすれる", def:"to lose track of time"},
+    {w:"<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>す", def:"to remember, to recall", k:"<b>思い出す</b> = 思う (think) + 出す (bring out). A thought comes out of storage."},
+    {w:"そろそろ", def:"about time to..."},
+    {w:"<ruby>悲<rt>かな</rt></ruby>しそう", def:"looking sad"},
+    {w:"たまてばこ", def:"the jewelled box of the story", k:"<b>玉手箱</b>: 玉 jewel + 手 hand + 箱 box. A precious box you keep close."},
+    {w:"<ruby>決<rt>けっ</rt></ruby>して〜てはいけません", def:"you must never..."},
+    {w:"<ruby>受<rt>う</rt></ruby>け<ruby>取<rt>と</rt></ruby>る", def:"to receive, to accept"},
+    {w:"<ruby>通<rt>とお</rt></ruby>りかかる", def:"to happen to pass by", star:true},
+    {w:"<ruby>首<rt>くび</rt></ruby>をかしげる", def:"to tilt your head (puzzled)", star:true},
+    {w:"<ruby>信<rt>しん</rt></ruby>じられない", def:"cannot believe"},
+    {w:"<ruby>見<rt>み</rt></ruby>つめる", def:"to stare at", star:true},
+    {w:"けむり", def:"smoke"},
+    {w:"<ruby>立<rt>た</rt></ruby>ちのぼる", def:"to rise up (of smoke)", star:true},
+    {w:"つつむ", def:"to wrap, to envelop", star:true},
+    {w:"しわ", def:"wrinkles", star:true},
+    {w:"<ruby>年<rt>とし</rt></ruby>をとる", def:"to age, to grow old"},
+    {w:"〜ような<ruby>気<rt>き</rt></ruby>がする", def:"to feel as if", star:true}
+  ],
+  quick:[
+    {q:"Who is Taro?", a:"A young fisherman from a village by the sea", opts:["A young fisherman from a village by the sea","A prince from the palace","An old man on the beach","A boy who lives with a turtle"], why:"海の近くの村に、うらしまたろうという若い漁師が住んでいました。"},
+    {q:"What were the children doing to the turtle?", a:"Bullying it", opts:["Bullying it","Feeding it","Racing it","Painting it"], why:"子どもたちが一匹のかめをいじめていました。"},
+    {q:"Where did the turtle take Taro?", a:"To a palace at the bottom of the sea", opts:["To a palace at the bottom of the sea","To an island","To his mother's house","To the mountains"], why:"かめは、海の底へ、どんどんもぐっていきました。… 美しいお城がありました。"},
+    {q:"What did Taro see in the four rooms of the palace?", a:"The four seasons, one in each room", opts:["The four seasons, one in each room","Four different fish","His four friends","Four boxes"], why:"春の部屋にはさくらがさき、夏の部屋にはせみが鳴いていました。秋の部屋には… 冬の部屋には…"},
+    {q:"What was Taro told about the box?", a:"Never open it", opts:["Never open it","Open it at home","Give it to his mother","Sell it in the village"], why:"決して開けてはいけません。"},
+    {q:"How much time had passed in the village?", a:"Three hundred years", opts:["Three hundred years","Three years","Three days","Thirty years"], why:"お城での三年は、村では三百年だったのです。"}
+  ],
+  evidence:[
+    {q:"Tap the sentence where Taro saves the turtle.", a:3, why:"たろうはかめを助けて、海にかえしました。 The whole story grows from this one kindness."},
+    {q:"Tap the sentence where the princess sets the rule.", a:23, why:"決して開けてはいけません: never open it. Every folk tale in this room has a rule, and every rule gets broken."},
+    {q:"Tap the first sentence that hints something is wrong on the beach.", a:26, why:"何かがちがっていました: something was different. The story does not say what yet."},
+    {q:"Tap the sentence that explains how time worked in the palace.", a:31, why:"お城での三年は、村では三百年だったのです。 のです delivers the explanation."},
+    {q:"Tap the sentence where Taro realises he has no one left.", a:32, why:"母も、友だちも、もうだれもいません。 Short sentences carry the heaviest moments."},
+    {q:"Tap the sentence where Taro breaks the promise.", a:34, why:"約束をわすれて、たまてばこを開けてしまいました。 The same てしまう as the young man in つるのおんがえし."}
+  ],
+  ideas:[
+    {q:"Taro was told never to open the box, and he opens it when he has lost everything. Is the ending a punishment, a kindness, or something else? Say why."},
+    {q:"Four rooms, four seasons, and Taro forgets time. What is the story saying about happiness and time? One or two lines."},
+    {q:"Three stories in this room have a gift with a rule attached: the crane, the straw hats, the box. Which rule is fairest, and which ending is kindest? You can answer in English or Japanese."}
+  ]
+},
+{ id:"kasajizo", band:"paragraphs", needs:"Plain-form narration (住んでいた, not 住んでいました), which is how real Japanese storybooks are written. A range of kanji, all with furigana. Several structures and words beyond Level 10, all marked ★.",
+  title:"かさじぞう", titleRuby:"かさじぞう", en:"The Straw Hats and the Stone Guardians",
+  sentences:[
+    "むかしむかし、ある<ruby>山<rt>やま</rt></ruby>のふもとに、<ruby>貧<rt>まず</rt></ruby>しいおじいさんとおばあさんが{{<ruby>住<rt>す</rt></ruby>んでいた|plain}}。",
+    "<ruby>大<rt>おお</rt></ruby>みそかの<ruby>日<rt>ひ</rt></ruby>、おじいさんは<ruby>町<rt>まち</rt></ruby>へ<ruby>笠<rt>かさ</rt></ruby>を<ruby>売<rt>う</rt></ruby>りに<ruby>行<rt>い</rt></ruby>った。<ruby>正月<rt>しょうがつ</rt></ruby>の<ruby>餅<rt>もち</rt></ruby>を{{<ruby>買<rt>か</rt></ruby>うためだった|tame}}。",
+    "しかし、<ruby>町<rt>まち</rt></ruby>では、<ruby>笠<rt>かさ</rt></ruby>は<ruby>一<rt>ひと</rt></ruby>つも<ruby>売<rt>う</rt></ruby>れなかった。",
+    "おじいさんはがっかりして、<ruby>雪<rt>ゆき</rt></ruby>の<ruby>中<rt>なか</rt></ruby>を<ruby>家<rt>いえ</rt></ruby>へ<ruby>帰<rt>かえ</rt></ruby>り<ruby>始<rt>はじ</rt></ruby>めた。",
+    "<ruby>帰<rt>かえ</rt></ruby>り<ruby>道<rt>みち</rt></ruby>に、<ruby>六人<rt>ろくにん</rt></ruby>のお<ruby>地蔵<rt>じぞう</rt></ruby>さんが<ruby>立<rt>た</rt></ruby>っていた。<ruby>頭<rt>あたま</rt></ruby>にも<ruby>肩<rt>かた</rt></ruby>にも、<ruby>雪<rt>ゆき</rt></ruby>が<ruby>積<rt>つ</rt></ruby>もっていた。",
+    "「お<ruby>地蔵<rt>じぞう</rt></ruby>さん、<ruby>寒<rt>さむ</rt></ruby>いでしょう。」おじいさんは、<ruby>売<rt>う</rt></ruby>れなかった<ruby>笠<rt>かさ</rt></ruby>をお<ruby>地蔵<rt>じぞう</rt></ruby>さんの<ruby>頭<rt>あたま</rt></ruby>にかぶせた。",
+    "<ruby>笠<rt>かさ</rt></ruby>は{{<ruby>五<rt>いつ</rt></ruby>つしかなかった|sika}}。おじいさんは、<ruby>自分<rt>じぶん</rt></ruby>の<ruby>手<rt>て</rt></ruby>ぬぐいをはずして、{{<ruby>六人目<rt>ろくにんめ</rt></ruby>|me}}のお<ruby>地蔵<rt>じぞう</rt></ruby>さんにかぶせた。",
+    "<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>ると、おばあさんは<ruby>言<rt>い</rt></ruby>った。「それは、いいことをしましたね。」",
+    "<ruby>二人<rt>ふたり</rt></ruby>は、<ruby>餅<rt>もち</rt></ruby>のない<ruby>正月<rt>しょうがつ</rt></ruby>を{{<ruby>迎<rt>むか</rt></ruby>えるつもりだった|tumori}}。",
+    "その<ruby>夜<rt>よる</rt></ruby>、<ruby>雪<rt>ゆき</rt></ruby>の<ruby>中<rt>なか</rt></ruby>から、<ruby>重<rt>おも</rt></ruby>い<ruby>足音<rt>あしおと</rt></ruby>が<ruby>近<rt>ちか</rt></ruby>づいてきた。",
+    "<ruby>戸<rt>と</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>で、ドサッと<ruby>大<rt>おお</rt></ruby>きな<ruby>音<rt>おと</rt></ruby>がして、<ruby>足音<rt>あしおと</rt></ruby>は<ruby>遠<rt>とお</rt></ruby>ざかっていった。",
+    "<ruby>戸<rt>と</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けると、<ruby>米<rt>こめ</rt></ruby>や<ruby>餅<rt>もち</rt></ruby>や、たくさんの<ruby>宝物<rt>たからもの</rt></ruby>が{{<ruby>置<rt>お</rt></ruby>いてあった|tearu}}。",
+    "<ruby>雪<rt>ゆき</rt></ruby>の<ruby>向<rt>む</rt></ruby>こうに、<ruby>笠<rt>かさ</rt></ruby>をかぶった<ruby>六人<rt>ろくにん</rt></ruby>のお<ruby>地蔵<rt>じぞう</rt></ruby>さんが、{{<ruby>帰<rt>かえ</rt></ruby>っていくのが<ruby>見<rt>み</rt></ruby>えた|noga}}。",
+    "<ruby>二人<rt>ふたり</rt></ruby>は、あたたかい<ruby>正月<rt>しょうがつ</rt></ruby>を{{<ruby>迎<rt>むか</rt></ruby>えることができた|dekiru}}。"
+  ],
+  moves:{
+    plain:{star:true, t:"<b>Plain-form narration.</b> 住んでいた, not 住んでいました. Storybooks and novels narrate in the plain form; ます is for talking to someone. Once you can read た and だった as past, a whole shelf of real books opens up."},
+    tame:{star:true, t:"<b>ため: the purpose.</b> 餅を買うためだった: it was in order to buy rice cakes. ため turns a reason into the goal of the trip. The sentence before said what he did; this one says why."},
+    sika:{star:true, t:"<b>しか〜ない: only, nothing but.</b> 五つしかなかった: there were only five. しか always pairs with a negative verb, and the feeling is that five is not enough."},
+    me:{star:true, t:"<b>〜目 makes an order.</b> 六人 is six people; 六人目 is the sixth. Add 目 to a counter and it stops counting and starts ranking: 一番目, 二日目, 三回目."},
+    tumori:{star:true, t:"<b>つもりだった: was going to.</b> 迎えるつもりだった: they were going to spend the New Year that way. つもり is a plan; だった puts the plan in the past, which tells you it is about to change."},
+    tearu:{star:true, t:"<b>てある: someone put it there, and there it is.</b> 置いてあった: had been put there. The doer is unnamed on purpose. The story lets you work out who."},
+    noga:{star:true, t:"<b>のが見えた: could be seen doing.</b> 帰っていくのが見えた: could be seen going home. の turns the whole action into a thing, and が見えた says it came into view. Show, not tell, in grammar."},
+    dekiru:"<b>ことができた: was able to.</b> 迎えることができた: they were able to welcome the New Year. Verb + ことができる is one of the ways Japanese says can, and the た makes it a happy ending."
+  },
+  notebook:[
+    {w:"ふもと", def:"the foot of a mountain", star:true},
+    {w:"<ruby>貧<rt>まず</rt></ruby>しい", def:"poor"},
+    {w:"<ruby>大<rt>おお</rt></ruby>みそか", def:"New Year's Eve, the last day of the year", star:true},
+    {w:"<ruby>笠<rt>かさ</rt></ruby>", def:"a woven straw hat", star:true, k:"<b>笠</b> = 竹 (bamboo) over 立 (stand). A bamboo thing that stands on your head. Not the same as かさ the umbrella, 傘."},
+    {w:"<ruby>売<rt>う</rt></ruby>りに<ruby>行<rt>い</rt></ruby>く", def:"to go to sell"},
+    {w:"<ruby>正月<rt>しょうがつ</rt></ruby>", def:"the New Year", k:"<b>正月</b> = 正 (correct, proper) + 月 (month). The proper month, the first of the year."},
+    {w:"<ruby>餅<rt>もち</rt></ruby>", def:"rice cake, eaten at New Year", star:true},
+    {w:"<ruby>一<rt>ひと</rt></ruby>つも〜ない", def:"not even one", star:true},
+    {w:"がっかりする", def:"to be disappointed"},
+    {w:"<ruby>帰<rt>かえ</rt></ruby>り<ruby>道<rt>みち</rt></ruby>", def:"the way home"},
+    {w:"お<ruby>地蔵<rt>じぞう</rt></ruby>さん", def:"Jizō, the stone guardian statues that stand by roads in Japan, protectors of travellers and children", star:true},
+    {w:"<ruby>積<rt>つ</rt></ruby>もる", def:"to pile up (of snow)", star:true},
+    {w:"<ruby>寒<rt>さむ</rt></ruby>い", def:"cold (weather)"},
+    {w:"かぶせる", def:"to put (a hat) on someone else's head", star:true},
+    {w:"しか〜ない", def:"only, nothing but", star:true},
+    {w:"<ruby>手<rt>て</rt></ruby>ぬぐい", def:"a thin cotton hand towel, often worn on the head", star:true},
+    {w:"はずす", def:"to take off, to remove", star:true},
+    {w:"<ruby>迎<rt>むか</rt></ruby>える", def:"to welcome, to see in (a new year)", star:true},
+    {w:"つもり", def:"an intention, a plan", star:true},
+    {w:"<ruby>足音<rt>あしおと</rt></ruby>", def:"footsteps", k:"<b>足音</b> = 足 (foot) + 音 (sound). Two kanji you know, one new word."},
+    {w:"<ruby>近<rt>ちか</rt></ruby>づく", def:"to come near"},
+    {w:"<ruby>遠<rt>とお</rt></ruby>ざかる", def:"to move away into the distance", star:true},
+    {w:"<ruby>米<rt>こめ</rt></ruby>", def:"rice, the grain", k:"<b>米</b> is grains scattered on a stalk. It also means America in 米国."},
+    {w:"<ruby>宝物<rt>たからもの</rt></ruby>", def:"treasure"},
+    {w:"<ruby>向<rt>む</rt></ruby>こう", def:"the far side, beyond", star:true}
+  ],
+  quick:[
+    {q:"Why did the old man go to town?", a:"To sell hats and buy rice cakes for New Year", opts:["To sell hats and buy rice cakes for New Year","To visit his family","To buy a new hat","To pray at the temple"], why:"笠を売りに行った。正月の餅を買うためだった。"},
+    {q:"How many hats did he sell?", a:"None", opts:["None","One","Five","All of them"], why:"笠は一つも売れなかった。 一つも〜ない: not even one."},
+    {q:"What did he put on the sixth statue?", a:"His own hand towel", opts:["His own hand towel","His coat","A hat he bought","Nothing"], why:"自分の手ぬぐいをはずして、六人目のお地蔵さんにかぶせた。"},
+    {q:"How did the old woman react?", a:"She praised him", opts:["She praised him","She was angry","She cried","She said nothing"], why:"「それは、いいことをしましたね。」"},
+    {q:"What was outside the door in the morning?", a:"Rice, rice cakes and treasure", opts:["Rice, rice cakes and treasure","The six statues","His five hats","Fresh snow and nothing else"], why:"米や餅や、たくさんの宝物が置いてあった。"}
+  ],
+  evidence:[
+    {q:"Tap the sentence that tells you the hats did not sell.", a:2, why:"一つも売れなかった: not one sold. The whole story turns on this failure."},
+    {q:"Tap the sentence where he runs out of hats.", a:6, why:"五つしかなかった: there were only five. Six statues, five hats, and then his own towel."},
+    {q:"Tap the sentence with the old woman's reaction.", a:7, why:"「いいことをしましたね。」 She does not mention the missing rice cakes."},
+    {q:"Tap the sentence that shows the couple expected a poor New Year.", a:8, why:"餅のない正月を迎えるつもりだった: they were going to see in the New Year with no rice cakes."},
+    {q:"Tap the sentence where the statues are seen leaving.", a:12, why:"帰っていくのが見えた. The story never says the Jizō brought the gifts; it shows them leaving."}
+  ],
+  ideas:[
+    {q:"He gives away hats he could not sell, then his own towel. Which gift matters more, and why?"},
+    {q:"The story never says who brought the gifts. It only shows six figures walking away in the snow. Why show it rather than say it?"},
+    {q:"Compare this with つるのおんがえし. Both are about おんがえし, repaying a kindness. Who gives, who receives, and what is different?"}
+  ]
+}
+];
+
+/* The authentic shelf: generated from data/readers/*.md by tools/gen-readers.js. */
+if (window.YOMIMONO_LIBRARY) STORIES.push(...window.YOMIMONO_LIBRARY);
+
+/* Japanese-led chrome. Task prompts stay English for now (J11). */
+const UI = {
+  title:    ["読み物","よみもの","yomimono","Reading Room"],
+  subtitle: ["お話を読んで、ノートをひらいて、わかったことを見せる","おはなしをよんで、ノートをひらいて、わかったことをみせる",
+             "ohanashi o yonde, nōto o hiraite, wakatta koto o miseru",
+             "read a story, open the notebook when you need it, then show what you understood"],
+};
+const UI_RUBY = {
+  title: "<ruby>読<rt>よ</rt></ruby>み<ruby>物<rt>もの</rt></ruby>",
+  subtitle: "お<ruby>話<rt>はなし</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んで、ノートをひらいて、わかったことを<ruby>見<rt>み</rt></ruby>せる",
+};
+
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const screens={pick:$("pick"),read:$("read"),task:$("task"),report:$("report")};
+  const show=(n)=>{Object.values(screens).forEach(s=>s.classList.remove("active"));screens[n].classList.add("active");window.scrollTo(0,0);};
+  const esc=(s)=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const shuffle=(a)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const plain=(html)=>html.replace(/<rt>[^<]*<\/rt>/g,"").replace(/<[^>]+>/g,"").replace(/\{\{|\|[a-z]+\}\}/g,"");
+  let story=null, queue=[], idx=0, first={}, graded=false, open={}, pickedIdx=null;
+
+  /* resolve {{phrase|key}} into tappable grammar spans */
+  function sentHtml(s){
+    return s.replace(/\{\{([\s\S]*?)\|([a-z]+)\}\}/g,(m,phrase,key)=>`<span class="gm" data-key="${key}">${phrase}</span>`);
+  }
+
+  /* pick */
+  const starCount=(st)=>(st.notebook||[]).filter(n=>n.star).length+Object.values(st.moves||{}).filter(m=>typeof m!=="string"&&m.star).length;
+  const bandChip=(st)=>{const m=BAND_META[st.band];return `<span class="tier${m.cur==="VCE"?" vce":m.cur==="AUTH"?" auth":""}">${esc(m.head)} · ${esc(m.vic)}</span>`;};
+  BAND_ORDER.forEach(b=>STORIES.filter(st=>st.band===b).forEach(st=>{
+    const c=document.createElement("button");c.className="card";c.type="button";
+    const stars=starCount(st);
+    if(st.authentic){
+      c.innerHTML=`${bandChip(st)}<span class="long">long read · ${st.chapters.length} chapters</span><h3>${st.titleRuby||esc(st.title)}</h3><div class="en">${esc(st.en)}</div>
+        <div class="needs"><b>${esc(st.author)}${st.translator?`, translated by ${esc(st.translator)}`:""}.</b> ${st.beyond.map(esc).join(" ")}</div>
+        <div class="beyond">A real book: everything here is above the VIC levels. The chapter word list is your way in, and every chapter is checked.</div>
+        <div class="meta">${st.sentences.length} sentences · ${st.notebook.length} words in the lists · ${st.quick.length} questions, ${(st.cloze||[]).length} gap-fills, ${st.evidence.length} evidence taps</div>`;
+    }else{
+      c.innerHTML=`${bandChip(st)}${st.chapters?`<span class="long">long read · ${st.chapters.length} chapters</span>`:""}<h3>${st.titleRuby}</h3><div class="en">${esc(st.en)}</div>
+        <div class="needs"><b>You will need:</b> ${esc(st.needs)}</div>
+        <div class="beyond">${stars?`★ ${stars} thing${stars===1?"":"s"} beyond the curriculum at this level`:"Nothing beyond the curriculum at this level"}</div>
+        <div class="meta">${st.sentences.length} sentences · ${st.notebook.length} notebook words</div>`;
+    }
+    c.addEventListener("click",()=>{story=st;read();});
+    $("cards").appendChild(c);
+  }));
+  /* level guide */
+  $("guide").innerHTML=`<h4>THE LEVELS, IN THE CURRICULUM'S OWN WORDS</h4>
+    <table><tr><th>Level</th><th>Curriculum</th><th>What a reader has by then</th></tr>
+    ${BAND_ORDER.map(b=>{const m=BAND_META[b];return `<tr><td class="b">${esc(m.head)}</td><td>${esc(m.vic)}</td><td>${esc(m.has)}</td></tr>`;}).join("")}
+    </table>
+    <div class="rule">${STAR_RULE}</div>
+    <p style="margin-top:10px;color:var(--muted)">Reading a level above yours is the point of the notebook. Open it, learn the ★ words if you want them, skip them if you do not.</p>`;
+  $("guideBtn").addEventListener("click",()=>{const g=$("guide");g.classList.toggle("show");$("guideBtn").textContent=g.classList.contains("show")?"Hide the level guide":"What do the levels mean?";});
+
+  /* read */
+  let chap=0;
+  function renderStory(el,pickable,range){
+    const [a,b]=range||[0,story.sentences.length-1];
+    el.innerHTML=story.sentences.map((s,i)=>(i<a||i>b)?"":`<span class="sent${pickable?" pickable":""}" data-i="${i}">${sentHtml(s)}</span> `).join("");
+  }
+  function chapterRange(){const c=story.chapters&&story.chapters[chap];return c?[c.from,c.to]:null;}
+  function renderChapterNav(){
+    const nav=$("chapnav");
+    if(!story.chapters){nav.style.display="none";return;}
+    nav.style.display="";
+    const c=story.chapters[chap];
+    nav.innerHTML=`<button class="btn btn-small btn-ghost" id="chPrev" ${chap===0?"disabled":""}>← まえ</button>
+      <span class="chtitle"><b>${chap+1} / ${story.chapters.length}</b> · ${esc(c.t)} <small>${esc(c.en)}</small></span>
+      <button class="btn btn-small btn-ghost" id="chNext" ${chap===story.chapters.length-1?"disabled":""}>つぎ →</button>`;
+    $("chPrev").addEventListener("click",()=>{chap--;showChapter();});
+    $("chNext").addEventListener("click",()=>{chap++;showChapter();});
+  }
+  function showChapter(){
+    renderStory($("story"),false,chapterRange());
+    wireMoves();
+    renderChapterNav();
+    $("gnote").className="gnote";$("gnote").innerHTML="";
+    if(story.authentic){
+      $("toTasks").textContent=`Tasks for chapter ${chap+1}`;
+      const last=chap===story.chapters.length-1;
+      $("attrib").style.display=last?"":"none";
+      if(last)$("attrib").innerHTML=`<b>青空文庫 · Aozora Bunko attribution</b><br>${story.attribution.map(esc).join("<br>")}`;
+      $("culture").style.display=(chap===0&&story.culture)?"":"none";
+      if(chap===0&&story.culture)$("culture").innerHTML=`<b>The world of this story.</b> ${esc(story.culture)}`;
+      if(typeof renderNotebook==="function"&&story.notebook.some(n=>n.ch!==undefined))renderNotebook();
+    }else{
+      $("attrib").style.display="none";$("culture").style.display="none";
+      $("toTasks").textContent=(story.chapters&&chap<story.chapters.length-1)?"Skip to the tasks":"I have read it";
+    }
+    window.scrollTo(0,0);
+  }
+  function wireMoves(){
+    $("story").querySelectorAll(".gm").forEach(g=>g.addEventListener("click",()=>{
+      $("story").querySelectorAll(".gm.open").forEach(x=>x.classList.remove("open"));
+      g.classList.add("open");
+      const m=story.moves[g.dataset.key];const txt=typeof m==="string"?m:(m&&m.t)||"";const star=m&&typeof m!=="string"&&m.star;
+      $("gnote").className="gnote show";$("gnote").innerHTML=(star?`<span class="star" title="Beyond the Victorian Curriculum at this level. Great to know, not required.">★ beyond this level</span> `:"")+txt;
+    }));
+  }
+  function read(){
+    $("rTitle").innerHTML=(story.titleRuby||esc(story.title))+` <small style="font-family:var(--font);font-size:12px;color:var(--muted)">${esc(story.en)}</small>`;
+    {const m=BAND_META[story.band];$("rLevel").innerHTML=story.authentic
+      ?`<b>${esc(m.head)} · ${esc(story.author)}${story.translator?`, tr. ${esc(story.translator)}`:""}.</b> Verbatim from Aozora Bunko (${esc(story.orthography)}). ${story.beyond.map(esc).join(" ")} <a href="${esc(story.card)}" target="_blank" rel="noopener">source card</a>`
+      :`<b>${esc(m.head)} · ${esc(m.vic)}.</b> ${esc(story.needs)}`;}
+    $("story").classList.toggle("auth",!!story.authentic);
+    nbAll=false; open={}; first={};
+    chap=0;
+    $("story").classList.remove("noruby","tasking");$("rubyBtn").textContent="furigana off";
+    showChapter();
+    renderNotebook();
+    show("read");
+  }
+  let nbAll=false;
+  function renderNotebook(){
+    const nb=$("notebook");nb.className="notebook"+(nb.classList.contains("show")?" show":"");
+    const scoped=story.authentic&&!nbAll;
+    const rows=story.notebook.map((n,i)=>({n,i})).filter(x=>!scoped||x.n.ch===chap);
+    const chLabel=story.authentic?`<div class="nb-scope"><button class="nb-more" id="nbScope">${scoped?"show all chapters":"this chapter only"}</button> <small>${scoped?`words for chapter ${chap+1}`:"all chapters"}</small></div>`:"";
+    nb.innerHTML=`<h4>📓 ノート · key words</h4>`+chLabel+rows.map(({n,i})=>`
+      <div class="nb-row"><span class="nb-w" data-i="${i}">${n.w}${n.read?` <small class="nb-read">${n.read}</small>`:""}</span><span class="nb-def">${n.def}${n.star?`<span class="star" title="Beyond the Victorian Curriculum at this level. Great to know, not required.">★</span>`:""}${n.k?` <button class="nb-more" data-i="${i}">kanji</button>`:""}</span>${n.k?`<div class="nb-k" id="nbk${i}">${n.k}</div>`:""}</div>`).join("")
+      +(story.authentic
+        ?`<p class="nb-hint">The word list a Japanese teacher would pre-teach for this chapter. Tap a word to light it up in the story. Every word in a real book is fair game, so this list is a way in, not a fence.</p>`
+        :`<p class="nb-hint">Skip this if you do not need it. Tap a word to light it up in the story; tap kanji to see how the character is built. ★ marks a word beyond the curriculum at this level: great to know, not required.</p>`);
+    nb.querySelectorAll(".nb-more[data-i]").forEach(b=>b.addEventListener("click",()=>$("nbk"+b.dataset.i).classList.toggle("show")));
+    const sc=$("nbScope"); if(sc) sc.addEventListener("click",()=>{nbAll=!nbAll;renderNotebook();});
+    nb.querySelectorAll(".nb-w").forEach(w=>w.addEventListener("click",()=>{
+      /* a notebook entry is a dictionary form; the story conjugates it, so
+         fall back from the whole word to its stem (drop the final kana) */
+      const base=plain(story.notebook[w.dataset.i].w).split("・")[0].replace(/(する|になる|をたたく|にかかる|にかえす|にまよう|をぬく|でいく|〜ない)$/,"");
+      const stem=base.length>1?base.slice(0,-1):base;
+      const has=(txt)=>plain(txt).includes(base)||plain(txt).includes(stem);
+      if(story.chapters&&!story.sentences.slice(chapterRange()[0],chapterRange()[1]+1).some(has)){
+        const i=story.sentences.findIndex(has);
+        if(i>=0){chap=story.chapters.findIndex(c=>i>=c.from&&i<=c.to);showChapter();}
+      }
+      $("story").querySelectorAll(".hl").forEach(x=>x.classList.remove("hl"));
+      let hits=0;
+      $("story").querySelectorAll(".sent").forEach(s=>{ if(plain(s.innerHTML).includes(base)){s.classList.add("hl");hits++;} });
+      if(!hits)$("story").querySelectorAll(".sent").forEach(s=>{ if(plain(s.innerHTML).includes(stem)) s.classList.add("hl"); });
+      setTimeout(()=>$("story").querySelectorAll(".hl").forEach(x=>x.classList.remove("hl")),2600);
+    }));
+  }
+  $("nbBtn").addEventListener("click",()=>$("notebook").classList.toggle("show"));
+  $("rubyBtn").addEventListener("click",()=>{
+    const off=$("story").classList.toggle("noruby");
+    $("rubyBtn").textContent=off?"furigana on":"furigana off";
+  });
+  $("backBtn").addEventListener("click",()=>show("pick"));
+  $("backBtn2").addEventListener("click",()=>show("pick"));
+
+  /* tasks: quick read (mcq) -> find the evidence (tap sentence) -> ideas (open) */
+  function startTasks(){
+    queue=[];
+    if(story.authentic){
+      queue=[];
+      shuffle(story.quick.filter(t=>t.ch===chap)).forEach(t=>queue.push({type:"quick",t}));
+      shuffle((story.cloze||[]).filter(t=>t.ch===chap)).forEach(t=>queue.push({type:"cloze",t}));
+      shuffle(story.evidence.filter(t=>t.ch===chap)).forEach(t=>queue.push({type:"evidence",t}));
+      if(!queue.length){ afterChapterQuestions(); return; }
+      idx=0;show("task");render();return;
+    }
+    shuffle(story.quick.slice()).forEach(t=>queue.push({type:"quick",t}));
+    shuffle(story.evidence.slice()).forEach(t=>queue.push({type:"evidence",t}));
+    story.ideas.forEach(t=>queue.push({type:"idea",t}));
+    idx=0;first={};open={};show("task");render();
+  }
+  function afterChapterQuestions(){
+    if(chap<story.chapters.length-1){chap++;show("read");showChapter();}
+    else finish();
+  }
+  $("toTasks").addEventListener("click",startTasks);
+  const key=(q)=>q.type+"|"+(q.t.q||q.t.text);
+
+  function render(){
+    graded=false;pickedIdx=null;
+    const q=queue[idx];const area=$("taskArea");
+    $("feedback").className="feedback";$("feedback").textContent="";
+    $("checkBtn").style.display="";$("checkBtn").disabled=true;$("nextBtn").style.display="none";
+    $("peek").style.display="none";$("peekBtn").style.display=q.type==="evidence"?"none":"";$("peekBtn").textContent=story.authentic?"show this chapter":"show the story";
+    const closed=queue.filter(x=>x.type!=="idea").length;
+    $("progress").textContent=`${Math.min(idx+1,queue.length)} of ${queue.length}${(!story.authentic&&closed>story.quick.length+story.evidence.length)?" (missed ones come back)":""}`;
+    if(q.type==="quick"){
+      const opts=shuffle(q.t.opts.slice());
+      area.innerHTML=`<span class="task-kind">${story.authentic?`CHAPTER ${chap+1} · `:""}QUICK READ</span><div class="task-prompt">${esc(q.t.q)}</div>
+        <div class="options">${opts.map(o=>`<button type="button" class="option" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+      area.querySelectorAll(".option").forEach(b=>b.addEventListener("click",()=>{
+        if(graded)return;area.querySelectorAll(".option").forEach(x=>x.dataset.sel="");b.dataset.sel="1";$("checkBtn").disabled=false;
+      }));
+    }else if(q.type==="cloze"){
+      const opts=shuffle(q.t.opts.slice());
+      area.innerHTML=`<span class="task-kind">${story.authentic?`CHAPTER ${chap+1} · `:""}FILL THE GAP</span><div class="task-prompt">Which word from this chapter's list fills the gap?</div>
+        <div class="story small tasking" style="font-size:19px;line-height:1.9">${esc(q.t.text)}</div>
+        <div class="options kana">${opts.map(o=>`<button type="button" class="option" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+      area.querySelectorAll(".option").forEach(b=>b.addEventListener("click",()=>{
+        if(graded)return;area.querySelectorAll(".option").forEach(x=>x.dataset.sel="");b.dataset.sel="1";$("checkBtn").disabled=false;
+      }));
+    }else if(q.type==="evidence"){
+      area.innerHTML=`<span class="task-kind">${story.authentic?`CHAPTER ${chap+1} · `:""}FIND THE EVIDENCE</span><div class="task-prompt">${esc(q.t.q)}</div><div class="story small tasking${story.authentic?" auth":""}" id="evStory"></div>`;
+      const st=$("evStory");renderStory(st,true,story.authentic?chapterRange():null);
+      st.querySelectorAll(".sent").forEach(s=>s.addEventListener("click",()=>{
+        if(graded)return;st.querySelectorAll(".sent").forEach(x=>x.classList.remove("picked"));
+        s.classList.add("picked");pickedIdx=+s.dataset.i;$("checkBtn").disabled=false;
+      }));
+    }else{
+      area.innerHTML=`<span class="task-kind">${story.authentic?`CHAPTER ${chap+1} · 読解問題 · answer in Japanese if you can`:"YOUR IDEAS"}</span><div class="task-prompt">${esc(q.t.q)}</div>
+        <textarea id="openIn" placeholder="A line or two. English or Japanese, your choice."></textarea>
+        <p class="openhint">This is not marked by the computer. It goes to your teacher exactly as you write it.</p>`;
+      $("openIn").addEventListener("input",()=>{$("checkBtn").disabled=$("openIn").value.trim().length<3;});
+      $("checkBtn").textContent="Keep it";
+    }
+    if(q.type!=="idea")$("checkBtn").textContent="Check";
+  }
+  $("peekBtn").addEventListener("click",()=>{
+    const p=$("peek");const on=p.style.display==="none";
+    if(on){renderStory(p,false,story.authentic?chapterRange():null);p.classList.add("tasking");}
+    p.style.display=on?"":"none";$("peekBtn").textContent=on?"hide the story":"show the story";
+  });
+  $("checkBtn").addEventListener("click",()=>{
+    if(graded)return;graded=true;
+    const q=queue[idx];const fb=$("feedback");
+    if(q.type==="idea"){
+      open[q.t.q]=$("openIn").value.trim();$("openIn").disabled=true;
+      fb.className="feedback neutral";fb.textContent="Kept. Your teacher will read this.";
+    }else{
+      let ok;
+      if(q.type==="quick"||q.type==="cloze"){
+        const sel=document.querySelector('.option[data-sel="1"]');ok=!!sel&&sel.dataset.v===q.t.a;
+        document.querySelectorAll(".option").forEach(b=>{b.disabled=true;if(b.dataset.v===q.t.a)b.classList.add("correct");else if(b.dataset.sel==="1")b.classList.add("incorrect");});
+      }else{
+        const accept=[q.t.a].concat(q.t.alt||[]);ok=accept.includes(pickedIdx);
+        const st=$("evStory");
+        st.querySelectorAll(".sent").forEach(s=>{s.classList.remove("pickable");if(+s.dataset.i===q.t.a)s.classList.add("correct");else if(+s.dataset.i===pickedIdx)s.classList.add("incorrect");});
+      }
+      const k=key(q);if(!(k in first))first[k]=ok;
+      if(!ok)queue.splice(queue.findIndex((x,i)=>i>idx&&x.type==="idea")<0?queue.length:queue.findIndex((x,i)=>i>idx&&x.type==="idea"),0,q); /* comes back before the ideas round */
+      fb.className="feedback "+(ok?"good":"bad");
+      const why=q.type==="cloze"?`${esc(q.t.a)}${q.t.read?` (${esc(q.t.read)})`:""} is the word from the list that fits here.`:esc(q.t.why||"");
+      fb.innerHTML=(ok?"✓ ":"✗ ")+why+(ok?"":" This one will come back around.");
+    }
+    $("checkBtn").style.display="none";$("nextBtn").style.display="";$("nextBtn").focus();
+  });
+  $("nextBtn").addEventListener("click",()=>{
+    idx++;
+    if(idx>=queue.length){ if(story.authentic)afterChapterQuestions(); else finish(); } else render();
+  });
+  function finish(){
+    const total=Object.keys(first).length,right=Object.values(first).filter(Boolean).length;
+    $("stat").textContent=`${right}/${total}`;
+    $("statLabel").textContent=story.authentic
+      ?"right first try across the chapters: quick read, fill the gap, find the evidence. Missed ones came back until you got them."
+      :"right first try on quick read and find the evidence. Missed ones came back until you got them.";
+    $("openOut").innerHTML=Object.entries(open).map(([q,a])=>`<div class="open-out"><b>${esc(q)}</b>${esc(a)||"<i>(left blank)</i>"}</div>`).join("");
+    $("copied").textContent="";
+    show("report");
+  }
+  $("copyBtn").addEventListener("click",()=>{
+    const total=Object.keys(first).length,right=Object.values(first).filter(Boolean).length;
+    const missed=Object.entries(first).filter(([k,v])=>!v).map(([k])=>k.split("|")[1]).join("; ");
+    const row=[$("nameIn").value.trim(),story.id,`${right}/${total}`,missed].concat(story.ideas.map(i=>(open[i.q]||"").replace(/\s+/g," "))).join("\t");
+    const done=()=>{$("copied").textContent="copied: name · story · first-try · missed · your ideas";};
+    const fallback=()=>{$("copied").textContent=row;}; /* no clipboard: show the row to select by hand */
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(row).then(done,fallback);else fallback();
+  });
+  $("againBtn").addEventListener("click",read);
+  $("homeBtn").addEventListener("click",()=>show("pick"));
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+})();
+</script>
+</body>
+</html>

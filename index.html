@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<meta name="description" content="ジャプリ — practice tools for secondary Japanese.">
+<title>ジャプリ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- Save to the home screen. The manifest covers Android and desktop; the
+     apple- lines are what iOS reads instead, and without the touch icon it
+     makes a tile out of a screenshot. Scope is the whole site, so a tool
+     opened from a card stays inside the installed window. -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ジャプリ">
+<meta name="application-name" content="ジャプリ">
+<meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#17140f" media="(prefers-color-scheme:dark)">
+<style>
+  /* A LANDING PAGE IS A DOOR, NOT A PROSPECTUS.
+
+     This page used to be eight headed sections of sixteen cards, each card
+     carrying two or three lines of prose. On a phone that was about five
+     screens of scrolling before you reached the last tool, and no two cards
+     could be told apart at a glance because every one of them was a
+     paragraph.
+
+     Now it is one unbroken run of tiles. The groups are carried by the
+     colour of the ground they sit on, with a small label at the top left of
+     each band, so a group costs no heading of its own: on a laptop the
+     label sits in the left margin and takes no vertical room at all. Each
+     tile says the name twice, once in Japanese and once in English, and
+     then one line of the shortest wording that separates it from the tile
+     next to it. Anything longer belongs inside the tool, not on the door.
+
+     Same palette as the Grammar Hub so the suite reads as one thing.
+     Dark mode redefines the tokens only, never the usage sites. */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --shadow:0 2px 12px rgba(0,0,0,.06);
+
+    /* ---- the seven grounds ----
+       One tint per group, low enough in chroma to sit under cream paper
+       without shouting, and far enough apart that two neighbouring bands
+       are never mistaken for one. The label ink is the same hue carried
+       dark enough to read. Named here, never anywhere else. */
+    --b1:#eae3d2; --i1:#6b5c3c;   /* 単元      sand    */
+    --b2:#e2eae6; --i2:#3c5f54;   /* 文法      celadon */
+    --b3:#efe4e2; --i3:#74514c;   /* ことば    clay    */
+    --b4:#e3e8f0; --i4:#44536b;   /* 読む      blue    */
+    --b5:#e9e6f0; --i5:#544a6b;   /* 話す・聞く lavender*/
+    --b6:#e8ece0; --i6:#4e5c40;   /* 書く      sage    */
+    --b7:#f0e6e9; --i7:#6b4753;   /* 遊ぶ      rose    */
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#17140f; --paper:#201c16; --ink:#f3ede2; --muted:#b3a996;
+           --line:#3d352a; --line-soft:#2c261e; --accent:#e07a6a;
+           --shadow:0 2px 12px rgba(0,0,0,.5);
+           --b1:#241f16; --i1:#cbb98f;
+           --b2:#19231f; --i2:#8fc0b0;
+           --b3:#251c1a; --i3:#d6a9a0;
+           --b4:#1a1f28; --i4:#a3b6d2;
+           --b5:#201c28; --i5:#b7abd6;
+           --b6:#1b231a; --i6:#a8c396;
+           --b7:#251b20; --i7:#d8a3b4; }
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.45;min-height:100vh}
+  .wrap{max-width:min(100vw,1240px);margin:0 auto;position:relative}
+
+  /* ---- the timer, top left ----
+     Andrew asked for one button, in the corner, that opens the
+     classroom timer from anywhere on this page. It sits over the
+     header rather than in the run of tiles, because it is the thing a
+     teacher reaches for with a class already waiting. The tiles below
+     still carry it, for anyone who meets the page the usual way. */
+  .corner{position:absolute;top:12px;left:12px;z-index:5;
+       display:inline-flex;align-items:center;gap:6px;
+       background:var(--paper);border:1px solid var(--line);border-radius:999px;
+       padding:7px 13px;text-decoration:none;color:var(--ink);font-size:.84rem;
+       box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .corner:hover{border-color:var(--accent);color:var(--accent)}
+  .corner b{font-family:var(--font);font-weight:600}
+  .corner .en{color:var(--muted);font-size:.74rem}
+  @media (max-width:640px){
+    .corner{position:static;margin:12px 0 0 12px}
+    .corner .en{display:none}
+  }
+  header{text-align:center;padding:20px 16px 14px}
+  h1{font-family:var(--font);font-size:clamp(1.5rem,5vw,2.1rem);letter-spacing:.5px}
+  header p{color:var(--muted);font-size:.85rem;max-width:620px;margin:5px auto 0}
+
+  /* ---- a band: the ground a group of tiles sits on ----
+     Bands butt straight up against each other with a hairline between, so
+     the run of tiles is unbroken and only the colour says where one group
+     stops. Above 760px the label moves into the left margin and the group
+     costs no vertical space whatsoever. */
+  .band{background:var(--b);padding:11px 14px}
+  .band + .band{border-top:1px solid rgba(0,0,0,.07)}
+  @media (prefers-color-scheme:dark){ .band + .band{border-top-color:rgba(255,255,255,.07)} }
+  .lab{font-size:.8rem;font-weight:700;color:var(--i);letter-spacing:.04em;
+       margin-bottom:7px;display:flex;align-items:baseline;gap:7px}
+  .lab em{font-style:normal;font-weight:400;font-size:.76em;opacity:.8}
+  .grid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
+  /* An older phone is 320 wide. One column there turns the page back
+     into the scroll it just stopped being, so the band loses some of
+     its padding and the tiles stay two across. */
+  @media (max-width:400px){
+    .band{padding:10px}
+    .grid{gap:8px;grid-template-columns:repeat(auto-fill,minmax(142px,1fr))}
+    .tile p{font-size:.75rem}
+  }
+  @media (min-width:760px){
+    .band{display:grid;grid-template-columns:104px 1fr;gap:14px;
+          align-items:start;padding:13px 18px}
+    .lab{display:block;margin:3px 0 0;text-align:right;line-height:1.3}
+    .lab em{display:block}
+  }
+
+  /* ---- a tile ----
+     Emoji inline with the name rather than on a line of its own: the line
+     it saves is a line across sixteen tiles. */
+  a.tile{position:relative;display:block;background:var(--paper);
+         border:1px solid var(--line);border-radius:10px;padding:9px 11px 10px;
+         text-decoration:none;color:inherit;box-shadow:var(--shadow);
+         transition:transform .12s ease,border-color .12s ease}
+  a.tile:hover{transform:translateY(-2px);border-color:var(--accent)}
+  a.tile:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  .tile h3{font-size:.98rem;font-weight:700;line-height:1.3}
+  .tile h3 .e{font-weight:400;margin-right:5px}
+  .tile .en{display:block;font-size:.72rem;color:var(--muted);
+            letter-spacing:.02em;margin:1px 0 4px}
+  .tile p{font-size:.78rem;color:var(--muted);line-height:1.35}
+  /* The trial mark. Fourteen of sixteen tiles are trials, so a badge on
+     each one would be the loudest thing on the page and would tell nobody
+     anything. A dot, explained once underneath.
+     The dot sits at the foot of the tile, not the head: at the head a
+     long name like ミッション：日本 has to wrap to get out of its way,
+     which costs a line on every tile to make room for one. */
+  .tile.t{padding-bottom:15px}
+  .tile.t:after{content:"";position:absolute;bottom:7px;right:8px;width:6px;
+       height:6px;border-radius:50%;background:var(--accent);opacity:.85}
+
+  .tail{padding:14px 16px 4px;color:var(--muted);font-size:.78rem;
+        display:flex;flex-wrap:wrap;gap:6px 22px}
+  .tail p{max-width:46ch}
+  .tail .dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+       background:var(--accent);opacity:.85;vertical-align:1.5px;margin-right:4px}
+  footer{text-align:center;color:var(--muted);font-size:.72rem;padding:14px 0 18px}
+  .build-tag{font-family:monospace;font-size:9px;letter-spacing:.3px;opacity:.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="corner" href="timer/"><span aria-hidden="true">⏳</span>
+     <b>タイマー</b><span class="en">Classroom timer</span></a>
+
+  <header>
+    <h1>ジャプリ</h1>
+    <p>中高生のための日本語れんしゅう道具 · Practice tools for secondary Japanese. No account, no login, nothing to download.</p>
+  </header>
+
+  <main id="tools">
+    <!-- The Japan Study Tour app is deliberately not listed here. It pairs
+         dates with the places fourteen students will be, so it is handed out
+         by link rather than left where anyone can find it. It is still live
+         at trip/ and still installs; it is only unlisted. -->
+
+    <section class="band" style="--b:var(--b1);--i:var(--i1)">
+      <div class="lab">単元 <em>Units</em></div>
+      <div class="grid">
+        <a class="tile" href="jinbutsu/">
+          <h3><span class="e">🗾</span>れきしの人</h3>
+          <span class="en">Historical figures</span>
+          <p>Year 9 Unit 12. Six people, the grammar, a pattern wheel, and write your own.</p>
+        </a>
+        <a class="tile t" href="walk/">
+          <h3><span class="e">🚶</span>単元の道</h3>
+          <span class="en">Unit Walk</span>
+          <p>Any unit as a stepped walk, Years 7 to 12.</p>
+        </a>
+        <a class="tile t" href="unit10/">
+          <h3><span class="e">🗂️</span>ユニット10</h3>
+          <span class="en">Unit 10</span>
+          <p>Abilities and preferences, start to finish.</p>
+        </a>
+        <a class="tile" href="hito/">
+          <h3><span class="e">🧑</span>ひと</h3>
+          <span class="en">Describing people</span>
+          <p>Year 8. Hair, eyes, clothes, and dress a figure by ear.</p>
+        </a>
+        <a class="tile" href="mega/">
+          <h3><span class="e">🚌</span>メガセンテンス</h3>
+          <span class="en">Megasentence</span>
+          <p>Year 7 Unit 9. Day, who, transport, place, and the verb.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b1);--i:var(--i1)">
+      <div class="lab">しけん <em>Exams</em></div>
+      <div class="grid">
+        <a class="tile" href="exam10/">
+          <h3><span class="e">📝</span>しけん・十年生</h3>
+          <span class="en">Year 10 exam practice</span>
+          <p>The Semester 2 paper: reading, grammar, kanji, essay.</p>
+        </a>
+        <a class="tile" href="exam11/">
+          <h3><span class="e">📝</span>しけん・十一年生</h3>
+          <span class="en">Year 11 exam practice</span>
+          <p>Unit 2: translation, two readings, essay.</p>
+        </a>
+        <a class="tile t" href="written/">
+          <h3><span class="e">🖊️</span>ひっきしけん</h3>
+          <span class="en">VCE written exam</span>
+          <p>Units 3 and 4. Grammar, errors, listening, reading, writing.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b2);--i:var(--i2)">
+      <div class="lab">文法 <em>Grammar</em></div>
+      <div class="grid">
+        <a class="tile" href="grammar/">
+          <h3><span class="e">🧩</span>文法ハブ</h3>
+          <span class="en">Grammar Hub</span>
+          <p>The Prep to Year 12 grammar timeline, drilled.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b3);--i:var(--i3)">
+      <div class="lab">ことば <em>Words</em></div>
+      <div class="grid">
+        <a class="tile t" href="words/">
+          <h3><span class="e">🧱</span>ことばラボ</h3>
+          <span class="en">Word Lab</span>
+          <p>Kanji families: build words from their parts.</p>
+        </a>
+        <a class="tile t" href="vocab/">
+          <h3><span class="e">📚</span>ことばのホーム</h3>
+          <span class="en">Vocab Hub</span>
+          <p>Every word in the suite, by year or unit.</p>
+        </a>
+        <a class="tile t" href="builder/">
+          <h3><span class="e">🧰</span>単語ビルダー</h3>
+          <span class="en">Word Builder</span>
+          <p>A unit's word list from one bank of kanji.</p>
+        </a>
+        <a class="tile t" href="kanji/">
+          <h3><span class="e">🏭</span>かんじこうじょう</h3>
+          <span class="en">Kanji Factory</span>
+          <p>Which part carries the meaning, which the sound.</p>
+        </a>
+        <a class="tile t" href="yomiwake/">
+          <h3><span class="e">🔀</span>よみわけ</h3>
+          <span class="en">Which Reading?</span>
+          <p>兄 or お兄さん: which reading is it here?</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b4);--i:var(--i4)">
+      <div class="lab">読む <em>Reading</em></div>
+      <div class="grid">
+        <a class="tile t" href="yomimono/">
+          <h3><span class="e">📖</span>よみもの</h3>
+          <span class="en">Reading Room</span>
+          <p>A folk tale with furigana, then the questions.</p>
+        </a>
+        <a class="tile t" href="read/">
+          <h3><span class="e">⏱️</span>すらすら</h3>
+          <span class="en">Reading speed</span>
+          <p>Short rounds against the clock.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b5);--i:var(--i5)">
+      <div class="lab">話す・聞く <em>Speaking</em></div>
+      <div class="grid">
+        <a class="tile t" href="oral/">
+          <h3><span class="e">🎙️</span>話す練習</h3>
+          <span class="en">Oral practice</span>
+          <p>47 oral questions with audio, in three tiers.</p>
+        </a>
+        <a class="tile t" href="oralexam/">
+          <h3><span class="e">🎤</span>オーラルしけん</h3>
+          <span class="en">VCE oral exam</span>
+          <p>Units 3 and 4: question bank, mock exam, drills.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b6);--i:var(--i6)">
+      <div class="lab">書く <em>Writing</em></div>
+      <div class="grid">
+        <a class="tile t" href="levelup/">
+          <h3><span class="e">🪜</span>レベルアップの壁</h3>
+          <span class="en">Level Up Wall</span>
+          <p>One task answered at every level, Prep to 12.</p>
+        </a>
+        <a class="tile t" href="writing/">
+          <h3><span class="e">✍️</span>書き方の壁</h3>
+          <span class="en">Writing Wall</span>
+          <p>What a top answer does, move by move.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="band" style="--b:var(--b7);--i:var(--i7)">
+      <div class="lab">遊ぶ <em>Play</em></div>
+      <div class="grid">
+        <a class="tile t" href="mission/">
+          <h3><span class="e">🕶️</span>ミッション：日本</h3>
+          <span class="en">Mission: Japan</span>
+          <p>A 1-bit handheld. An agent in Tokyo, no set order.</p>
+        </a>
+        <a class="tile" href="timer/">
+          <h3><span class="e">⏳</span>タイマー</h3>
+          <span class="en">Classroom timer</span>
+          <p>Counts down in kanji numerals, big enough for the back row.</p>
+        </a>
+      </div>
+    </section>
+
+    <div class="tail">
+      <p><span class="dot"></span>ためし中 · a dot means a trial version your
+         teacher is still checking. It may change or disappear.</p>
+      <p>📱 Add it to your home screen: Safari share button then <b>Add to
+         Home Screen</b>, or in Chrome <b>Install app</b>.</p>
+      <p>🔒 Never asks your name, never sends anything anywhere. Reports stay
+         on screen for you to copy.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="build-tag">JH build 2026-10-28</div>
+  </footer>
+
+</div>
+<!-- Bilingual by design: no lever on the landing page. Each tool carries its own. -->
+</body>
+</html>

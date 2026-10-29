@@ -1,0 +1,3809 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Older iOS reads only the apple- spelling. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Oral Exam">
+<title>オーラルしけん Oral Exam</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%99%3C/text%3E%3C/svg%3E">
+<style>
+  /* A Year 12 student practising on a phone, often standing up, often the
+     night before. Nothing below 15px, body copy at 17, tap targets at 44.
+     The navigation is at the top because that is where a thumb looks first on
+     a page you are reading rather than scrolling through. */
+  :root{
+    --bg:#eef1f5; --paper:#ffffff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e;          /* the navy that carries every control */
+    --accent:#a83232;        /* a correction, a warning, time running out */
+    --ok:#2f6a3e;            /* something right, something done */
+    --tip:#fff8e1;           /* an examiner tip, quoted from a report */
+    --tipline:#e0cf9a;
+    --c1:#d9edf1; --c2:#fbe3e8; --c3:#dcecdc; --c4:#e4e1f0;
+    --c5:#f6d9c8; --c6:#dde9f5;
+    --shadow:0 2px 10px rgba(0,0,0,.07);
+    /* The six section colours are traditional Japanese ones, pastel so that
+       the ink on them is dark: 空色, 一斤染, 玉子色, 藤色, 青磁色, 若緑.
+       Each tab hands in its own pair as --c (the pane) and --ci (the ink on
+       it), so no colour is named anywhere but in TABS. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --display:var(--font-jp);
+    --font:var(--font-en),var(--font-jp),sans-serif;
+    --spk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2316375e' d='M4 9v6h4l5 4V5L8 9H4zm12.5 3c0-1.6-.9-2.9-2.2-3.6v7.2c1.3-.7 2.2-2 2.2-3.6zM14.3 4.4v1.9c2.6.8 4.5 3.2 4.5 6s-1.9 5.2-4.5 6v1.9c3.6-.9 6.3-4.2 6.3-7.9s-2.7-7.1-6.3-7.9z'/%3E%3C/svg%3E");
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  /* Two soft washes under everything, so a translucent tile has something
+     behind it worth blurring. Fixed, so they do not slide as the page
+     scrolls and make the glass look painted on. */
+  body{font-family:var(--font);color:var(--ink);
+       line-height:1.6;font-size:17px;overflow-wrap:break-word;
+       background:
+         radial-gradient(900px 520px at 12% -12%, #e2ecf7 0%, transparent 62%),
+         radial-gradient(760px 420px at 96% 6%, #f6e9ec 0%, transparent 58%),
+         var(--bg);
+       background-attachment:fixed}
+
+  /* ---------- top bar ---------- */
+  .top{position:sticky;top:0;z-index:40;background:var(--paper);
+       border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+  .bar{display:flex;align-items:center;gap:10px;padding:9px 14px 8px;
+       min-height:54px;max-width:720px;margin:0 auto}
+  .htitle{min-width:0;flex:1}
+  .crumb{font-size:17.5px;font-weight:700;line-height:1.25;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crumb button{border:0;background:none;padding:0;font-family:inherit;
+         font-size:15px;font-weight:600;color:var(--deep);cursor:pointer;
+         -webkit-appearance:none;appearance:none;
+         text-decoration:underline;text-underline-offset:3px}
+  .crumb .sep{color:var(--muted);opacity:.7;margin:0 5px;font-weight:400}
+  .htitle .en{font-size:13.5px;color:var(--muted);line-height:1.3;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* The two always-on controls, in the same white-on-navy-border style as
+     the trip app so the whole set reads as one family. 44px square. */
+  .tool{flex:none;width:44px;height:44px;border:2px solid var(--deep);
+        border-radius:11px;background:#fff;color:var(--deep);cursor:pointer;
+        font-family:var(--font);font-weight:800;font-size:16px;line-height:1;
+        display:flex;align-items:center;justify-content:center;padding:0}
+  .tool.off{opacity:.45}
+  /* kana is a word, not a letter, so its button is wider than square. */
+  .tool.wide{width:auto;min-width:54px;padding:0 8px;font-size:13px;
+        font-family:var(--font-jp),var(--font-en),sans-serif;line-height:1.1}
+  @media (max-width:360px){ .tool.wide{font-size:11.5px;padding:0 5px} }
+  .tool small{font-size:11px;font-weight:700;display:block}
+  .tool svg{width:23px;height:23px}
+  .tool .ic{fill:none;stroke:currentColor;stroke-width:2.2;
+            stroke-linecap:round;stroke-linejoin:round}
+  .tool .icf{fill:currentColor;stroke:none}
+
+  /* ---------- the tab row ----------
+     A coloured tile with a word under it, the way a phone labels an app:
+     the colour is what a student navigates by after a week, the word is
+     what tells them on the first day. Each tab hands in its own two
+     colours as --c/--ci, so no colour is named here. Labels are allowed
+     two lines and the box is two lines tall either way, so the row does
+     not change height between tabs. */
+  nav{border-top:1px solid var(--line-soft);background:var(--paper)}
+  .navin{display:flex;max-width:720px;margin:0 auto}
+  nav button{flex:1;min-width:0;border:0;cursor:pointer;
+             padding:7px 2px 6px;display:flex;flex-direction:column;
+             align-items:center;gap:3px;font-family:var(--font);
+             color:var(--ci);
+             background:linear-gradient(170deg,rgba(255,255,255,.62),
+                        rgba(255,255,255,0) 58%),var(--c);
+             box-shadow:inset 0 1px 0 rgba(255,255,255,.75),
+                        inset -1px 0 0 rgba(255,255,255,.5);
+             opacity:.58;transition:opacity .14s}
+  nav button:last-child{box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
+  nav button svg{width:22px;height:22px;display:block}
+  nav button .ic{stroke-width:2.6}
+  nav button .lab{font-size:10.5px;line-height:1.15;font-weight:700;
+             height:2.3em;text-align:center;letter-spacing:-.1px}
+  /* The one you are on is the one at full strength. Every other pane keeps
+     its colour, dimmed, so the row stays a row of six places rather than one
+     button and five gaps. */
+  nav button.on{opacity:1;box-shadow:inset 0 2px 0 var(--ci),
+             inset 0 3px 0 rgba(255,255,255,.55)}
+  nav button:active{filter:brightness(.94)}
+  .ic{fill:none;stroke:currentColor;stroke-width:2.4;
+      stroke-linecap:round;stroke-linejoin:round}
+  .icf{fill:currentColor;stroke:none}
+
+  main{max-width:720px;margin:0 auto;padding:14px 14px 70px}
+  h2{font-size:21px;line-height:1.3;margin:2px 0 10px}
+  h2 .en{display:block;font-size:13.5px;font-weight:400;color:var(--muted);
+         margin-top:2px}
+  h3{font-size:17px;margin:18px 0 8px}
+  p{margin:0 0 10px}
+  .lede{color:var(--muted);font-size:15.5px;margin-bottom:14px}
+  ul.lede{padding-left:18px}
+  ul.lede li{margin-bottom:3px}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:13px;
+        padding:13px 14px;margin:0 0 11px;box-shadow:var(--shadow)}
+  .card.flat{box-shadow:none}
+  button.card{display:block;width:100%;text-align:left;cursor:pointer;
+              font-family:var(--font);font-size:17px;color:inherit;
+              line-height:1.5}
+  /* A question in the list does two things, so it needs two targets: the
+     card opens it, the play button beside it speaks the question. One tap
+     cannot mean both. */
+  .qrow{position:relative}
+  .qrow>.card{padding-bottom:48px}
+  .playbtn{position:absolute;right:10px;bottom:10px;width:44px;height:44px;
+       border:2px solid var(--deep);border-radius:11px;background:#fff;
+       cursor:pointer;padding:0}
+  .playbtn:after{content:"";display:block;width:21px;height:21px;margin:0 auto;
+       background:var(--spk) center/contain no-repeat}
+  body:not(.hasvoice) .playbtn{display:none}
+  body:not(.hasvoice) .qrow>.card{padding-bottom:13px}
+  .jatext{font-family:var(--font-jp),var(--font-en),sans-serif;font-size:19px;
+       line-height:2.05;display:block}
+
+  /* How hard to pitch a run. Four choices in one row, so the whole decision
+     is one tap and the page does not grow a paragraph to explain it. */
+  /* The home page: the same six colours as the tab row, as full blocks, so
+     a student learns the colour once and navigates by it afterwards. */
+  /* Six squares that join, as one sheet of glass divided into panes
+     rather than six separate buttons. The seams are white hairlines, not
+     gaps: a gap makes six objects, a seam makes one. */
+  .blocks{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:4px 0 16px;
+          border-radius:20px;overflow:hidden;box-shadow:0 8px 26px rgba(0,0,0,.13)}
+  @media (min-width:560px){ .blocks{grid-template-columns:1fr 1fr 1fr} }
+  .block{aspect-ratio:1;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;text-align:center;
+         gap:7px;border:0;border-radius:0;padding:12px 13px;cursor:pointer;
+         font-family:var(--font);color:var(--ci);
+         background:linear-gradient(165deg,rgba(255,255,255,.72),
+                    rgba(255,255,255,.08) 52%,rgba(255,255,255,0) 70%),var(--c);
+         box-shadow:inset 0 1px 0 rgba(255,255,255,.85),
+                    inset 1px 0 0 rgba(255,255,255,.45),
+                    inset -1px 0 0 rgba(255,255,255,.45),
+                    inset 0 -1px 0 rgba(255,255,255,.35);
+         transition:filter .13s}
+  .block:active{filter:brightness(.93) saturate(1.1)}
+  .block .bi{display:flex;align-items:center;justify-content:center}
+  .block svg{width:34px;height:34px}
+  .block .ic{stroke-width:2.3}
+  .block .bt{font-size:17px;font-weight:800;line-height:1.15}
+  .block .bd{font-size:12.5px;line-height:1.3;opacity:.95}
+  @media (max-width:340px){
+    .block .bt{font-size:15.5px} .block .bd{font-size:11.5px}
+    .block svg{width:29px;height:29px}
+  }
+
+  /* One screen does all four recognition rounds: a prompt, a column of
+     options, and the reason you were wrong. The options are full width
+     because half of them carry a Japanese sentence and a play button. */
+  .opt{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;
+       width:100%;text-align:left;background:var(--paper);color:inherit;
+       border:2px solid var(--line);border-radius:12px;padding:11px 12px;
+       margin-bottom:8px;font-family:var(--font);font-size:16.5px;
+       line-height:1.4;cursor:pointer;min-height:52px}
+  .opt .oen{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+  .opt.pick{border-color:var(--deep)}
+  .opt.yes{border-color:var(--ok);background:#f1f8f2}
+  .opt.no{border-color:var(--accent);background:#fdf2f2}
+  .opt.dim{opacity:.55}
+  .opt .mark{font-size:20px;font-weight:800;line-height:1}
+  .opt.yes .mark{color:var(--ok)} .opt.no .mark{color:var(--accent)}
+  .opt .spk{flex:none;width:40px;height:40px;border:2px solid var(--deep);
+       border-radius:10px;background:#fff;cursor:pointer;padding:0}
+  .opt .spk:after{content:"";display:block;width:19px;height:19px;margin:0 auto;
+       background:var(--spk) center/contain no-repeat}
+  body:not(.hasvoice) .opt .spk{display:none}
+  .why{border-left:4px solid var(--line);padding:6px 11px;margin:2px 0 12px;
+       font-size:15px;color:var(--muted)}
+  .why.yes{border-color:var(--ok)} .why.no{border-color:var(--accent)}
+  .scorebar{display:flex;align-items:baseline;gap:9px;margin:0 0 12px;
+       font-size:14.5px;color:var(--muted)}
+  .scorebar b{font-size:19px;color:var(--ink)}
+
+  /* The topic the student picked, shown wherever it governs what happens
+     next, with its words one tap away: the mock assessors' first note was
+     that a student without the vocabulary cannot explain their research. */
+  .mytopic{border:2px solid var(--deep);border-radius:13px;padding:10px 13px;
+       margin:2px 0 12px;background:var(--paper)}
+  .mytopic>b{font-size:19px;margin-right:7px}
+  .mytopic>span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+  .mytopic details{margin-top:8px}
+  .lnk{border:0;background:none;padding:0;font-family:var(--font);
+       font-size:14px;color:var(--deep);font-weight:700;cursor:pointer;
+       text-decoration:underline;text-underline-offset:3px}
+  .vrow{padding:4px 0;border-bottom:1px solid var(--line-soft)}
+  .vrow:last-child{border-bottom:0}
+
+  /* A script card: who says the line matters more than anything else on
+     the entry and exit screens, so it is a label rather than a colour. */
+  .card .who{font-size:11.5px;font-weight:800;letter-spacing:.06em;
+       text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .card.mine{border-left:4px solid var(--deep)}
+  .card.mine .who{color:var(--deep)}
+
+  /* The eight directions an assessor can go, as buttons the student picks
+     from while the clock runs. Two columns on anything but the narrowest
+     phone: eight choices in one column is a scroll, and scrolling is time. */
+  .moves{display:grid;grid-template-columns:1fr;gap:8px;margin:6px 0 14px}
+  @media (min-width:360px){ .moves{grid-template-columns:1fr 1fr} }
+  .movebtn{text-align:left;border:2px solid var(--line);border-radius:12px;
+       background:var(--paper);color:inherit;padding:10px 11px;cursor:pointer;
+       font-family:var(--font);min-height:62px}
+  .movebtn b{display:block;font-size:15.5px;line-height:1.2}
+  .movebtn i{display:block;font-style:normal;font-size:14px;color:var(--deep);
+       margin-top:1px}
+  .movebtn span{display:block;font-size:12.5px;color:var(--muted);
+       line-height:1.3;margin-top:3px}
+  .movebtn[disabled]{opacity:.38;cursor:default}
+
+  .segs{display:flex;gap:6px;margin:4px 0 6px}
+  .seg{flex:1;min-width:0;min-height:44px;padding:6px 4px;border:1.5px solid var(--line);
+       border-radius:11px;background:var(--paper);color:var(--muted);cursor:pointer;
+       font-family:var(--font);font-size:14px;font-weight:600;line-height:1.2}
+  .seg.on{background:var(--deep);border-color:var(--deep);color:#fff;font-weight:700}
+  .seghint{font-size:14.5px;color:var(--muted);margin:0 0 12px}
+
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+         gap:10px;margin-bottom:12px}
+  .tile{border:1px solid var(--line);border-radius:13px;padding:12px 13px;
+        cursor:pointer;font-family:var(--font);font-size:16.5px;text-align:left;
+        color:inherit;line-height:1.4;box-shadow:var(--shadow)}
+  .tile b{display:block;font-size:17px}
+  .tile i.what{margin-top:4px;color:var(--ink);opacity:.8;font-size:13.5px}
+  .tile i{display:block;font-style:normal;font-size:13px;color:var(--muted);
+          margin-top:3px}
+  .tile:nth-child(6n+1){background:var(--c1)} .tile:nth-child(6n+2){background:var(--c2)}
+  .tile:nth-child(6n+3){background:var(--c3)} .tile:nth-child(6n+4){background:var(--c4)}
+  .tile:nth-child(6n+5){background:var(--c5)} .tile:nth-child(6n){background:var(--c6)}
+
+  /* ---------- Japanese lines, every one of them tappable ---------- */
+  .ja{font-family:var(--font-jp),var(--font-en),sans-serif;font-size:19px;
+      line-height:2.05;cursor:pointer;display:block;position:relative;
+      padding-right:30px}
+  .ja:after{content:"";position:absolute;right:0;top:.45em;width:19px;height:19px;
+            background:var(--spk) center/contain no-repeat;opacity:.5}
+  body:not(.hasvoice) .ja{cursor:default;padding-right:0}
+  body:not(.hasvoice) .ja:after{display:none}
+  .ja.live{background:#fff6cf;border-radius:5px}
+  ruby rt{font-size:.5em;font-weight:400;color:var(--muted);
+          letter-spacing:0}
+  body.nofuri ruby rt{display:none}
+  .en{font-size:15px;color:var(--muted);line-height:1.45}
+  .novoice{display:none;background:var(--tip);border:1px solid var(--tipline);
+           border-radius:10px;padding:9px 11px;font-size:14.5px;margin-bottom:12px}
+  body:not(.hasvoice) .novoice{display:block}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .chip{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;
+        padding:6px 12px;font-family:var(--font);font-size:14.5px;cursor:pointer;
+        color:var(--muted);min-height:36px}
+  .chip.on{background:var(--deep);border-color:var(--deep);color:#fff;font-weight:600}
+  .fgroup{width:100%;font-size:12.5px;text-transform:uppercase;
+          letter-spacing:.06em;color:var(--muted);margin:4px 0 -2px}
+
+  /* ---------- one question ---------- */
+  .qmeta{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+  .pill{font-size:12.5px;background:var(--line-soft);border-radius:999px;
+        padding:3px 9px;color:var(--muted)}
+  .pill.ho{background:#ffe4e4;color:#8c2222;font-weight:600}
+  .tip{background:var(--tip);border:1px solid var(--tipline);border-radius:11px;
+       padding:11px 12px;margin:12px 0;font-size:15px}
+  .tip b{display:block;font-size:12.5px;text-transform:uppercase;
+         letter-spacing:.06em;color:#7a6320;margin-bottom:4px}
+  .tip q{font-style:italic}
+  details{border:1px solid var(--line);border-radius:11px;padding:0;
+          margin:0 0 9px;background:var(--paper)}
+  /* Block, not flex. A flex summary makes every <ruby> inside it a flex
+     item, which breaks a word with readings into one piece per character. */
+  details>summary{cursor:pointer;padding:11px 32px 11px 13px;font-weight:600;
+          list-style:none;display:block;position:relative;line-height:1.9}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary:after{content:"\25bc";position:absolute;right:13px;top:13px;
+          font-size:11px;color:var(--muted);transition:transform .15s}
+  details[open]>summary:after{transform:rotate(180deg)}
+  details>summary .tier{margin-left:7px}
+  .dbody{padding:0 13px 12px}
+  .tier{font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;
+        color:var(--muted)}
+  .vocab{list-style:none;font-size:15.5px}
+  .vocab li{padding:4px 0;border-bottom:1px solid var(--line-soft)}
+  .vocab li:last-child{border:0}
+  .vocab b{font-family:var(--font-jp),sans-serif;font-size:17px}
+  .gram{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
+  .gram span{font-size:14px;background:#eaf0f7;border-radius:7px;padding:3px 8px;
+             font-family:var(--font-jp),var(--font-en),sans-serif}
+
+  /* ---------- buttons ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+       border:2px solid var(--deep);background:var(--deep);color:#fff;
+       border-radius:11px;padding:11px 16px;font-family:var(--font);
+       font-size:16px;font-weight:600;cursor:pointer;min-height:46px}
+  .btn.ghost{background:#fff;color:var(--deep)}
+  .btn.warn{border-color:var(--accent);background:var(--accent)}
+  .btn.wide{width:100%}
+  .btn[disabled]{opacity:.45;cursor:default}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+  /* ---------- the mock examination ---------- */
+  .clock{position:sticky;top:0;z-index:5;display:flex;align-items:center;
+         gap:10px;background:var(--deep);color:#fff;border-radius:11px;
+         padding:9px 13px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+  .clock b{font-size:25px;font-weight:700;letter-spacing:.02em}
+  .clock span{font-size:13.5px;opacity:.9}
+  .clock.low{background:var(--accent)}
+  .hidden-q{background:#f3f6fa;border:1px dashed var(--line);border-radius:11px;
+            padding:16px 14px;text-align:center;color:var(--muted);font-size:15px}
+  .chain{list-style:none;margin:10px 0 0}
+  .chain li{padding:8px 0;border-top:1px solid var(--line-soft)}
+  .step{font-size:12.5px;color:var(--muted);text-transform:uppercase;
+        letter-spacing:.06em}
+
+  /* ---------- recording ---------- */
+  .rec{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);
+       animation:pulse 1.1s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+  audio{width:100%;margin-top:8px}
+  .note{font-size:14px;color:var(--muted);margin-top:6px}
+
+  /* ---------- the reel ----------
+     Three slots tall, the middle one ruled off as the one that counts, and
+     the top and bottom faded so the drum reads as continuing past the
+     window rather than ending at it. touch-action is the important line:
+     without it a flick scrolls the page instead of turning the drum. */
+  .rwin{position:relative;flex:1;min-width:0;height:192px;overflow:hidden;
+        background:var(--paper);
+        border:1px solid var(--line);border-radius:4px;
+        touch-action:none;cursor:grab;
+        -webkit-user-select:none;user-select:none;
+        -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 24%,
+                           #000 76%,transparent 100%);
+        mask-image:linear-gradient(to bottom,transparent 0,#000 24%,
+                   #000 76%,transparent 100%)}
+  .reel.spinning .rwin{cursor:default}
+  .rwin:active{cursor:grabbing}
+  .rstrip{will-change:transform}
+  .ritem{height:64px;display:flex;flex-direction:column;align-items:center;
+         justify-content:center;gap:1px;text-align:center;padding:0 10px}
+  .ritem b{font-family:var(--display,inherit);
+           font-size:clamp(17px,5.4vw,22px);font-weight:600;
+           line-height:1.15;white-space:nowrap;overflow:hidden;
+           text-overflow:ellipsis;max-width:100%}
+  .ritem i{font-style:normal;font-size:12px;color:var(--muted);
+           letter-spacing:.04em}
+  .rmark{position:absolute;left:0;right:0;top:64px;height:64px;
+         pointer-events:none;border-top:2px solid var(--deep);
+         border-bottom:2px solid var(--deep);background:rgba(0,0,0,.035)}
+  .reel{display:flex;align-items:center;gap:9px;margin:4px 0 12px}
+  /* Dragging a cursor is a poor way to throw a drum, so there is a quiet
+     button beside it as well. Beside rather than on top: the longest topic
+     name needs the whole width of the window on a small phone, and a
+     button over the top of it would either cover the name or squeeze it
+     until it had to be cut off. */
+  .rspin{flex:none;width:44px;height:44px;border-radius:50%;
+         cursor:pointer;padding:0;
+         border:1px solid var(--line);background:var(--paper);
+         color:var(--deep);display:flex;align-items:center;
+         justify-content:center;opacity:.72;
+         box-shadow:0 1px 4px rgba(28,33,41,.12);transition:opacity .13s}
+  .rspin:hover,.rspin:focus{opacity:1;border-color:var(--deep);outline:none}
+  .rspin svg{width:21px;height:21px}
+  .rspin .ic{stroke-width:2}
+  .reel.spinning .rspin{opacity:.3;pointer-events:none}
+
+  /* ---------- the discussion image ---------- */
+  .shot{width:100%;border-radius:11px;border:1px solid var(--line);display:block}
+  .shotwrap{position:relative;margin-bottom:10px}
+  /* The voice list. A sheet rather than a screen: it is a setting, and you
+     want to be back where you were straight afterwards. */
+  .sheet{position:fixed;inset:0;z-index:65;background:rgba(10,15,22,.45);
+         display:none;align-items:flex-end;justify-content:center}
+  .sheet.on{display:flex}
+  .sheet-in{background:var(--paper);width:100%;max-width:560px;
+            border-radius:16px 16px 0 0;padding:16px 16px 20px;
+            padding-bottom:calc(20px + env(safe-area-inset-bottom));
+            max-height:82vh;overflow:auto}
+  .sheet .band{width:100%;margin-bottom:7px}
+  .full{position:fixed;inset:0;z-index:60;background:#000;display:none}
+  .full.on{display:flex;align-items:center;justify-content:center}
+  .full img{max-width:100%;max-height:100%;object-fit:contain}
+  .full .x{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px}
+  textarea{width:100%;font-family:var(--font);font-size:16px;line-height:1.6;
+           border:1px solid var(--line);border-radius:10px;padding:10px;
+           min-height:92px;background:var(--paper);color:var(--ink)}
+  input[type=text]{width:100%;font-family:var(--font);font-size:17px;
+           border:1px solid var(--line);border-radius:10px;padding:10px;
+           background:var(--paper);color:var(--ink)}
+  label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+
+  /* ---------- self assessment ---------- */
+  .bands{display:grid;gap:7px;margin:8px 0 0}
+  .band{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);
+        border-radius:10px;padding:9px 11px;cursor:pointer;background:var(--paper);
+        font-family:var(--font);font-size:15px;text-align:left;color:inherit;
+        line-height:1.45}
+  .band.on{border-color:var(--deep);background:#eaf0f7}
+  .band b{flex:none;font-size:15px;color:var(--deep);min-width:38px}
+  .mark{font-size:30px;font-weight:700;color:var(--deep)}
+
+  /* ---------- drills ---------- */
+  .drillq{font-size:19px;font-family:var(--font-jp),var(--font-en),sans-serif;
+          line-height:2}
+  .reveal{display:none}
+  .reveal.on{display:block}
+  /* A correction. Labelled in words, with a bar down the side: a colour on
+     its own is no use to a reader who cannot see it, and a line through a
+     whole question-and-answer pair reads as though the question was wrong. */
+  .pair{display:grid;gap:7px;margin:7px 0 0}
+  .side{border-left:4px solid;border-radius:0 9px 9px 0;padding:5px 10px;
+        background:#fafbfd}
+  .side>b{display:block;font-size:12.5px;text-transform:uppercase;
+          letter-spacing:.06em;font-weight:700}
+  .side.no{border-color:var(--accent)} .side.no>b{color:var(--accent)}
+  .side.yes{border-color:var(--ok)} .side.yes>b{color:var(--ok)}
+  .score{font-size:14px;color:var(--muted)}
+
+  .updatebar{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;
+     background:var(--deep);color:#fff;padding:11px 14px;
+     padding-bottom:calc(11px + env(safe-area-inset-bottom));
+     font-size:15px;align-items:center;gap:10px;justify-content:center;
+     flex-wrap:wrap}
+  .updatebar.on{display:flex}
+  .updatebar button{border:2px solid #fff;background:none;color:#fff;
+     border-radius:9px;padding:7px 13px;font-family:var(--font);font-size:15px;
+     font-weight:600;cursor:pointer}
+  /* The credits are a footnote, not a paragraph. Small enough to stop
+     competing with the work on the page, still large enough to read if
+     somebody goes looking for where the content came from. */
+  .foot{color:var(--muted);font-size:10.5px;line-height:1.45;margin-top:26px;
+        border-top:1px solid var(--line-soft);padding-top:8px;opacity:.75}
+
+  /* ---------- the ? and its popup ----------
+     Pages were carrying a paragraph of instructions that most students read
+     once and then scrolled past every time after. The instructions are now
+     behind this: hover on a mouse, tap on a phone, and the same popup
+     either way. Nothing is hidden that a student needs in order to start,
+     only the explanation of something already in front of them. */
+  .qmark{flex:none;width:24px;height:24px;border-radius:50%;cursor:pointer;
+       border:1.5px solid var(--line);background:var(--paper);
+       color:var(--muted);font-family:var(--font);font-size:14px;
+       font-weight:800;line-height:1;padding:0;display:inline-flex;
+       align-items:center;justify-content:center;vertical-align:middle}
+  .qmark:hover,.qmark:focus{border-color:var(--deep);color:var(--deep);
+       outline:none}
+  h2 .qmark,h3 .qmark{margin-left:7px}
+  /* A newline in the text becomes a line break, so a list of rules reads
+     as a list rather than a paragraph. Tall ones scroll rather than running
+     off the top of a phone. */
+  .tip-pop{position:fixed;z-index:120;display:none;background:var(--deep);
+       color:#fff;border-radius:11px;padding:10px 13px;font-size:14.5px;
+       line-height:1.45;box-shadow:0 6px 22px rgba(0,0,0,.3);
+       font-family:var(--font);white-space:pre-line;
+       max-height:70vh;overflow-y:auto;overscroll-behavior:contain}
+  .tip-pop.on{display:block}
+
+  /* ---------- recording ----------
+     At the top of the page, because it is the thing a student does before
+     answering rather than after reading. Red and round, so it reads as a
+     record button and not as another navigation choice. */
+  .recbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+       margin:0 0 12px}
+  .recbtn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+       border:2px solid var(--accent);background:#fff;color:var(--accent);
+       border-radius:11px;padding:0 14px;min-height:44px;
+       font-family:var(--font);font-size:15.5px;font-weight:700}
+  .recbtn .rdot{width:13px;height:13px;border-radius:50%;
+       background:var(--accent);flex:none}
+  .recbtn.on{background:var(--accent);color:#fff}
+  .recbtn.on .rdot{background:#fff;animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .recbar audio{height:38px;max-width:100%}
+  .btn.sm{min-height:44px;padding:0 13px;font-size:15px}
+  @media (max-width:360px){
+    .ja{font-size:18px} body{font-size:16.5px}
+    .bar{gap:7px;padding-left:10px;padding-right:10px}
+  }
+</style>
+</head>
+<body class="hasvoice">
+
+<div class="top">
+  <div class="bar">
+    <!-- Home. Every other way back is a breadcrumb, which only goes up one
+         branch; this goes to the front door from anywhere. -->
+    <button class="tool" id="homeBtn" title="Home" aria-label="Home">
+      <svg viewBox="0 0 28 28" aria-hidden="true">
+        <path class="ic" d="M4 13.2 14 5l10 8.2"/>
+        <path class="ic" d="M6.6 11.8V23h14.8V11.8"/>
+        <path class="ic" d="M11.3 23v-6.2h5.4V23"/></svg></button>
+    <div class="htitle">
+      <div class="crumb" id="crumb"></div>
+      <div class="en" id="sub"></div>
+    </div>
+    <!-- Furigana on or off, and the speaking speed. Both are here rather than
+         buried in a settings page because both get changed many times in a
+         sitting: readings off is how you check you can still read it, and 0.7
+         is how you catch a question you missed at full speed. -->
+    <!-- Readings on or off, and the speaking speed. A single ふ said nothing
+         to a student who had not been told what it meant; the whole word
+         does. It says out loud which way it has just gone, because on a
+         page of kana-only sentences the change is not always visible. The
+         voice picker is gone: the recordings are better than every device
+         voice, they are the same everywhere, and leaving the choice there
+         only invited somebody to make the app worse by accident. -->
+    <button class="tool wide" id="furiBtn" title="Readings above the kanji">
+      <span>ふりがな</span></button>
+    <button class="tool" id="rateBtn" title="How fast the voice speaks">
+      <span id="rateLabel">×1</span></button>
+    <!-- The clack a tile makes when it is pressed, and the way to stop it.
+         A room of twenty-five phones is a good reason for this to be one
+         tap away rather than buried. -->
+    <button class="tool" id="clickBtn" title="Tile sound">
+      <svg viewBox="0 0 28 28" aria-hidden="true">
+        <circle class="icf" cx="10" cy="14" r="3.2"/>
+        <path class="ic" d="M16 9.5a6.5 6.5 0 0 1 0 9"/>
+        <path class="ic" id="clickWave" d="M19.6 6a11 11 0 0 1 0 16"/></svg>
+      </button>
+  </div>
+  <nav><div class="navin" id="nav"></div></nav>
+</div>
+
+<main id="main"></main>
+
+<div class="sheet" id="sheet"></div>
+
+<div class="full" id="full">
+  <img id="fullimg" alt="Your discussion image, full screen">
+  <button class="btn ghost x" id="fullx">Close</button>
+</div>
+
+<div class="updatebar" id="upbar">
+  <span id="upmsg">A newer version is ready.</span>
+  <button id="upnow">Load it</button>
+  <button id="uplater">Later</button>
+</div>
+
+<script src="data/criteria.js"></script>
+<script src="data/readings.js"></script>
+<script src="data/audio.js"></script>
+<script src="data/report_insights.js"></script>
+<script src="data/questions.js"></script>
+<script src="data/phrases.js"></script>
+<script src="data/errors.js"></script>
+<script src="data/topics.js"></script>
+<script src="data/flow.js"></script>
+<script src="data/qwords.js"></script>
+<script src="data/particles.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var BUILD = "Version 28, 13 October 2026";
+
+  var CRIT  = window.ORAL_CRITERIA,
+      REP   = window.ORAL_REPORTS,
+      QD    = window.ORAL_QUESTIONS,
+      PH    = window.ORAL_PHRASES,
+      ER    = window.ORAL_ERRORS,
+      TOP   = (window.ORAL_TOPICS || { topics:[] }).topics,
+      FL    = window.ORAL_FLOW,
+      QW    = window.ORAL_QWORDS || { words:[], rounds:[] },
+      PT    = window.ORAL_PARTICLES || { rounds:[] };
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+    });
+  }
+
+  /* ---- furigana ------------------------------------------------------
+     The data stores 漢字[かんじ]. ruby() turns it into real ruby so a reading
+     sits above its own kanji instead of after the word, and plain() strips the
+     brackets for anything that has to be spoken or measured. Readings are
+     written into the data by hand; nothing here guesses one. */
+  var KRUN = /([一-龯々〆ヶ]+)\[([^\]]*)\]/g;
+  function ruby(text){
+    var out = "", last = 0, m;
+    KRUN.lastIndex = 0;
+    while ((m = KRUN.exec(text))){
+      out += esc(text.slice(last, m.index));
+      out += "<ruby>" + esc(m[1]) + "<rt>" + esc(m[2]) + "</rt></ruby>";
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+  function plain(text){
+    return String(text == null ? "" : text).replace(KRUN, "$1");
+  }
+  /* What the voice is given.
+
+     Not kana. Handing a Japanese voice kana for everything makes every reading
+     right and the intonation flat, because the engine takes its pitch accent
+     and its phrasing from the kanji. So it gets the ordinary written form.
+
+     Three things are done to it. The particles は and へ are written as they
+     are said, わ and え, because an engine does not always work that out: 日本の
+     高校生は came out with a HA in the middle of it. Then the spaces come out:
+     they are in the data to make a long kana line readable, and a speech engine
+     treats a space as a pause, which is what made it sound chopped into pieces.
+     Then a reading is swapped in for the few words the engine is known to get
+     wrong, which are listed in readings.js with nothing else beside them.
+     Longest first, so 何年生 is matched before 何年.
+
+     Nothing on screen changes. は is still は where a student can see it. */
+  var OVERRIDE = ((window.ORAL_READINGS || {}).overrides || [])
+    .slice().sort(function(a, b){ return b.ja.length - a.ja.length; });
+  /* ---- は as わ, へ as え ----
+     Which は is the particle? The data already knows, because the Japanese
+     here is spaced at the phrase boundaries, and a は that ENDS one of those
+     phrases is the particle. That rule was checked against a morphological
+     analyser over every line in this app: it finds all 462 of them and
+     touches nothing else, which matters, because はこ and はしります begin
+     with a は that must stay a は.
+
+     ではなく and ではありません are the one shape where the particle sits
+     inside a phrase rather than ending it, so they are named.
+
+     A word that ends in は and is not a particle goes in not_particle in
+     readings.js. こんにちは does not need to be there: it is said わ. */
+  var NOTWA = (window.ORAL_READINGS || {}).not_particle || [];
+  var CHUNKS = /[^ \u3000、。！？!?「」『』]+/g;
+  function particles(text){
+    return String(text).replace(CHUNKS, function(chunk){
+      if (NOTWA.indexOf(chunk) >= 0) return chunk;
+      chunk = chunk.replace(/では(?=[なあ])/g, "でわ");
+      if (/は$/.test(chunk)) return chunk.slice(0, -1) + "わ";
+      if (/へ$/.test(chunk)) return chunk.slice(0, -1) + "え";
+      return chunk;
+    });
+  }
+  function speakable(text){
+    var out = particles(String(text == null ? "" : text).replace(KRUN, "$1"))
+      .replace(/[ \u3000]+/g, "");
+    for (var i = 0; i < OVERRIDE.length; i++)
+      out = out.split(OVERRIDE[i].ja).join(OVERRIDE[i].say);
+    return out;
+  }
+  /* A recorded file beats any device voice, so if one exists for this line it
+     is played instead. The map is built by tools/make-audio.py and is absent
+     until somebody records them, in which case nothing here does anything. */
+  var CLIPS = (window.ORAL_AUDIO || {}).clips || {};
+  /* The recordings are the default. They are a Google neural voice, which
+     beats what any of the four platforms offers of its own, and they sound
+     the same on all of them. A device voice is used only when one has been
+     asked for by name. */
+  function clipFor(text){
+    if (S.voice !== "clips" && SAY.hasDeviceJa()) return null;
+    return CLIPS[speakable(text)] || null;
+  }
+  /* A Japanese line, tappable, with its own speaker mark. The spoken form
+     goes in data-say so the voice never reads a bracket aloud. */
+  function jaLine(text, say){
+    return '<span class="ja" data-say="' + esc(speakable(say || text)) + '">'
+         + ruby(text) + '</span>';
+  }
+  function enLine(text){ return '<span class="en">' + esc(text) + '</span>'; }
+
+  /* A correction, shown the same way everywhere. The assessor reports write
+     these as "X instead of Y", and they use that both ways round: a bare one
+     means X was the mistake, but "they should use X instead of Y" means X is
+     the correction. So nothing here relies on reading a quotation, on a colour,
+     or on a line through the middle. Each side is labelled in words, and a
+     line through a whole question-and-answer pair would have said the question
+     was wrong too, so there is none. */
+  function fixPair(wrong, right){
+    return '<div class="pair">'
+         + '<div class="side no"><b>\u2718 not this</b>'
+         + jaLine(wrong) + '</div>'
+         + '<div class="side yes"><b>\u2714 this</b>'
+         + jaLine(right) + '</div></div>';
+  }
+
+  /* ---- store ---------------------------------------------------------
+     localStorage only, as the repo rules require. Everything a student types,
+     ticks or uploads stays in their own browser: no account, no server, no
+     analytics, nothing leaves the phone. */
+  var KEY = "oralExam-v1";
+  /* voicePick marks which generation of the voice setting a saved choice
+     belongs to. The recordings arrived after the first sittings, so a
+     browser that had been used before them was still carrying a choice of
+     the device's own voice, and on a Mac that means Kyoko reading every
+     line however good the recordings are. Raising this number drops that
+     one saved choice, once. Notes, ticks and drafts are untouched. */
+  var VOICEPICK = 2;
+  var S = { furi:true, rate:1, voice:"clips", voicePick:VOICEPICK, band:"mixed",
+            topic:"", click:true, deck:null,
+            notes:{}, assess:{}, disc:{}, weak:{}, seen:{} };
+  var saved = null;
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) saved = JSON.parse(raw);
+  } catch (e){}
+  if (saved) for (var k in S) if (saved[k] !== undefined) S[k] = saved[k];
+  /* A store written before the recordings existed carries no voicePick, so
+     its choice of voice is dropped and the recordings take over. */
+  var voiceReset = !!saved && saved.voicePick !== VOICEPICK;
+  if (voiceReset){ S.voice = "clips"; S.voicePick = VOICEPICK; }
+  var saveTimer = null;
+  function save(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try { localStorage.setItem(KEY, JSON.stringify(S)); }
+      catch (e){ flash("Your phone would not save that. The image may be too large."); }
+    }, 250);
+  }
+  /* The quarter second of waiting is there so that typing a note does not
+     write the whole store on every keystroke. A few things cannot afford
+     it: the drum's deck is written the moment a topic is dealt, because a
+     student who closes the tab straight after a spin would otherwise come
+     back to the deck as it was before that spin and be given the same
+     topic again. */
+  function saveNow(){
+    clearTimeout(saveTimer);
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e){}
+  }
+  if (voiceReset) save();
+  function flash(msg){
+    $("upmsg").textContent = msg;
+    $("upbar").classList.add("on");
+    $("upnow").style.display = "none";
+    $("uplater").textContent = "OK";
+  }
+
+  /* ---- the voice -----------------------------------------------------
+     The device reads the Japanese. Where it has no Japanese voice the play
+     marks disappear altogether: a Japanese sentence in an English voice
+     teaches the wrong thing, and silence is honest. Browsers publish the
+     voice list late, and later still in a home-screen app on iOS, so this
+     keeps looking rather than giving up after one try. */
+  var SAY = (function(){
+    var can = "speechSynthesis" in window, jaV = null, settled = false, waiting = [];
+    /* How good a Japanese voice is likely to be, from its name. Taking the
+       first one in the list was taking the worst one on some machines.
+
+         Natural, Neural, Nanami, Keita   Microsoft's online voices in Edge,
+                                          which are the best thing available
+                                          free on Windows and macOS
+         Premium, Enhanced                Apple's downloadable voices, far
+                                          better than the one iOS ships with
+         Kyoko, Otoya, Hattori, O-ren     Apple's standard Japanese voices
+         Google                           Android's neural Japanese voice
+         Haruka, Ichiro, Ayumi            Microsoft's old local voices
+         Grandma, Bubbles, Jester and     Apple's novelty voices. They exist
+         the rest of that row             in Japanese too, and one of them
+                                          reading an examination question
+                                          would be a disaster. */
+    var NOVELTY = /eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|jester|bells|bubbles|organ|superstar|trinoids|whisper|wobble|boing|bahh|albert|zarvox|cellos|good news|bad news/i;
+    function score(v){
+      var n = v.name || "", pts = 0;
+      if (NOVELTY.test(n)) return -1000;
+      if (/natural|neural/i.test(n)) pts += 100;
+      if (/nanami|keita/i.test(n)) pts += 80;
+      if (/premium|enhanced/i.test(n)) pts += 60;
+      if (/google/i.test(n)) pts += 50;
+      if (/kyoko|otoya|hattori|o-?ren|siri/i.test(n)) pts += 45;
+      if (/haruka|ichiro|ayumi/i.test(n)) pts -= 70;
+      if (/compact/i.test(n)) pts -= 40;
+      if (v.localService === false) pts += 10;   /* cloud voices tend to be the neural ones */
+      if (v.default) pts += 5;
+      return pts;
+    }
+    function jaVoices(){
+      var out = [];
+      try {
+        (speechSynthesis.getVoices() || []).forEach(function(v){
+          if (/^ja(-|_|$)/i.test(v.lang || "")) out.push(v);
+        });
+      } catch (e){}
+      out.sort(function(a, b){ return score(b) - score(a); });
+      return out;
+    }
+    function find(){
+      var vs = jaVoices();
+      if (!vs.length) return null;
+      /* A voice chosen by hand wins, as long as it is still there. */
+      if (S.voice && S.voice.indexOf("v:") === 0){
+        var want = S.voice.slice(2);
+        for (var i = 0; i < vs.length; i++)
+          if (vs[i].voiceURI === want || vs[i].name === want) return vs[i];
+      }
+      return vs[0];
+    }
+    function land(){
+      jaV = find(); settled = true;
+      /* A recording plays with no device voice installed at all, so what
+         decides whether the play marks appear is whether anything can
+         speak, not whether this phone can. Keying it to the device voice
+         alone hid every play mark on a machine with no Japanese voice,
+         which is most Windows machines, while 953 recordings sat unused. */
+      document.body.classList.toggle("hasvoice", !!jaV || !!Object.keys(CLIPS).length);
+      waiting.splice(0).forEach(function(f){ f(); });
+    }
+    if (can){
+      try {
+        if (speechSynthesis.getVoices().length) land();
+        speechSynthesis.addEventListener("voiceschanged", land);
+        [600, 2000, 5000, 10000].forEach(function(t){ setTimeout(land, t); });
+      } catch (e){ settled = true; }
+    } else {
+      document.body.classList.toggle("hasvoice", !!Object.keys(CLIPS).length);
+    }
+    /* ---- one sound element, unlocked once ----
+       A question in the mock examination speaks itself, the way it does in
+       the room, and that is a sound starting without anybody tapping
+       anything. Safari on an iPhone refuses that for a sound element it has
+       never seen played inside a real tap, and a fresh element was being
+       made for every clip, so each one was new to it again. On a laptop
+       that is invisible; on a phone a run can go quiet partway through.
+
+       So: one element for the whole app, woken by the first touch anywhere
+       on the page with a moment of silence, and every clip after that is
+       the same element with a new src. Nothing is fetched for the silence;
+       it is forty-four bytes of WAV header inline. */
+    var SILENCE = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYA"
+                + "AESsAAACABAAZGF0YQAAAAA=";
+    var liveEl = null, el0 = null, woken = false;
+    function sound(){
+      if (!el0){ el0 = new Audio(); el0.preload = "auto"; }
+      return el0;
+    }
+    function wake(){
+      if (woken) return;
+      woken = true;
+      var a = sound();
+      try {
+        a.src = SILENCE;
+        a.muted = true;
+        var r = a.play();
+        if (r && r.then) r.then(function(){
+          try { a.pause(); } catch (e){}
+          a.muted = false;
+        }).catch(function(){ a.muted = false; });
+        else { try { a.pause(); } catch (e){} a.muted = false; }
+      } catch (e){ a.muted = false; }
+    }
+    ["pointerdown", "touchstart", "keydown"].forEach(function(ev){
+      document.addEventListener(ev, wake, { capture:true, once:true });
+    });
+    function playClip(clip, el, done){
+      var a = sound();
+      a.onended = a.onerror = null;
+      try { a.pause(); } catch (e){}
+      a.src = "audio/" + clip;
+      a.playbackRate = S.rate;
+      if (el) el.classList.add("live");
+      liveEl = el;
+      a.onended = a.onerror = function(){
+        if (el) el.classList.remove("live");
+        if (liveEl === el) liveEl = null;
+        if (done) done();
+      };
+      var r = a.play();
+      if (r && r.catch) r.catch(function(){
+        if (el) el.classList.remove("live");
+        if (liveEl === el) liveEl = null;
+        if (done) done();
+      });
+    }
+    function stop(){
+      if (liveEl){ liveEl.classList.remove("live"); liveEl = null; }
+      if (el0){ try { el0.pause(); } catch (e){} }
+      try { if (can) speechSynthesis.cancel(); } catch (e){}
+    }
+    return {
+      /* A recorded clip plays with no voice installed at all, so the play
+         marks stay when there are clips even if the device cannot speak. */
+      hasJa: function(){ return !!jaV || !!Object.keys(CLIPS).length; },
+      hasDeviceJa: function(){ return !!jaV; },
+      list: jaVoices,
+      current: function(){ return jaV; },
+      repick: function(){ jaV = find(); },
+      ready: function(f){ if (settled) f(); else waiting.push(f); },
+      /* One line at a time: two sentences over each other is noise. */
+      speak: function(text, el, done){
+        stop();
+        var clip = clipFor(text);
+        if (clip) return playClip(clip, el, done);
+        if (!jaV) land();
+        if (!jaV){
+          /* Asked for the device voice, and there is not one. Rather than
+             say nothing, play the recording if there is one. */
+          var fallback = CLIPS[speakable(text)];
+          if (fallback) return playClip(fallback, el, done);
+          if (done) done();
+          return;
+        }
+        var u = new SpeechSynthesisUtterance(speakable(text));
+        u.voice = jaV; u.lang = "ja-JP"; u.rate = 0.85 * S.rate;
+        if (el){ el.classList.add("live"); liveEl = el; }
+        u.onend = u.onerror = function(){
+          if (el) el.classList.remove("live");
+          if (liveEl === el) liveEl = null;
+          if (done) done();
+        };
+        try { speechSynthesis.speak(u); } catch (e){ if (done) done(); }
+      },
+      stop: stop
+    };
+  })();
+
+  /* Every Japanese line in the app speaks when tapped, wherever it is, from
+     one handler. Nothing has to remember to wire itself up. */
+  document.addEventListener("click", function(ev){
+    var el = ev.target.closest ? ev.target.closest(".ja") : null;
+    if (!el || !SAY.hasJa()) return;
+    SAY.speak(el.dataset.say || el.textContent, el);
+  });
+
+  /* ---- the click ----
+     A wooden clack when a tile is pressed, synthesised rather than
+     downloaded: a short burst of noise through a narrow band-pass, which is
+     most of what a 拍子木 is. It exists because the tiles now look like
+     something you could press, and a surface that looks pressable and
+     answers with nothing feels broken.
+
+     It is off until the first tap on the page, because a browser will not
+     let a page make a noise before it has been touched, and it is one
+     button away from off for good. */
+  /* ================= the reel =================
+     A poker-machine drum rather than a Wheel of Fortune. On a wheel the
+     labels sit at every angle and shrink to fit a wedge, which is the wrong
+     thing to do to words a student is still learning to read. On a drum
+     they stay horizontal and full size, and the list can be any length.
+
+     The physics is real, because a thing that eases along a curve feels
+     like a menu and a thing that coasts feels like a wheel.
+
+       coast   v decays against two forces: viscous drag, which takes a
+               fixed proportion of the speed each second and gives the long
+               smooth run-down, and dry friction, a constant scrape that
+               actually brings it to rest rather than letting it creep
+               forever. v' = -(SLOW*v + DRAG*sign(v)).
+       catch   below CATCH the drum is slow enough to be pulled, and a
+               spring takes over towards the nearest detent.
+       settle  a damped spring, a' = -K*x - C*v, with C a little under
+               critical so it overshoots by about a tenth of a slot and
+               comes back. That small bounce is the whole difference
+               between landing and stopping.
+
+     Three to five seconds of it. The first version lost 2.4 of its speed
+     a second with 90 of friction on top, which brought even the hardest
+     flick to rest in about a second and a half: a flick, not a spin.
+
+     The button does not throw a random amount of energy. It deals a topic
+     off a deck, so all ten come up before any comes up twice, rebuilds the
+     order of the drum while it is moving and nobody can read it, and then
+     finds the speed that lands on that topic: the same physics run forward
+     for a few hundred candidate speeds, keep the ones that stop in the
+     right place inside the time window, pick one. Nothing steers the drum
+     or stops it early. A flick is still a flick and lands where the
+     physics put it.
+
+     The tick is a notch going past a pawl, which is a short strike with
+     the low end off plus the rim ringing after it. The frame counts the
+     notches it crossed and books that many ahead on the audio clock rather
+     than playing one a frame, so the rate falls away with the drum, which
+     is the thing the ear is listening to. */
+  var REEL = (function(){
+    var H = 64, raf = 0;
+    function cancel(){ if (raf) cancelAnimationFrame(raf); raf = 0; }
+
+    function mount(box, items, onLand){
+      /* items is kept and reshuffled in place, so the strip can be rebuilt
+         in a new order between spins */
+      var L = items.length, SPAN = L * H;
+      var win = box.querySelector(".rwin"), strip = box.querySelector(".rstrip");
+      var three = "";
+      for (var c = 0; c < 3; c++){
+        three += items.map(function(it){
+          return '<div class="ritem"><b>' + it.html + '</b>'
+               + (it.sub ? '<i>' + it.sub + '</i>' : '') + '</div>';
+        }).join("");
+      }
+      strip.innerHTML = three;
+
+      /* ---- how it winds down ----
+         0.8 and 45 threw away 56% of the speed in the first second and
+         crawled through the rest, which is an air brake and not a wheel.
+         A heavy thing that is spinning loses speed at close to a steady
+         rate, so most of the friction here is the constant and only a
+         quarter of it rises with the speed. From a middling throw the
+         drum now reads 6000, 4050, 3243, 2532, 1904, 1350, 862, 431 at
+         each half second: an even wind-down you can watch, instead of a
+         lurch and a long crawl. */
+      var SLOW = 0.25, DRAG = 700, CATCH = 300, K = 150, C = 16;
+      var pos = 0, v = 0, target = null, last = 0;
+      var spinning = false;
+
+      function wrap(x){ return ((x % SPAN) + SPAN) % SPAN; }
+      function paint(){
+        strip.style.transform =
+          "translate3d(0," + (H - SPAN - wrap(pos)).toFixed(2) + "px,0)";
+      }
+      function at(){ return Math.round(wrap(pos) / H) % L; }
+      /* The sound is the speed. The drum hands over the speed and how far
+         apart the notches are, and CLICK works out the rest: one click per
+         two items, because a notch per item at six turns a second is 230
+         clicks a second and the ear hears a tone, not a wheel. */
+      function ticks(speed){
+        if (!(speed > 1)) return;
+        CLICK.ratchet(speed, 2 * H);
+      }
+      function done(){
+        CLICK.clunk();
+        spinning = false;
+        box.classList.remove("spinning");
+        if (onLand) onLand(items[at()], at());
+      }
+      /* ---- a fixed step ----
+         The physics used to advance by however long the last frame took,
+         which is the ordinary way to animate and the wrong way to do this.
+         The speed that lands on a given slot is worked out by running the
+         same sums forward at a sixtieth of a second a step; if the drum
+         itself then advances in steps of whatever the browser gave it,
+         1/60 here and 1/120 on a tablet and 1/40 under load, it travels a
+         slightly different distance and stops a slot or two from where it
+         was sent. Nothing looked wrong, which is the worst kind of wrong:
+         the drum simply landed on a different topic from the one the deck
+         had dealt, and the deck then dealt that topic again.
+
+         So time is accumulated and spent in whole steps of a sixtieth,
+         and what is left over waits for the next frame. The drum now lands
+         exactly where it was thrown, on any screen, under any load. The
+         guard stops a tab that has been asleep for a minute from
+         fast-forwarding through a thousand steps when it wakes. */
+      var STEP = 1 / 60, acc = 0;
+      function step(dt){
+        if (target === null){
+          var sgn = v < 0 ? -1 : 1;
+          v -= (SLOW * v + DRAG * sgn) * dt;
+          if (v * sgn < 0) v = 0;
+          pos += v * dt;
+          if (Math.abs(v) < CATCH) target = Math.round(pos / H) * H;
+        } else {
+          v += (-K * (pos - target) - C * v) * dt;
+          pos += v * dt;
+        }
+      }
+      function frame(now){
+        acc += last ? Math.min(0.25, (now - last) / 1000) : STEP;
+        last = now;
+        for (var guard = 0; acc >= STEP && guard < 30; guard++){
+          step(STEP); acc -= STEP;
+          if (target !== null && Math.abs(pos - target) < 0.4 && Math.abs(v) < 8){
+            pos = target; v = 0; acc = 0;
+            paint(); done(); return;
+          }
+        }
+        paint(); ticks(Math.abs(v));
+        raf = requestAnimationFrame(frame);
+      }
+      function launch(v0){
+        cancel();
+        target = null; v = v0; last = 0; acc = 0;
+        spinning = true;
+        box.classList.add("spinning");
+        /* ---- the drum spins for everybody ----
+           This used to hand a device with reduced motion a three slot
+           glide lasting under half a second. That one branch was why
+           Andrew could not see a spin or hear the clicks however many
+           times the physics and the sound were fixed: the branch never
+           ran either of them. On a school laptop with the setting on
+           system wide, the whole class gets the same dead control.
+
+           Reduced motion is about movement a person did not ask for and
+           cannot predict. A drum is a control whose entire function is
+           to spin, and it moves because the student pressed it. So the
+           spin stays, for everybody, with its clicks. */
+        raf = requestAnimationFrame(frame);
+      }
+
+      /* A flick, for a finger. The velocity is taken from the last few
+         milliseconds rather than the whole gesture, so a slow drag that
+         ends in a snap throws the drum and a slow drag that ends still
+         does not. */
+      var grab = null;
+      win.addEventListener("pointerdown", function(ev){
+        cancel(); spinning = false; box.classList.remove("spinning");
+        v = 0; target = null;
+        grab = { y:ev.clientY, pos:pos, t:performance.now(),
+                 ly:ev.clientY, lt:performance.now(), v:0, moved:0 };
+        try { win.setPointerCapture(ev.pointerId); } catch (e){}
+      });
+      win.addEventListener("pointermove", function(ev){
+        if (!grab) return;
+        ev.preventDefault();
+        pos = grab.pos - (ev.clientY - grab.y);
+        grab.moved += Math.abs(ev.clientY - grab.ly);
+        var now = performance.now(), dt = now - grab.lt;
+        if (dt > 4){
+          grab.v = -(ev.clientY - grab.ly) / dt * 1000;
+          grab.ly = ev.clientY; grab.lt = now;
+          grab.mouse = ev.pointerType === "mouse";
+        }
+        paint(); ticks(Math.abs(grab.v));
+      });
+      function release(){
+        if (!grab) return;
+        /* A hand can flick; a mouse cannot. The same gesture drags a
+           cursor at perhaps a third the speed of a thumb, so a mouse
+           throw is scaled up to land in the same range. The button on the
+           rim is there because even scaled, dragging a mouse is a poor way
+           to throw anything. */
+        var fling = grab.v * (grab.mouse ? 2.2 : 1);
+        var stale = performance.now() - grab.lt > 130;
+        grab = null;
+        if (stale || Math.abs(fling) < 130){ launch(0); return; }
+        launch(Math.max(-7000, Math.min(7000, fling)));
+      }
+      win.addEventListener("pointerup", release);
+      win.addEventListener("pointercancel", release);
+
+      /* ---- which one it stops on ----
+         The order of the drum is rebuilt at the start of every button
+         spin, while it is already moving and nobody can read it, and the
+         caller names the one it wants. The throw is then solved rather
+         than guessed: run the same physics forward for a few hundred
+         candidate speeds, keep the ones that stop on the wanted slot after
+         three to five seconds, and pick one of those. */
+      function reorder(){
+        shuffle(items);
+        var three = "";
+        for (var c = 0; c < 3; c++){
+          three += items.map(function(it){
+            return '<div class="ritem"><b>' + it.html + '</b>'
+                 + (it.sub ? '<i>' + it.sub + '</i>' : '') + '</div>';
+          }).join("");
+        }
+        strip.innerHTML = three;
+        paint();
+      }
+      /* the same integration as frame(), run forward with no drawing */
+      function dryRun(v0){
+        var p = 0, u = v0, t = 0, dt = 1 / 60;
+        while (u > CATCH && t < 12){
+          u -= (SLOW * u + DRAG) * dt;
+          if (u < 0) u = 0;
+          p += u * dt;
+          t += dt;
+        }
+        return { slot: Math.round(p / H), secs: t + 0.3 };   /* 0.3 to settle */
+      }
+      /* Wide, because the speeds that stop on a given slot come in
+         clusters, one per extra turn of the drum: a narrow window leaves
+         two or three of them and every spin takes the same time. */
+      var MINS = 2.8, MAXS = 5.0;
+      function throwTo(slot){
+        var from = Math.round(pos / H), want = ((slot % L) + L) % L, hits = [];
+        /* Gentler friction means a four second spin starts slower, so the
+           search starts lower, and in finer steps, because the speeds that
+           stop on one word are rarer when fewer of them are in range. */
+        for (var v0 = 1800; v0 <= 15000; v0 += 10){
+          var r = dryRun(v0);
+          if (r.secs < MINS || r.secs > MAXS) continue;
+          if ((((from + r.slot) % L) + L) % L === want) hits.push(v0);
+        }
+        if (!hits.length) return launch(3400 + Math.random() * 3000);
+        launch(hits[Math.floor(Math.random() * hits.length)]);
+      }
+
+      paint();
+      return {
+        /* A free spin, for when nothing has asked for a particular one. */
+        spin: function(){ reorder(); launch(3200 + Math.random() * 3600); },
+        /* Spin and land on this one. */
+        spinTo: function(id){
+          reorder();
+          var i = 0;
+          items.forEach(function(it, n){ if (it.id === id) i = n; });
+          throwTo(i);
+        },
+        at: at,
+        spinning: function(){ return spinning; }
+      };
+    }
+    return { mount: mount, cancel: cancel };
+  })();
+
+  var CLICK = (function(){
+    var ctx = null, noise = null;
+    function build(){
+      if (ctx) return ctx;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+      var n = Math.floor(ctx.sampleRate * 0.06);
+      noise = ctx.createBuffer(1, n, ctx.sampleRate);
+      var d = noise.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      return ctx;
+    }
+    function play(){
+      if (!S.click) return;
+      try {
+        var c = build();
+        if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = c.currentTime;
+        var src = c.createBufferSource(); src.buffer = noise;
+        var bp = c.createBiquadFilter();
+        bp.type = "bandpass"; bp.frequency.value = 1750; bp.Q.value = 7;
+        var g = c.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.26, t + 0.003);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
+        src.connect(bp); bp.connect(g); g.connect(c.destination);
+        src.start(t); src.stop(t + 0.07);
+      } catch (e){}
+    }
+  /* ---- the drum's clack ----
+       The tile press above keeps its 拍子木: one short band of noise, and
+       that is the right sound for a tile. A notch going past a pawl is a
+       different thing and needs two sounds at once, the strike with the
+       low end taken off and the rim ringing for a few hundredths of a
+       second after it. The strike alone is a watch tick; the ring alone
+       is a marimba.
+
+       Every click is a little different, up to a tone of pitch either way
+       and a fifth of the level, because thirty identical clicks stop
+       sounding like wood and start sounding like a buzzer. */
+    function clack(at, loud){
+      var c = ctx; if (!c) return;
+      /* Andrew could not hear these twice over. The first cause was the
+         rate, and this is the other half: a 16ms click at 2600Hz through
+         a laptop speaker at a third of full scale is not much. Half of
+         full scale, and a clack decays long before the next one is due,
+         so nothing stacks. */
+      var vol = Math.max(0.08, Math.min(0.5, loud));
+      var jit = 0.88 + Math.random() * 0.26;
+
+      var src = c.createBufferSource(); src.buffer = noise;
+      var bp = c.createBiquadFilter();
+      bp.type = "bandpass"; bp.frequency.value = 2600 * jit; bp.Q.value = 2.2;
+      var g1 = c.createGain();
+      g1.gain.setValueAtTime(0.0001, at);
+      g1.gain.exponentialRampToValueAtTime(vol, at + 0.001);
+      g1.gain.exponentialRampToValueAtTime(0.0001, at + 0.016);
+      src.connect(bp); bp.connect(g1); g1.connect(c.destination);
+      src.start(at); src.stop(at + 0.02);
+
+      var o = c.createOscillator();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(1150 * jit, at);
+      o.frequency.exponentialRampToValueAtTime(820 * jit, at + 0.03);
+      var g2 = c.createGain();
+      g2.gain.setValueAtTime(0.0001, at);
+      g2.gain.exponentialRampToValueAtTime(vol * 0.7, at + 0.002);
+      g2.gain.exponentialRampToValueAtTime(0.0001, at + 0.034);
+      o.connect(g2); g2.connect(c.destination);
+      o.start(at); o.stop(at + 0.04);
+    }
+    /* ---- the ratchet ----
+       The first attempt counted the notches a frame had crossed and
+       booked that many clicks, each batch starting at "now" on the audio
+       clock, so every frame started a batch on top of the one still
+       playing and the lot ran together into a mush that did not change as
+       the drum slowed. Which is the point of the sound: you should hear
+       it slowing before you see it.
+
+       One cursor, then, and the clicks go on it in order. The spacing is
+       the time a notch actually takes to cross the window, H over the
+       speed, so the rate falls away exactly as the drum does. The floor
+       is there because a click every five milliseconds is a buzz, and the
+       ceiling because a drum that has all but stopped should fall silent
+       rather than tick once more a second later. */
+    /* ---- how fast the clicks come ----
+       It used to be one click per notch, floored at 62 a second. Two
+       things were wrong with that. 62 a second is above the rate at which
+       an ear stops hearing separate clicks and starts hearing a pitch, so
+       the top of every spin was a buzz. And because the floor was a hard
+       maximum, the rate sat ON it for the first two thirds of the spin and
+       only began to change near the end: the drum visibly slowed for
+       seconds while the sound did not move.
+
+       So the floor is added rather than imposed. The gap is always the
+       time a notch takes to cross the window PLUS a fixed minimum, which
+       means the rate changes the whole way down and never passes about 20
+       a second. From a middling throw it now runs 18, 16, 14, 12, 10, 8,
+       6, 3 clicks a second: you hear it slowing from the first half
+       second, which is the part that was missing. */
+    var FLOOR = 0.03, CEIL = 0.55, NOTCH = 128, cursor = 0;
+    function ratchet(speed, notch){
+      if (!S.click || !(speed > 0)) return;
+      var gap = FLOOR + (notch || NOTCH) / speed;
+      if (gap > CEIL) return;
+      try {
+        var c = build(); if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = c.currentTime;
+        if (cursor < t) cursor = t + 0.004;
+        var loud = 0.5 - Math.min(0.22, (speed || 0) / 34000);
+        for (var guard = 0; cursor < t + 0.05 && guard < 6; guard++){
+          clack(cursor, loud);
+          cursor += gap;
+        }
+      } catch (e){}
+    }
+    /* the one at the end, when it drops into the slot */
+    function clunk(){
+      if (!S.click) return;
+      try {
+        var c = build(); if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = Math.max(c.currentTime + 0.004, cursor);
+        clack(t, 0.4);
+        cursor = t + 0.02;
+      } catch (e){}
+    }
+    /* Built inside the press that starts the spin rather than inside the
+       frame loop after it: a browser is readier to start an audio engine
+       during a gesture than a tenth of a second later. */
+    function wakeAudio(){
+      try { var c = build(); if (c && c.state === "suspended") c.resume(); }
+      catch (e){}
+    }
+    return { play: play, ratchet: ratchet, clunk: clunk, wake: wakeAudio };
+
+  })();
+  /* The things that look pressable: the home panes, the tab row, and the
+     tiles and move buttons inside a section. Not every button in the app:
+     a clack on Next twenty times in a drill is a different thing. */
+  var CLICKY = ".block, nav button, .tile, .movebtn";
+  document.addEventListener("click", function(ev){
+    if (!ev.target.closest) return;
+    if (ev.target.closest(CLICKY)) CLICK.play();
+  }, true);
+
+  /* ---- the ? popup ----
+     One floating node, moved to whichever ? asked for it. Hover shows it on
+     a mouse and tap shows it on a phone, which is the only way a hover-only
+     tooltip is any use to a student holding the thing. */
+  var TIP = (function(){
+    var el = null, from = null;
+    function node(){
+      if (!el){
+        el = document.createElement("div");
+        el.className = "tip-pop";
+        el.setAttribute("role", "tooltip");
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+    function show(btn){
+      var text = btn.getAttribute("data-tip");
+      if (!text) return;
+      var n = node();
+      n.textContent = text;
+      n.style.width = Math.min(290, window.innerWidth - 24) + "px";
+      n.classList.add("on");
+      from = btn;
+      var r = btn.getBoundingClientRect(), w = n.offsetWidth, h = n.offsetHeight;
+      var left = r.left + r.width / 2 - w / 2;
+      left = Math.max(12, Math.min(left, window.innerWidth - w - 12));
+      var top = r.bottom + 8;
+      if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+      n.style.left = left + "px";
+      n.style.top = top + "px";
+    }
+    function hide(){ if (el) el.classList.remove("on"); from = null; }
+    /* Hover is for a mouse only. On a touch screen the browser fires a
+       synthetic hover immediately before the tap, so a handler that opens on
+       hover and toggles on click opens the popup and then closes it again in
+       one press, which is how this behaved for exactly one build. Checking
+       the pointer type keeps the two apart. */
+    document.addEventListener("pointerover", function(ev){
+      if (ev.pointerType && ev.pointerType !== "mouse") return;
+      var b = ev.target.closest && ev.target.closest("[data-tip]");
+      if (b) show(b);
+    });
+    document.addEventListener("pointerout", function(ev){
+      if (ev.pointerType && ev.pointerType !== "mouse") return;
+      var b = ev.target.closest && ev.target.closest("[data-tip]");
+      if (b && b === from) hide();
+    });
+    document.addEventListener("click", function(ev){
+      var b = ev.target.closest && ev.target.closest("[data-tip]");
+      if (b){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (b === from && el && el.classList.contains("on")) hide();
+        else show(b);
+        return;
+      }
+      hide();
+    }, true);
+    document.addEventListener("keydown", function(ev){
+      if (ev.key === "Escape") hide();
+    });
+    window.addEventListener("scroll", hide, true);
+    return { hide: hide };
+  })();
+  /* A ? that explains whatever it sits beside. */
+  function qmark(text){
+    return '<button type="button" class="qmark" data-tip="' + esc(text)
+         + '" aria-label="What is this?">?</button>';
+  }
+
+  /* ---- the two always-on controls ---- */
+  function paintFuri(){
+    document.body.classList.toggle("nofuri", !S.furi);
+    $("furiBtn").classList.toggle("off", !S.furi);
+    $("furiBtn").setAttribute("aria-pressed", S.furi ? "true" : "false");
+    $("furiBtn").title = S.furi ? "Readings are on. Tap to turn them off."
+                                : "Readings are off. Tap to turn them on.";
+    $("furiBtn").setAttribute("aria-label", $("furiBtn").title);
+  }
+  /* It says which way it has just gone. A student looking at a sentence
+     with no kanji in it cannot see the difference the button made. */
+  $("furiBtn").onclick = function(){
+    S.furi = !S.furi; paintFuri(); save();
+    SAY.speak(S.furi ? FL.ui.furiOn.ja : FL.ui.furiOff.ja);
+  };
+  var RATES = [0.7, 1, 1.2];
+  function paintRate(){
+    $("rateLabel").textContent = "×" + S.rate;
+  }
+  /* The recordings are the only voice now. They are a Google neural voice,
+     they are the same on every device, and they beat what any of the four
+     platforms offers of its own, so there is nothing left to choose between
+     and the picker that used to sit in the top bar has gone. A device voice
+     is still read if a line somehow has no recording, which is the one case
+     where having it matters. */
+  function paintClick(){
+    var b = $("clickBtn");
+    b.classList.toggle("off", !S.click);
+    $("clickWave").style.display = S.click ? "" : "none";
+    b.title = S.click ? "Tiles click when you press them. Tap to silence."
+                      : "Tiles are silent. Tap for the click.";
+    b.setAttribute("aria-label", b.title);
+    b.setAttribute("aria-pressed", S.click ? "true" : "false");
+  }
+  $("clickBtn").onclick = function(){
+    S.click = !S.click; paintClick(); save();
+    if (S.click) CLICK.play();
+  };
+  $("rateBtn").onclick = function(){
+    S.rate = RATES[(RATES.indexOf(S.rate) + 1) % RATES.length] || 1;
+    paintRate(); save();
+    SAY.speak(FL.ui.rate.ja);
+  };
+
+  /* ================= indexes over the data ================= */
+  var QBYID = {}, CONV = [], DISC = [];
+  QD.questions.forEach(function(q){
+    QBYID[q.id] = q;
+    (q.section === "conversation" ? CONV : DISC).push(q);
+  });
+  var ERBYID = {};
+  ER.errors.forEach(function(e){ ERBYID[e.id] = e; });
+  var CRITBYID = {};
+  CRIT.sections.forEach(function(s){
+    s.criteria.forEach(function(c){ CRITBYID[c.id] = { c: c, section: s }; });
+  });
+  var TOPNAME = {}, STAGENAME = {};
+  QD.conversation_topics.forEach(function(t){ TOPNAME[t.id] = t; });
+  QD.discussion_stages.forEach(function(t){ STAGENAME[t.id] = t; });
+  var TYPENAME = {};
+  QD.question_types.forEach(function(t){ TYPENAME[t.id] = t; });
+
+  /* ================= routing =================
+     One string route, pushed onto the browser's own history, so the phone's
+     back gesture steps back through the app instead of leaving it. */
+  /* en is the full name, read out by a screen reader and shown on hover.
+     lab is the one or two words that fit under the tile. c is the pane's
+     colour and ci the ink on it: a traditional Japanese colour, pastel
+     enough that dark ink sits on it, with a deeper shade of the same hue
+     for the glyph and the label. */
+  var TABS = [
+    { id:"browse", ja:"しつもん", en:"Questions", lab:"Questions",
+      home:"Every question an assessor could ask, with answers at three levels",
+      icon:"bubble", c:"#a0d8ef", ci:"#1f5f82" },   /* 空色 */
+    { id:"mock",   ja:"タイムれんしゅう", en:"Timed practice", lab:"Timed practice",
+      home:"The whole examination in 15 minutes, or your SAC topic in 4",
+      icon:"clock",  c:"#f5b1aa", ci:"#8e3f38" },   /* 一斤染 */
+    { id:"drill",  ja:"ドリル", en:"Drills", lab:"Drills",
+      home:"Short rounds on the mistakes the VCAA reports name every year",
+      icon:"target", c:"#fcd575", ci:"#6a4806" },   /* 玉子色 */
+    { id:"disc",   ja:"ディスカッション", en:"Discussion builder", lab:"Discussion",
+      home:"Build your Section 2 answer stage by stage, in your own words",
+      icon:"steps",  c:"#bbbcde", ci:"#434489" },   /* 藤色 */
+    { id:"phrase", ja:"フレーズ", en:"Phrases", lab:"Phrases",
+      home:"Lines worth knowing by heart, for when a question gets away",
+      icon:"lines",  c:"#a8d8ce", ci:"#2d6b60" },   /* 青磁色 */
+    { id:"me",     ja:"じぶんで さいてん", en:"Self-grade", lab:"Self-grade",
+      home:"Mark yourself against the official criteria and keep a copy",
+      icon:"person", c:"#b5d5a0", ci:"#426b2c" }   /* 若緑 */
+  ];
+  var ICONS = {
+    bubble:'<svg viewBox="0 0 28 28" aria-hidden="true"><path class="ic" d="M3.5 6.5h21v13h-12l-6 5v-5h-3z"/><path class="ic" d="M10.5 11.2c0-1.6 1.3-2.7 2.9-2.7 1.6 0 2.9 1 2.9 2.4 0 2-2.6 2.2-2.6 4"/><circle class="icf" cx="13.7" cy="17.2" r="1.15"/></svg>',
+    clock: '<svg viewBox="0 0 28 28" aria-hidden="true"><circle class="ic" cx="14" cy="15" r="9.5"/><path class="ic" d="M14 9.5v5.5l4 2.5"/><path class="ic" d="M10 3.5h8"/></svg>',
+    target:'<svg viewBox="0 0 28 28" aria-hidden="true"><circle class="ic" cx="14" cy="14" r="10"/><circle class="ic" cx="14" cy="14" r="5.5"/><circle class="icf" cx="14" cy="14" r="2.2"/></svg>',
+    steps: '<svg viewBox="0 0 28 28" aria-hidden="true"><path class="ic" d="M6 22.5v-6M14 22.5V12M22 22.5V5.5"/></svg>',
+    lines: '<svg viewBox="0 0 28 28" aria-hidden="true"><path class="ic" d="M4 8h20M4 14h20M4 20h13"/></svg>',
+    person:'<svg viewBox="0 0 28 28" aria-hidden="true"><circle class="ic" cx="14" cy="9.5" r="4.6"/><path class="ic" d="M5 24c0-5 4-8 9-8s9 3 9 8"/></svg>'
+  };
+
+  var route = "home", RENDER = {};
+  function go(r, replace){
+    route = r;
+    try {
+      if (replace) history.replaceState({ r:r }, "", "#" + r);
+      else history.pushState({ r:r }, "", "#" + r);
+    } catch (e){}
+    draw();
+  }
+  window.addEventListener("popstate", function(ev){
+    route = (ev.state && ev.state.r) || (location.hash || "#home").slice(1) || "home";
+    draw();
+  });
+
+  function tabOf(r){ return r.split(":")[0]; }
+  function paintNav(){
+    $("nav").innerHTML = TABS.map(function(t){
+      return '<button data-tab="' + t.id + '" title="' + esc(t.en) + '"'
+           + ' aria-label="' + esc(t.en) + '"'
+           + ' style="--c:' + t.c + ';--ci:' + t.ci + '"'
+           + (tabOf(route) === t.id ? ' class="on" aria-current="page"' : '')
+           + '>' + ICONS[t.icon]
+           + '<span class="lab">' + esc(t.lab) + '</span></button>';
+    }).join("");
+    Array.prototype.forEach.call($("nav").children, function(b){
+      b.onclick = function(){ SAY.stop(); go(b.dataset.tab); };
+    });
+  }
+
+  /* The trail across the top replaces a back button: every step but the last
+     is tappable, so two levels up is one tap rather than two. */
+  var TRAIL = [];
+  function setHead(trail, sub){
+    TRAIL = trail;
+    $("crumb").innerHTML = trail.map(function(s, i){
+      var last = i === trail.length - 1;
+      /* No ruby in a 15px crumb that is already clipped at both ends: the
+         readings come off and the kanji stay. */
+      var lab = esc(plain(s.ja));
+      return (i ? '<span class="sep">›</span>' : "")
+           + (last ? lab : '<button data-r="' + esc(s.r) + '">' + lab + '</button>');
+    }).join("");
+    Array.prototype.forEach.call($("crumb").querySelectorAll("button"), function(b){
+      b.onclick = function(){ SAY.stop(); go(b.dataset.r); };
+    });
+    $("sub").textContent = sub || "";
+  }
+
+  function draw(){
+    SAY.stop(); REEL.cancel();
+    stopClock();
+    paintNav();
+    var fn = RENDER[tabOf(route)] || RENDER.home;
+    $("main").innerHTML = "";
+    fn(route.split(":").slice(1));
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= 0. home =================
+     The app used to open inside the question browser, which meant the first
+     thing a student read was a paragraph about one tab rather than a way in
+     to any of them. Home is where the descriptions live now: every other
+     screen gets on with its job. */
+  RENDER.home = function(){
+    setHead([{ ja:"オーラルしけん", r:"home" }], "VCE Japanese oral examination practice");
+    var h = '<h2>オーラルしけん<span class="en">Practice for the VCE Japanese '
+          + 'Second Language oral examination</span></h2>'
+          + '<div class="blocks">'
+          + TABS.map(function(t){
+              return '<button class="block" data-go="' + t.id + '"'
+                   + ' style="--c:' + t.c + ';--ci:' + t.ci + '">'
+                   + '<span class="bi">' + ICONS[t.icon] + '</span>'
+                   + '<span class="bt">' + esc(t.lab) + '</span>'
+                   + '<span class="bd">' + esc(t.home) + '</span></button>';
+            }).join("")
+          + '</div>'
+          + '<p class="note">Everything here stays on this phone. Nothing is '
+          + 'uploaded, there is no account, and it works with no signal once '
+          + 'it has loaded.</p>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-go]", function(b){
+      b.onclick = function(){ go(b.dataset.go); };
+    });
+  };
+
+  /* ================= the recognition rounds =================
+     Four kinds of round, one screen. They are all the same shape underneath:
+     something to read or hear, a column of options, and, once you have
+     chosen, the reason. The reason is the whole point. A wrong answer with
+     no explanation teaches a student only that they were wrong, which they
+     already knew, so the data carries one on every distractor and the
+     validator refuses a round without them.
+
+       word    a question; which question word is it asking with
+       reply   a question; which of four real sentences answers it
+       choose  a sentence with a gap; which particle
+       judge   a whole sentence; right or wrong, and the fix
+
+     Nothing here is marked out of anything or kept. It is recognition
+     practice, and a score a student cannot see tomorrow is a score that
+     cannot discourage them either. */
+  var RSTATE = {};
+  /* The order a round is met in.
+
+     Written down, a judge round pairs each right sentence with its wrong
+     twin, which is the readable way to author it. Shown in that order the
+     second of every pair is free: the student has just been told the answer
+     to it. So a round is shuffled when it starts, and anything sharing a
+     `pair` is then pushed at least PAIR_GAP apart, so the twin comes back
+     later, when it is a question again.
+
+     This one is a real shuffle rather than a seeded one. The order of a
+     round should differ every sitting, and Start again should mean it. The
+     order is worked out once and kept in the round's state, so moving
+     through the round does not reshuffle under the student. */
+  var PAIR_GAP = 3;
+  function orderFor(r){
+    function pairAt(i){ return r.items[i].pair || ""; }
+    /* Does this order keep every pair apart? Asked of a finished order, so
+       a build that could not manage it is thrown away rather than shipped
+       with the two halves of a pair side by side, which is the whole bug. */
+    function ok(out){
+      for (var i = 1; i < out.length; i++){
+        var p = pairAt(out[i]);
+        if (!p) continue;
+        for (var b = Math.max(0, i - PAIR_GAP); b < i; b++)
+          if (pairAt(out[b]) === p) return false;
+      }
+      return true;
+    }
+    function build(){
+      var pool = r.items.map(function(_, i){ return i; }), i, j, t;
+      for (i = pool.length - 1; i > 0; i--){
+        j = Math.floor(Math.random() * (i + 1));
+        t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+      }
+      var out = [];
+      function recent(p){
+        if (!p) return false;
+        for (var b = Math.max(0, out.length - PAIR_GAP); b < out.length; b++)
+          if (pairAt(out[b]) === p) return true;
+        return false;
+      }
+      /* The pool is already shuffled, so taking the first item that is
+         allowed is a random choice among the allowed ones. */
+      while (pool.length){
+        var k = 0;
+        while (k < pool.length && recent(pairAt(pool[k]))) k++;
+        if (k === pool.length) k = 0;
+        out.push(pool.splice(k, 1)[0]);
+      }
+      return out;
+    }
+    /* Greedy can still paint itself into a corner when the only items left
+       are a pair, so the whole thing is simply tried again. With four pairs
+       in twelve it succeeds almost every time; fifty attempts makes a
+       failure something that does not happen. */
+    for (var n = 0; n < 50; n++){
+      var out = build();
+      if (ok(out)) return out;
+    }
+    return build();
+  }
+  function newRound(r){
+    return { at:0, picked:null, right:0, done:0, order:orderFor(r) };
+  }
+  function roundById(id){
+    var all = (QW.rounds || []).concat(PT.rounds || []);
+    for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
+    return null;
+  }
+  function wordById(id){
+    for (var i = 0; i < QW.words.length; i++)
+      if (QW.words[i].id === id) return QW.words[i];
+    return { id:id, ja:id, en:id };
+  }
+  /* The data is authored with the right answer first, because that is the
+     readable way to write it, and for one release that is also how it was
+     shown: every answer in the particle round was option a, which makes a
+     round of multiple choice worthless. So nothing renders options in the
+     order they are written.
+
+     The shuffle is seeded from the item's own text rather than from
+     Math.random, so the order is the same every time that item comes round.
+     A student who gets it wrong and comes back to it meets the same four in
+     the same places, and the options do not jump under their thumb when the
+     screen redraws to show the answer. */
+  /* FNV-1a and xorshift32, both of which stay inside 32 bits. The obvious
+     n * 1103515245 + 12345 does not: with n near two billion the product
+     passes what a double can hold exactly, the low bits are lost, and every
+     draw comes back zero. A shuffle driven by that puts the right answer in
+     the same place every time, which is the bug this code exists to fix. */
+  function seed32(text){
+    var n = 2166136261;
+    for (var i = 0; i < text.length; i++){
+      n ^= text.charCodeAt(i);
+      n = Math.imul(n, 16777619);
+    }
+    return (n >>> 0) || 1;
+  }
+  function nextRand(n){
+    n ^= n << 13; n >>>= 0;
+    n ^= n >>> 17;
+    n ^= n << 5;  n >>>= 0;
+    return n || 1;
+  }
+  function seededShuffle(arr, key){
+    var out = arr.slice(), n = seed32(key);
+    for (var i = out.length - 1; i > 0; i--){
+      n = nextRand(n);
+      var j = n % (i + 1), t = out[i]; out[i] = out[j]; out[j] = t;
+    }
+    return out;
+  }
+  /* The options a word round offers: the right one plus three others,
+     shuffled the same way. */
+  function wordOptions(item){
+    var out = [wordById(item.answer)];
+    var pool = QW.words.filter(function(w){ return w.id !== item.answer; });
+    var n = seed32(item.ja);
+    for (var i = 0; i < 3 && pool.length; i++){
+      n = nextRand(n);
+      out.push(pool.splice(n % pool.length, 1)[0]);
+    }
+    return seededShuffle(out, item.ja + "|w");
+  }
+
+  function drawRound(id){
+    var r = roundById(id);
+    if (!r) return go("browse", true);
+    var st = RSTATE[id] = RSTATE[id] || newRound(r);
+    var home = (QW.rounds || []).indexOf(r) >= 0 ? "drill:qw" : "drill:pt";
+    var crumbTop = { ja:"ドリル", r:"drill" };
+    setHead([crumbTop, { ja:r.title, r:id }],
+            r.title + " · " + (st.at + 1) + " of " + r.items.length);
+    var it = r.items[st.order[st.at]];
+
+    var h = '<div class="scorebar"><b>' + (st.at + 1) + ' / ' + r.items.length
+          + '</b><span>' + st.right + ' right so far</span></div>';
+
+    /* Andrew, 3 October 2026: the English under a question-word item gives
+       the answer away. It does. "Where did you go on the weekend?" over a
+       choice of who, what, where and when is not a question any more.
+       So the English waits until the answer is in, on the two rounds that
+       are about catching what was asked.
+
+       The particle rounds keep theirs. There the English is not the answer,
+       it is the thing you need in order to choose: working out that "by
+       train" is で is the skill, and a student who cannot read the sentence
+       is testing their reading rather than their particles. */
+    var showEn = st.picked !== null || r.kind === "choose";
+
+    /* the prompt */
+    if (r.kind === "choose"){
+      h += '<div class="card">'
+         + '<span class="jatext">' + ruby(it.before) + ' <b>＿＿</b> '
+         + ruby(it.after) + '</span>' + enLine(it.en) + '</div>';
+    } else {
+      h += '<div class="qrow"><div class="card">' + jaLine(it.ja)
+         + (it.en && showEn ? enLine(it.en) : "")
+         + '</div><button class="playbtn" id="playq" aria-label="Hear it"></button>'
+         + '</div>';
+    }
+
+    /* the options */
+    var opts = r.kind === "word"   ? wordOptions(it).map(function(w){
+                 return { key:w.id, lab:esc(w.en), sub:esc(w.ja) + " · " + esc(w.forms),
+                          ok:w.id === it.answer, why:"" }; })
+             : r.kind === "reply"  ? seededShuffle(it.options.map(function(o, i){
+                 /* and the same for the answers: four Japanese sentences
+                    with their English underneath is a reading comprehension
+                    question, not a listening one. */
+                 return { key:String(i), ja:o.ja, lab:ruby(o.ja),
+                          sub:showEn ? esc(o.en) : "",
+                          ok:!!o.ok, why:o.why }; }), it.ja)
+             : r.kind === "choose" ? seededShuffle(it.options.map(function(o){
+                 return { key:o, lab:esc(o), sub:"", ok:o === it.answer, why:"" };
+               }), it.before + it.after)
+             : [{ key:"y", lab:"Right as it is", sub:"", ok:it.ok === true },
+                { key:"n", lab:"Something is wrong", sub:"", ok:it.ok === false }];
+
+    opts.forEach(function(o){
+      var cls = "opt";
+      if (st.picked !== null){
+        if (o.ok) cls += " yes";
+        else if (o.key === st.picked) cls += " no";
+        else cls += " dim";
+      }
+      h += '<button class="' + cls + '" data-o="' + esc(o.key) + '">'
+         + '<span>' + (r.kind === "reply" ? '<span class="jatext">' + o.lab
+                       + '</span>' : '<b>' + o.lab + '</b>')
+         + (o.sub ? '<span class="oen">' + o.sub + '</span>' : "") + '</span>'
+         + (st.picked !== null ? '<span class="mark">'
+              + (o.ok ? "\u2714" : (o.key === st.picked ? "\u2718" : "")) + '</span>'
+            : (o.ja ? '<span class="spk" data-say="' + esc(speakable(o.ja))
+                    + '" role="button" aria-label="Hear it"></span>' : '<span></span>'))
+         + '</button>';
+    });
+
+    /* the reason */
+    if (st.picked !== null){
+      var chosen = null;
+      opts.forEach(function(o){ if (o.key === st.picked) chosen = o; });
+      var won = chosen && chosen.ok;
+      var why = it.why || (chosen && chosen.why) || "";
+      /* plain() already ends the corrected sentence with 。, so no full
+         stop goes after it. */
+      if (r.kind === "judge" && !it.ok)
+        why = "Should be " + plain(it.right) + " " + it.why;
+      if (r.kind === "word" && !won)
+        why = "It asks with " + plain(wordById(it.answer).ja) + ", which is "
+            + wordById(it.answer).en + ".";
+      h += '<div class="why ' + (won ? "yes" : "no") + '">'
+         + (won ? "\u2714 " : "\u2718 ") + esc(why || (won ? "Right." : "Not this one."))
+         + '</div>';
+      if (r.kind === "judge" && !it.ok)
+        h += fixPair(it.ja, it.right);
+      /* The gap is the hard part; the whole sentence is the thing worth
+         carrying away, so it arrives complete and speakable. */
+      if (r.kind === "choose")
+        h += '<div class="qrow"><div class="card">'
+           + jaLine(it.before + it.answer + it.after) + enLine(it.en)
+           + '</div><button class="playbtn" id="playw" aria-label="Hear it">'
+           + '</button></div>';
+      h += '<div class="row">'
+         + (st.at < r.items.length - 1
+            ? '<button class="btn wide" id="nextI">Next</button>'
+            : '<button class="btn wide" id="againI">Start again</button>')
+         + '</div>';
+    }
+    h += '<div class="row"><button class="btn ghost" data-r="' + home
+       + '">Back</button></div>';
+    $("main").innerHTML = h + foot();
+
+    if ($("playq")) $("playq").onclick = function(){ SAY.speak(it.ja); };
+    if ($("playw")) $("playw").onclick = function(){
+      SAY.speak(it.before + it.answer + it.after);
+    };
+    /* A question is read out as it arrives, which is the whole point of a
+       recognition round: in the room you hear it before you see it. A judge
+       item is not read out, because half of them are wrong on purpose and
+       playing a wrong sentence into a student's ear unasked is the opposite
+       of helpful. The play button is there if they want it. */
+    if (st.picked === null && it.ja && r.kind !== "judge") SAY.speak(it.ja);
+    each($("main"), "[data-o]", function(b){
+      b.onclick = function(ev){
+        if (ev.target.classList.contains("spk")){
+          SAY.speak(ev.target.dataset.say);
+          return;
+        }
+        if (st.picked !== null) return;
+        st.picked = b.dataset.o;
+        st.done++;
+        opts.forEach(function(o){ if (o.key === st.picked && o.ok) st.right++; });
+        drawRound(id);
+      };
+    });
+    if ($("nextI")) $("nextI").onclick = function(){
+      st.at++; st.picked = null; drawRound(id);
+    };
+    /* Start again reshuffles, so a second run is a second run. */
+    if ($("againI")) $("againI").onclick = function(){
+      RSTATE[id] = newRound(r); drawRound(id);
+    };
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ SAY.stop(); go(b.dataset.r); };
+    });
+  }
+
+  /* The way in to the two question-word rounds, with the one line of
+     pedagogy that justifies them: the reports name mismatched answers in
+     every year, and the cause is the question word, not the Japanese. */
+  function drawQwords(){
+    setHead([{ ja:"ドリル", r:"drill" }, { ja:"しつもんの ことば", r:"drill:qw" }],
+            "Question words");
+    var h = '<h2>しつもんの ことば<span class="en">Question words</span></h2>'
+          + qmark('The fault named in all six VCAA oral exam reports is the '
+                + 'answer not matching the question, and it comes from missing '
+                + 'the question word rather than from weak Japanese. You hear '
+                + 'each question first, the way you meet it in the room.')
+          + '<div class="tiles">'
+          + QW.rounds.map(function(r){
+              return '<button class="tile" data-r="drill:r:' + esc(r.id) + '">'
+                   + '<b>' + esc(r.title) + '</b>'
+                   + '<i>' + r.items.length + ' items</i>'
+                   + '<i class="what">' + esc(r.about) + '</i></button>';
+            }).join("")
+          + '</div>'
+          + '<h3>The question words themselves</h3>'
+          + '<div class="tiles">'
+          + QW.words.map(function(w){
+              return '<div class="tile" style="cursor:default">'
+                   + '<b>' + ruby(w.ja) + '</b><i>' + esc(w.en) + '</i>'
+                   + '<i class="what">' + ruby(w.forms) + '</i></div>';
+            }).join("")
+          + '</div>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ go(b.dataset.r); };
+    });
+  }
+
+  /* ================= 1. the question browser ================= */
+  var F = { section:"conversation", topic:"", type:"", ho:false };
+
+  RENDER.browse = function(args){
+    if (args[0] === "spin") return drawSpin();
+    if (args[0] === "q") return drawQuestion(args[1]);
+    if (args[0] === "set") return drawTopicSet(args[1]);
+
+    setHead([{ ja:"しつもん", r:"browse" }], "Questions · browse and filter");
+    var m = $("main");
+    var list = (F.section === "conversation" ? CONV : DISC).filter(function(q){
+      if (F.topic && q.topic !== F.topic) return false;
+      if (F.type && q.question_type !== F.type) return false;
+      if (F.ho && !q.higher_order) return false;
+      return true;
+    });
+
+    var topics = F.section === "conversation" ? QD.conversation_topics
+                                              : QD.discussion_stages;
+    var h = '<h2>しつもん<span class="en">Every question, with model answers at three '
+          + 'levels and the examiner tip behind it</span></h2>'
+          + '<div class="row"><button class="btn wide" data-r="browse:spin">'
+          + 'ルーレットを まわす<span class="en">Spin for a topic</span>'
+          + '</button></div>'
+
+          + '<div class="novoice">Nothing on this device can read the Japanese, '
+          + 'so the play marks are hidden. Everything else works. On iOS, '
+          + 'Settings › Accessibility › Spoken Content › Voices adds a voice.</div>'
+          + '<div class="filters">'
+          + '<div class="fgroup">Section</div>'
+          + chip("sec", "conversation", "1 Conversation", F.section === "conversation")
+          + chip("sec", "discussion", "2 Discussion", F.section === "discussion")
+          + '<div class="fgroup">'
+          + (F.section === "conversation" ? "Topic" : "Stage of the discussion")
+          + '</div>'
+          + chip("top", "", "All", !F.topic)
+          + topics.map(function(t){
+              return chip("top", t.id, t.en, F.topic === t.id);
+            }).join("")
+          + '<div class="fgroup">Question type</div>'
+          + chip("typ", "", "All", !F.type)
+          + QD.question_types.map(function(t){
+              return chip("typ", t.id, t.en, F.type === t.id);
+            }).join("")
+          + chip("ho", "1", "Higher order only", F.ho)
+          + '</div>';
+
+    h += '<p class="lede">' + list.length + ' question'
+       + (list.length === 1 ? "" : "s")
+       + (F.section === "discussion"
+          ? ". These never name a subtopic, because you bring your own. The model "
+            + "answers all use わがし as a worked example."
+          : ".") + '</p>';
+
+    h += list.map(function(q){
+      var grp = F.section === "conversation" ? TOPNAME[q.topic] : STAGENAME[q.topic];
+      return '<div class="qrow"><button class="card" data-q="' + esc(q.id) + '">'
+           + '<div class="qmeta"><span class="pill">'
+           + esc(grp ? grp.en : q.topic) + '</span>'
+           + '<span class="pill">' + esc(TYPENAME[q.question_type].en) + '</span>'
+           + (q.higher_order ? '<span class="pill ho">higher order</span>' : "")
+           + '</div>'
+           + '<span class="jatext">' + ruby(q.question_ja) + '</span>'
+           + enLine(q.question_en) + '</button>'
+           + '<button class="playbtn" data-play="' + esc(speakable(q.question_ja))
+           + '" aria-label="Hear the question"></button></div>';
+    }).join("");
+
+    if (F.section === "discussion"){
+      h += '<h3>Worked subtopics</h3>'
+         + '<p class="lede">Five subtopics answered right through, so you can see '
+         + 'the shape of eight minutes before you build your own.</p>'
+         + '<div class="tiles">'
+         + QD.topic_sets.map(function(t){
+             return '<button class="tile" data-set="' + esc(t.id) + '">'
+                  + '<b>' + ruby(t.topic_ja) + '</b><i>' + esc(t.topic_en) + '</i>'
+                  + '</button>';
+           }).join("") + '</div>';
+    }
+    m.innerHTML = h + foot();
+    wireChips(m);
+    each(m, "[data-r]", function(b){
+      b.onclick = function(){ SAY.stop(); go(b.dataset.r); };
+    });
+    each(m, "[data-q]", function(b){
+      b.onclick = function(){ go("browse:q:" + b.dataset.q); };
+    });
+    each(m, "[data-play]", function(b){
+      b.onclick = function(ev){ ev.stopPropagation(); SAY.speak(b.dataset.play, b); };
+    });
+    each(m, "[data-set]", function(b){
+      b.onclick = function(){ go("browse:set:" + b.dataset.set); };
+    });
+  };
+
+  function chip(g, v, label, on){
+    return '<button class="chip' + (on ? " on" : "") + '" data-g="' + g
+         + '" data-v="' + esc(v) + '">' + esc(label) + '</button>';
+  }
+  function wireChips(scope){
+    each(scope, ".chip", function(b){
+      b.onclick = function(){
+        var g = b.dataset.g, v = b.dataset.v;
+        if (g === "sec"){ F.section = v; F.topic = ""; }
+        else if (g === "top") F.topic = v;
+        else if (g === "typ") F.type = v;
+        else if (g === "ho") F.ho = !F.ho;
+        RENDER.browse([]);
+      };
+    });
+  }
+  function each(scope, sel, fn){
+    Array.prototype.forEach.call(scope.querySelectorAll(sel), fn);
+  }
+  /* An intro is either one line or a few short ones. A list of three is
+     easier to take in at the top of a screen than a sentence carrying
+     three ideas, so the data says which it wants and this draws it. */
+  function lede(about){
+    if (!about) return "";
+    if (typeof about === "string") return '<p class="lede">' + esc(about) + '</p>';
+    return '<ul class="lede">' + about.map(function(line){
+      return '<li>' + esc(line) + '</li>';
+    }).join("") + '</ul>';
+  }
+
+  /* ルーレット. Lands on one of the ten things the conversation is about,
+     then hands over a real question from it, because a topic on its own is
+     not practice. */
+  var spun = null;
+  function drawSpin(){
+    var CT = QD.conversation_topics;
+    if (!SPINDECK.order.length) spinRestore(CT);
+    setHead([{ ja:"しつもん", r:"browse" }, { ja:"ルーレット", r:"browse:spin" }],
+            "Spin for a topic, then answer it cold");
+    $("main").innerHTML =
+        '<h2>ルーレット<span class="en">Flick the drum or press the button, and '
+      + 'answer whatever it gives you out loud before you look at anything '
+      + 'else</span>'
+      + qmark("The assessors do not work through a list, and you do not get "
+        + "to choose. Every assessor report says the same thing: the wording "
+        + "will not be the wording you practised. This is the cheapest way "
+        + "to practise being asked something you did not pick.") + '</h2>'
+      + '<div class="reel" id="reel"><div class="rwin">'
+      + '<div class="rstrip"></div><div class="rmark"></div></div>'
+      + '<button type="button" class="rspin" id="rspin" title="Spin"'
+      + ' aria-label="Spin the drum">'
+      + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+      + '<path class="ic" d="M20 12a8 8 0 1 1-2.6-5.9"/>'
+      + '<path class="ic" d="M20 3.6V8h-4.4"/></svg></button></div>'
+      + '<div class="row"><button class="btn wide" id="spinBtn">'
+      + 'まわす<span class="en">Spin</span></button></div>'
+      + '<div id="spinOut"></div>'
+      + foot();
+    var R = REEL.mount($("reel"), CT.map(function(t){
+      return { html: ruby(t.ja), sub: esc(t.en), id: t.id };
+    }), function(item){
+      spun = item.id;
+      /* the deck only moves on when the drum stopped where it was sent: a
+         student who throws it by hand lands where the physics put them,
+         and the dealt topic waits its turn */
+      if (SPINDECK.order[SPINDECK.at] === item.id) spinNext();
+      showSpun(item);
+    });
+    function go1(){
+      if (R.spinning()) return;
+      CLICK.wake();          /* start the audio engine inside the gesture */
+      SAY.stop();
+      $("spinOut").innerHTML = "";
+      R.spinTo(SPINDECK.order[SPINDECK.at]);
+    }
+    $("spinBtn").onclick = go1;
+    $("rspin").onclick = go1;
+    if (spun) showSpun(null);
+    wireSpin();
+  }
+  function wireSpin(){
+    var m = $("main");
+    each(m, "[data-play]", function(b){
+      b.onclick = function(ev){ ev.stopPropagation(); SAY.speak(b.dataset.play, b); };
+    });
+    each(m, "[data-r]", function(b){
+      b.onclick = function(){ SAY.stop(); go(b.dataset.r); };
+    });
+    wireRecorder(m);
+  }
+  function showSpun(item){
+    var t = TOPNAME[item ? item.id : spun];
+    if (!t) return;
+    var pool = CONV.filter(function(q){ return q.topic === t.id; });
+    var q = pool[Math.floor(Math.random() * pool.length)];
+    $("spinOut").innerHTML =
+        '<h3>' + ruby(t.ja) + ' <span class="en">' + esc(t.en) + '</span></h3>'
+      + recordBlock("spin-" + q.id)
+      + '<div class="qrow"><div class="card">'
+      + '<span class="jatext">' + ruby(q.question_ja) + '</span>'
+      + enLine(q.question_en) + '</div>'
+      + '<button class="playbtn" data-play="' + esc(speakable(q.question_ja))
+      + '" aria-label="Hear the question"></button></div>'
+      + '<div class="row">'
+      + (pool.length > 1
+          ? '<button class="btn ghost sm" id="another">Another on this topic'
+            + '</button>'
+          : '')
+      + '<button class="btn ghost sm" data-r="browse:q:' + esc(q.id) + '">'
+      + 'Follow-ups and answers</button></div>';
+    if ($("another")) $("another").onclick = function(){ SAY.stop(); showSpun(null); };
+    wireSpin();
+    if (item) SAY.speak(q.question_ja);
+  }
+
+  function drawQuestion(id){
+    var q = QBYID[id];
+    if (!q) return go("browse", true);
+    var grp = q.section === "conversation" ? TOPNAME[q.topic] : STAGENAME[q.topic];
+    setHead([{ ja:"しつもん", r:"browse" },
+             { ja:(grp ? grp.ja : q.topic), r:"browse" }],
+            (grp ? grp.en : q.topic) + " · " + TYPENAME[q.question_type].en);
+    var m = $("main");
+    var h = recordBlock("q-" + q.id)
+          + '<div class="qmeta">'
+          + '<span class="pill">' + (q.section === "conversation"
+              ? "Section 1" : "Section 2") + '</span>'
+          + '<span class="pill">' + esc(TYPENAME[q.question_type].en) + '</span>'
+          + '<span class="pill">difficulty ' + q.difficulty + ' of 3</span>'
+          + (q.higher_order ? '<span class="pill ho">higher order</span>' : "")
+          + '</div>'
+          + '<div class="card">' + jaLine(q.question_ja) + enLine(q.question_en)
+          + '</div>';
+
+    if (grp && grp.advice)
+      h += '<p class="lede"><b>' + esc(grp.en) + ':</b> ' + esc(grp.advice) + '</p>';
+
+    /* Each follow-up carries its own answer, folded away. The three bands
+       above are answers to the question at the top; a follow-up asks
+       something else and needs something else, which is the whole point
+       of giving it a model of its own. */
+    h += '<h3>If they follow it up</h3><div class="card">'
+       + q.followups.map(function(f, i){
+           return (i ? '<div style="height:9px"></div>' : "")
+                + jaLine(f.ja) + enLine(f.en)
+                + (f.model ? '<details><summary>An answer to this one</summary>'
+                    + '<div class="dbody">' + jaLine(f.model.ja)
+                    + enLine(f.model.en) + '</div></details>' : "");
+         }).join("") + '</div>';
+
+    h += '<h3>Three ways to answer it</h3>';
+    if (q.model_topic)
+      h += '<p class="lede">Written for ' + ruby(q.model_topic)
+         + ', because a model answer has to be about something. Swap in your own '
+         + 'subtopic and the shape still holds.</p>';
+    [["basic", "Basic", "Answers the question. A middle band stops here."],
+     ["developed", "Developed", "Two or three pieces of information and a reason."],
+     ["advanced", "Advanced", "Range, an opinion, and something the assessors did not ask for."]
+    ].forEach(function(t){
+      var mr = q.model_responses[t[0]];
+      h += '<details' + (t[0] === "developed" ? " open" : "") + '>'
+         + '<summary>' + t[1] + ' <span class="tier">' + esc(t[2]) + '</span></summary>'
+         + '<div class="dbody">' + jaLine(mr.ja) + enLine(mr.en) + '</div></details>';
+    });
+
+    if (q.report_refs && q.report_refs.length){
+      /* The pair goes above the quotations, not below them. The reports
+         phrase a correction as "X instead of Y" and use it in both directions,
+         so a teacher reading the quotation on its own cannot tell which form
+         is being asked for. Showing the fix first settles it before they
+         reach the quote. */
+      var lead = (q.common_errors || []).map(function(eid){
+        var e = ERBYID[eid];
+        return e ? fixPair(e.wrong, e.right) : "";
+      }).join("");
+      h += '<div class="tip"><b>Examiner tip</b>' + lead
+         + '<div class="tier" style="margin:' + (lead ? "11px" : "0") + ' 0 4px">'
+         + 'What the assessors wrote</div>'
+         + q.report_refs.map(function(r){
+             var bits = r.split(/:\s/);
+             var yr = bits.shift();
+             return '<div style="margin-bottom:5px"><b style="display:inline;'
+                  + 'text-transform:none;letter-spacing:0;font-size:15px">'
+                  + esc(yr) + '</b> <q>' + esc(bits.join(": ")) + '</q></div>';
+           }).join("") + '</div>';
+    }
+
+    if (q.key_vocab && q.key_vocab.length){
+      h += '<h3>Words you need</h3><ul class="vocab card flat">'
+         + q.key_vocab.map(function(v){
+             return '<li><b>' + esc(v.ja) + '</b> 〈' + esc(v.reading)
+                  + '〉 ' + esc(v.en) + '</li>';
+           }).join("") + '</ul>';
+    }
+    if (q.key_grammar && q.key_grammar.length){
+      h += '<h3>Grammar it is testing</h3><div class="gram">'
+         + q.key_grammar.map(function(g){ return '<span>' + esc(g) + '</span>'; })
+             .join("") + '</div>';
+    }
+    if (q.common_errors && q.common_errors.length){
+      h += '<h3>What goes wrong here</h3>'
+         + q.common_errors.map(function(eid){
+             var e = ERBYID[eid];
+             if (!e) return "";
+             return '<div class="card"><b>' + esc(e.name) + '</b>'
+                  + ' <span class="score">named in ' + e.count + ' of 6 years</span>'
+                  + '<div class="en" style="margin:5px 0 7px">' + esc(e.why) + '</div>'
+                  + fixPair(e.wrong, e.right) + '</div>';
+           }).join("");
+    }
+
+    h += '<h3>What it is marked against</h3>'
+       + q.criteria_targeted.map(function(cid){
+           var c = CRITBYID[cid];
+           if (!c) return "";
+           return '<div class="card flat"><b>' + esc(c.c.name) + '</b> '
+                + '<span class="score">' + esc(c.section.name_en)
+                + ', ' + c.c.max + ' marks</span>'
+                + '<div class="en" style="margin-top:4px">' + esc(c.c.scope)
+                + '</div></div>';
+         }).join("");
+
+    h += '<h3>Your answer</h3>'
+       + '<p class="lede">Typed here, it stays on this phone. Say it out loud '
+       + 'first, then write what you actually managed to say.</p>'
+       + '<textarea id="mynote" placeholder="…">'
+       + esc(S.notes[q.id] || "") + '</textarea>';
+
+    var sibs = (q.section === "conversation" ? CONV : DISC);
+    var at = sibs.indexOf(q);
+    h += '<div class="row">'
+       + (at > 0 ? '<button class="btn ghost" data-r="browse:q:'
+           + esc(sibs[at-1].id) + '">‹ Previous</button>' : "")
+       + (at < sibs.length - 1 ? '<button class="btn ghost" data-r="browse:q:'
+           + esc(sibs[at+1].id) + '">Next ›</button>' : "")
+       + '</div>' + foot();
+
+    m.innerHTML = h;
+    $("mynote").oninput = function(){ S.notes[q.id] = this.value; save(); };
+    each(m, "[data-r]", function(b){ b.onclick = function(){ go(b.dataset.r); }; });
+    wireRecorder(m);
+  }
+
+  function drawTopicSet(id){
+    var t = null;
+    QD.topic_sets.forEach(function(x){ if (x.id === id) t = x; });
+    if (!t) return go("browse", true);
+    setHead([{ ja:"しつもん", r:"browse" }, { ja:t.topic_ja, r:"browse" }],
+            t.topic_en + " · a worked subtopic");
+    var h = '<h2>' + ruby(t.topic_ja) + '<span class="en">' + esc(t.topic_en)
+          + '</span></h2>'
+          + '<div class="tip"><b>Why this subtopic works</b>' + esc(t.why_it_works)
+          + '</div>'
+          + '<div class="card"><b>The image to look for</b>'
+          + '<div class="en" style="margin-top:4px">' + esc(t.image_advice)
+          + '</div></div>'
+          + '<h3>Words you must be able to explain</h3>'
+          + '<p class="lede">Five of the six VCAA oral exam reports say the assessors ask what your '
+          + 'own key words mean. These are the ones for this subtopic.</p>'
+          + t.key_words.map(function(k){
+              return '<div class="card"><b>' + esc(k.ja) + '</b> 〈'
+                   + esc(k.reading) + '〉 ' + esc(k.en)
+                   + '<div style="margin-top:6px">' + jaLine(k.explain_ja)
+                   + '</div></div>';
+            }).join("")
+          + '<h3>Right through, stage by stage</h3>';
+    t.stages.forEach(function(s){
+      var st = STAGENAME[s.stage] || { ja:s.stage, en:s.stage };
+      h += '<details><summary>' + ruby(st.ja)
+         + ' <span class="tier">' + esc(st.en) + '</span></summary>'
+         + '<div class="dbody">' + jaLine(s.model.ja) + enLine(s.model.en)
+         + '<div class="tier" style="margin-top:9px">And the line that lifts it</div>'
+         + jaLine(s.stretch.ja) + enLine(s.stretch.en)
+         + '</div></details>';
+    });
+    $("main").innerHTML = h + foot();
+  }
+
+  /* ================= 2. the mock examination =================
+     Real order, real timing, and the question spoken before it is shown,
+     because in the room you only ever hear it. */
+  var MOCK = null, clockTimer = null;
+
+  /* How hard a run is pitched. An assessor pitches to what they are hearing,
+     so a run that mixes every level at once is only one of the two honest
+     shapes. The other is a run held at one level the whole way, follow-ups
+     included, which is what a student practising for a particular result
+     actually wants. The bank already carries difficulty 1-3 and a higher
+     order flag on every question, so this reads them rather than re-tagging
+     anything: what it cannot do is band each follow-up separately, so a band
+     takes the first n of them, which works because they are written in
+     order from the obvious one to the one that pushes. */
+  var BANDS = [
+    { id:"mixed", lab:"As it comes",
+      hint:"Every level, easiest first, and you open the follow-ups yourself" },
+    { id:"low",   lab:"Low",
+      hint:"The straightforward questions only, one follow-up each" },
+    { id:"mid",   lab:"Medium",
+      hint:"The middle of the bank, two follow-ups each" },
+    { id:"high",  lab:"High",
+      hint:"The demanding and higher order questions, every follow-up" }
+  ];
+  var FUS = { mixed:9, low:1, mid:2, high:9 };
+  function inBand(q, band){
+    if (band === "low")  return q.difficulty <= 1 && !q.higher_order;
+    if (band === "mid")  return q.difficulty === 2;
+    if (band === "high") return q.difficulty >= 3 || q.higher_order;
+    return true;
+  }
+  /* A band must never leave a run short, so anything it cannot fill comes
+     from the rest of the bank, nearest difficulty first. */
+  function bandPool(list, band){
+    var inb = list.filter(function(q){ return inBand(q, band); });
+    var rest = list.filter(function(q){ return !inBand(q, band); });
+    var aim = band === "low" ? 1 : band === "mid" ? 2 : 3;
+    rest.sort(function(a, b){
+      return Math.abs(a.difficulty - aim) - Math.abs(b.difficulty - aim);
+    });
+    return inb.concat(rest);
+  }
+  function followupsFor(q){
+    return q.followups.slice(0, FUS[MOCK && MOCK.band ? MOCK.band : S.band] || 9);
+  }
+
+  /* The four minute SAC run. A school assessed task is short, so a student
+     cannot wait to be asked the right question: everything they can do has
+     to be shown inside five questions. Criterion 1 is marked on the range
+     and depth of what is said, on elaborating and reflecting, and on
+     interacting rather than reciting, so the run takes one question of each
+     kind the bank holds, from different topics, easiest first. A student who
+     answers all five has given an opinion with a reason, compared two
+     things, handled something hypothetical and talked about themselves,
+     which is the whole of what the descriptors ask for. */
+  var SAC_ORDER = ["personal", "factual", "opinion", "comparison",
+                   "evaluative", "hypothetical"];
+  var SAC_N = 5;
+  function buildSac(band){
+    var pool = bandPool(CONV.slice(), band);
+    shuffle(pool);
+    pool = bandPool(pool, band);
+    var picked = [], usedType = {}, usedTopic = {};
+    SAC_ORDER.forEach(function(t){
+      if (picked.length >= SAC_N) return;
+      for (var i = 0; i < pool.length; i++){
+        var q = pool[i];
+        if (q.question_type === t && !usedTopic[q.topic]){
+          picked.push(q); usedType[t] = 1; usedTopic[q.topic] = 1; return;
+        }
+      }
+    });
+    /* A band may not hold every kind. Top up from anywhere rather than run
+       a student short of their four minutes. */
+    for (var i = 0; i < pool.length && picked.length < SAC_N; i++){
+      if (!usedTopic[pool[i].topic]){
+        picked.push(pool[i]); usedTopic[pool[i].topic] = 1;
+      }
+    }
+    picked.sort(function(a, b){ return a.difficulty - b.difficulty; });
+    return { kind:"sac", s1:picked, s2:[], band:band, sec:0, at:0,
+             shown:false, fu:-1, started:0, left:0 };
+  }
+  /* A SAC run on the student's own topic. The assessor has heard the name of
+     the product or practice and nothing else, so the questions are the ones
+     anybody would reach for knowing only that. One opener, which is always
+     a question answerable from the topic itself, then a second open one,
+     two of the shape questions and one that asks for a judgement: general to
+     specific, never back up, shuffled inside each width so two runs are two
+     different assessors rather than two different topics. */
+  function topicById(id){
+    for (var i = 0; i < TOP.length; i++) if (TOP[i].id === id) return TOP[i];
+    return null;
+  }
+  /* The run screen was written for examination questions, which carry
+     follow-ups and model answers. A topic question has neither, on purpose:
+     the student researched this and the app did not. `as` decides what the
+     step line above the question says: a SAC run names the topic, Section 2
+     names the stage, which is what the examination itself does. */
+  function topicQ(t, q, as){
+    return { id:q.id, section:as === "s2" ? "discussion" : "sac",
+             topic:as === "s2" ? q.stage : t.id,
+             question_type:q.width, higher_order:q.higher_order,
+             difficulty:q.difficulty, question_ja:q.question_ja,
+             question_en:q.question_en, followups:[], key_grammar:[],
+             key_vocab:[], criteria_targeted:[], report_refs:[],
+             common_errors:[] };
+  }
+  function buildTopicSac(id, band){
+    var t = topicById(id);
+    if (!t) return buildSac(band);
+    function take(w, n, skip){
+      var pool = t.questions.filter(function(q){
+        return q.width === w && q !== skip;
+      });
+      shuffle(pool);
+      return pool.slice(0, n);
+    }
+    /* The first question is never shuffled. An assessor who has heard only
+       the name of your topic opens by asking what it is, every time, and it
+       is the one question on the list you cannot claim not to have
+       prepared. */
+    var first = t.questions.filter(function(q){ return q.width === "open"; })[0];
+    var qs = [first].concat(take("open", 1, first))
+                    .concat(take("shape", 2))
+                    .concat(take("deep", 1));
+    /* The run screen was written for examination questions, which carry
+       follow-ups and model answers. A topic question has neither, on
+       purpose: the student researched this and the app did not. */
+    qs = qs.map(function(q){ return topicQ(t, q, "sac"); });
+    return { kind:"sac", topic:t.id, s1:qs, s2:[], band:band, sec:0, at:0,
+             shown:false, fu:-1, started:0, left:0 };
+  }
+
+  /* What the clock is counting down, whichever run is going. */
+  function runSec(){
+    if (MOCK.kind === "sac"){
+      var t = MOCK.topic ? topicById(MOCK.topic) : null;
+      return { number:0, name_en:t ? t.name_en : "SAC practice",
+               name_ja:t ? t.name_ja : "SACれんしゅう",
+               minutes:4, marks:CRIT.sections[0].marks };
+    }
+    return CRIT.sections[MOCK.sec];
+  }
+
+  function buildMock(band){
+    /* Section 1, in the order the examination actually runs.
+
+       It used to be one question per topic, shuffled, with the language and
+       culture one forced in somewhere. Andrew, 4 October 2026: some parts of
+       the exam have to go in a particular order. They do. It opens on one of
+       six predictable questions, works through the student's own world, then
+       Japanese study, then their contact with Japanese culture. So the run is
+       built phase by phase from flow.js, and the shuffling happens inside a
+       phase and never across them. */
+    var s1 = [], used = {}, usedTopic = {};
+    FL.section1.phases.forEach(function(ph){
+      var pool = bandPool(CONV.filter(function(q){
+        return q.phase === ph.id && !used[q.id];
+      }), band);
+      shuffle(pool);
+      pool = bandPool(pool, band);
+      var took = 0;
+      /* no two from the same topic while there is still a choice */
+      for (var pass = 0; pass < 2 && took < ph.n; pass++){
+        for (var i = 0; i < pool.length && took < ph.n; i++){
+          var q = pool[i];
+          if (used[q.id]) continue;
+          if (pass === 0 && usedTopic[q.topic]) continue;
+          s1.push(q); used[q.id] = 1; usedTopic[q.topic] = 1; took++;
+        }
+      }
+    });
+
+    /* Section 2 is not built ahead of time any more. No app without AI can
+       work out what an assessor would ask next, so the student says: they
+       pick the next move while the clock runs, which is also the skill the
+       flow sheet teaches, steering the questioning towards what they
+       actually researched. See drawDisc2. */
+    return { kind:"full", part:"entry", s1:s1, s2:[], band:band,
+             topic:S.topic, sec:0, at:0, shown:false, fu:-1,
+             asked:{}, q2:null, started:0, left:0 };
+  }
+  /* ---- the drum's deck ----
+     Ten topics and a random throw meant one could come up twice running and
+     another could sit there all lesson. A deck deals each one before any
+     comes round again, and never opens a new deck on the one the last one
+     ended with.
+
+     It survives a reload, a closed tab and a flat battery, because a
+     student who comes back to the drum in the same lesson should carry on
+     through the deck rather than start it again and meet the same two
+     topics they have just done. It does NOT survive the gap to the next
+     lesson: after six hours the deck is spent and the next spin deals a
+     fresh one, which is what "across a lesson" means and is long enough
+     for a double period with a break in the middle. The Reset button
+     clears it with everything else. */
+  var LESSON = 6 * 60 * 60 * 1000;
+  var SPINDECK = { order: [], at: 0 };
+  function spinKeep(){
+    S.deck = { order: SPINDECK.order.slice(), at: SPINDECK.at, when: Date.now() };
+    saveNow();
+  }
+  function spinDeal(list){
+    SPINDECK.order = list.map(function(t){ return t.id; });
+    shuffle(SPINDECK.order);
+    SPINDECK.at = 0;
+    spinKeep();
+  }
+  /* A saved deck is only any use if it is this lesson's and it is still
+     about these topics: a deck saved before a topic was added or renamed
+     would deal a topic the drum no longer carries. */
+  function spinRestore(list){
+    var d = S.deck, ids = list.map(function(t){ return t.id; });
+    var fresh = d && d.order && d.order.length === ids.length
+      && Date.now() - (d.when || 0) < LESSON
+      && d.order.every(function(id){ return ids.indexOf(id) >= 0; });
+    if (!fresh) return spinDeal(list);
+    SPINDECK.order = d.order.slice();
+    SPINDECK.at = Math.min(Math.max(0, d.at | 0), d.order.length - 1);
+  }
+  function spinNext(){
+    SPINDECK.at++;
+    if (SPINDECK.at >= SPINDECK.order.length){
+      var last = SPINDECK.order[SPINDECK.order.length - 1], tries = 0;
+      do { shuffle(SPINDECK.order); tries++; }
+      while (SPINDECK.order.length > 1 && SPINDECK.order[0] === last && tries < 20);
+      SPINDECK.at = 0;
+    }
+    spinKeep();
+  }
+  function shuffle(a){
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+  }
+
+  function stopClock(){ clearInterval(clockTimer); clockTimer = null; }
+
+  RENDER.mock = function(args){
+    if (args[0] === "run" && MOCK){
+      if (MOCK.part === "entry") return drawEntry();
+      if (MOCK.part === "trans") return drawTrans();
+      if (MOCK.part === "s2")    return drawDisc2();
+      if (MOCK.part === "exit")  return drawExit();
+      return drawMockRun();
+    }
+    if (args[0] === "sac") return drawSacPick();
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }], "Timed practice · 15 or 4 minutes");
+    var ex = CRIT.examination, s = CRIT.sections;
+    /* Students get the idea in one line. The detail is all still here,
+       folded away, for the sitting where someone wants it. */
+    var h = '<h2>タイムれんしゅう<span class="en">Practise on the clock, the whole '
+          + 'examination or a short SAC</span>'
+          + qmark('Hit start, then click through the questions and the '
+                + 'follow-ups. You hear each question before you see it, the '
+                + 'way it happens in the room. The whole examination walks '
+                + 'you in, runs both sections on the clock, and walks you '
+                + 'out.') + '</h2>'
+          + '<div class="segs" role="group" aria-label="How hard to pitch the run">'
+          + BANDS.map(function(b){
+              return '<button class="seg' + (S.band === b.id ? " on" : "") + '"'
+                   + ' data-band="' + b.id + '"'
+                   + ' aria-pressed="' + (S.band === b.id ? "true" : "false") + '">'
+                   + esc(b.lab) + '</button>';
+            }).join("")
+          + '</div><p class="seghint" id="seghint">'
+          + esc((BANDS.filter(function(b){ return b.id === S.band; })[0]
+                 || BANDS[0]).hint) + '</p>'
+          + (function(){
+              var t = S.topic ? topicById(S.topic) : null;
+              if (!t) return '<p class="seghint">Pick your topic first. You '
+                   + 'name it on the way into the real examination, which is '
+                   + 'why Section 1 never touches it and Section 2 is entirely '
+                   + 'about it, so a run without one would be the wrong '
+                   + 'examination.</p>';
+              return '<div class="mytopic"><b>' + ruby(t.name_ja) + '</b> '
+                   + esc(t.name_en)
+                   + '<span>Section 2 will be about this. '
+                   + '<button class="lnk" id="changeTopic">Change</button></span>'
+                   + '<details><summary>Words for this topic</summary>'
+                   + '<div class="dbody">'
+                   + t.key_vocab.map(function(v){
+                       return '<div class="vrow">' + jaLine(v.ja)
+                            + enLine(v.en) + '</div>';
+                     }).join("") + '</div></details></div>';
+            })()
+          + '<div class="row"><button class="btn wide" id="startMock">'
+          + 'The whole examination · 15 minutes</button></div>'
+          + '<div class="row"><button class="btn ghost wide" id="startSac">'
+          + 'SAC practice · 4 minutes</button></div>'
+          + '<p class="seghint">The short one is for the SAC: pick the product '
+          + 'or practice you researched, and answer questions from someone who '
+          + 'has heard nothing but its name.</p>'
+          + '<details><summary>What you are walking into</summary>'
+          + '<div class="dbody"><ul style="margin:2px 0 0 18px;font-size:15.5px">'
+          + '<li>' + esc(ex.total_minutes_wording) + ', ' + ex.total_marks
+          + ' marks, ' + ex.contribution_percent + '% of your study score</li>'
+          + '<li>' + ex.assessors + ' assessors. ' + esc(ex.recorded) + '</li>'
+          + '<li>Section 1 ' + s[0].name_en + ', ' + s[0].minutes
+          + ' minutes, ' + s[0].marks + ' marks</li>'
+          + '<li>Section 2 ' + s[1].name_en + ', ' + s[1].minutes
+          + ' minutes, ' + s[1].marks + ' marks</li>'
+          + '</ul>'
+          + '<div class="tip"><b>Before Section 1</b>'
+          + esc(CRIT.entry.wording) + '</div>'
+          + '<div class="tip"><b>No introduction in Section 2</b>'
+          + esc(CRIT.sections[1].no_introduction.wording) + ' '
+          + esc(CRIT.sections[1].no_introduction.also) + '</div></div></details>'
+          + '<p class="note">Nothing leaves this phone. A recording you make '
+          + 'stays on it.</p>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-band]", function(b){
+      b.onclick = function(){ S.band = b.dataset.band; save(); draw(); };
+    });
+    if ($("changeTopic")) $("changeTopic").onclick = function(){ go("mock:sac"); };
+    $("startMock").onclick = function(){
+      if (!S.topic || !topicById(S.topic)){
+        /* No topic yet, so they have to pick one before anything can run.
+           Remember which button sent them: picking a topic used to start a
+           four minute SAC whatever they had asked for, so on a fresh device
+           the fifteen minute examination could not be reached at all until
+           a SAC had been run by accident first. */
+        PICK_FOR = "mock";
+        return go("mock:sac");
+      }
+      MOCK = buildMock(S.band);
+      go("mock:run");
+    };
+    $("startSac").onclick = function(){ PICK_FOR = "sac"; go("mock:sac"); };
+  };
+
+  /* Pick the product or practice you researched. The SAC is not the
+     examination: the assessor has your topic and nothing else, which is why
+     this screen exists rather than the run starting straight away. */
+  /* Which button sent the student to the topic picker. */
+  var PICK_FOR = "sac";
+  function drawSacPick(){
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:"SAC", r:"mock:sac" }],
+            PICK_FOR === "mock"
+              ? "The whole examination \u00b7 15 minutes \u00b7 pick your topic"
+              : "SAC practice \u00b7 4 minutes \u00b7 pick your topic");
+    var h = '<h2>どのトピックですか<span class="en">Pick the product or practice '
+          + 'you researched</span>'
+          + qmark('The assessor has heard nothing but the name of your topic. '
+                + 'They start wide and work down, and they do not know which '
+                + 'questions you prepared. The same choice sets Section 2 of '
+                + 'the whole examination.') + '</h2>'
+          + '<div class="tiles">'
+          + TOP.map(function(t){
+              return '<button class="tile" data-t="' + esc(t.id) + '">'
+                   + '<b>' + ruby(t.name_ja) + '</b>'
+                   + '<i>' + esc(t.name_en) + '</i>'
+                   + '<i class="what">' + esc(t.blurb_en) + '</i></button>';
+            }).join("")
+          + '</div>'
+          + '<button class="card flat" id="noTopic" style="width:100%;text-align:left">'
+          + '<b>No set topic</b><br><span class="en">Five questions about your own '
+          + 'world instead, one of each kind</span></button>'
+          + '<p class="note">The questions are the ones anyone would ask knowing '
+          + 'only your topic. They are deliberately not the ones in your notes.</p>'
+          + foot();
+    $("main").innerHTML = h;
+    function start(build){
+      MOCK = build;
+      MOCK.left = 4 * 60;
+      MOCK.started = Date.now();
+      go("mock:run");
+    }
+    each($("main"), "[data-t]", function(b){
+      b.onclick = function(){
+        /* Chosen once, remembered: Section 2 of the whole examination is
+           about this topic too, which is the only way it can be a real
+           discussion rather than a generic one. */
+        S.topic = b.dataset.t; save();
+        if (PICK_FOR === "mock"){
+          PICK_FOR = "sac";
+          MOCK = buildMock(S.band);
+          return go("mock:run");
+        }
+        start(buildTopicSac(b.dataset.t, S.band));
+      };
+    });
+    $("noTopic").onclick = function(){ S.topic = ""; save(); start(buildSac(S.band)); };
+  }
+
+  /* ---- the parts of the examination that are not questions ----
+     Walking in, the line that ends the conversation, and walking out. None
+     of it is assessed and all of it has to be done, and an app that drills
+     eight minutes of discussion but skips しつれいします is teaching the
+     wrong examination. These are scripts to read aloud, so each line is a
+     card you can hear, not a question to answer. */
+  function scriptCards(steps){
+    return steps.map(function(st){
+      return '<div class="qrow"><div class="card' + (st.who === "you" ? " mine" : "")
+           + '"><div class="who">' + (st.who === "you" ? "You" : "Assessor")
+           + '</div>' + jaLine(st.ja) + enLine(st.en)
+           + (st.note ? '<p class="note" style="margin:6px 0 0">'
+                      + esc(st.note) + '</p>' : "")
+           + '</div><button class="playbtn" data-play="'
+           + esc(speakable(st.ja)) + '" aria-label="Hear it"></button></div>';
+    }).join("");
+  }
+  function wireScript(){
+    each($("main"), "[data-play]", function(b){
+      b.onclick = function(ev){ ev.stopPropagation(); SAY.speak(b.dataset.play, b); };
+    });
+  }
+  function drawEntry(){
+    var t = topicById(MOCK.topic);
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:FL.entry.name_ja, r:"mock:run" }],
+            FL.entry.name_en + " · no marks, do it anyway");
+    $("main").innerHTML = '<h2>' + ruby(FL.entry.name_ja)
+      + '<span class="en">' + esc(FL.entry.name_en) + '</span></h2>'
+      + lede(FL.entry.about)
+      + (t ? '<div class="mytopic"><b>' + ruby(t.name_ja) + '</b> '
+             + esc(t.name_en) + '<span>You name this topic on the way in, '
+             + 'which is why Section 1 never touches it.</span></div>' : "")
+      + scriptCards(FL.entry.steps)
+      + '<div class="row"><button class="btn wide" id="startS1">'
+      + 'Done. Start the ' + CRIT.sections[0].minutes + ' minutes</button></div>'
+      + '<div class="row"><button class="btn ghost" id="quitE">Stop</button></div>'
+      + foot();
+    wireScript();
+    $("startS1").onclick = function(){
+      SAY.stop();
+      MOCK.part = "s1"; MOCK.sec = 0; MOCK.at = 0;
+      MOCK.shown = false; MOCK.fu = -1;
+      MOCK.left = CRIT.sections[0].minutes * 60;
+      MOCK.started = Date.now();
+      draw();
+    };
+    $("quitE").onclick = function(){ MOCK = null; go("mock"); };
+  }
+  function drawTrans(){
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:"ディスカッション", r:"mock:run" }],
+            "Section 2 · " + CRIT.sections[1].minutes + " minutes");
+    var t = topicById(MOCK.topic);
+    $("main").innerHTML = '<h2>' + ruby("ディスカッション")
+      + '<span class="en">The assessor hands over</span></h2>'
+      + scriptCards([{ who:"assessor", ja:FL.section2.transition.ja,
+                       en:FL.section2.transition.en }])
+      + lede(FL.section2.about)
+      + (t ? '<div class="mytopic"><b>' + ruby(t.name_ja) + '</b> '
+             + esc(t.name_en) + '</div>' : "")
+      + '<div class="row"><button class="btn wide" id="startS2">Start the '
+      + CRIT.sections[1].minutes + ' minutes</button></div>'
+      + '<div class="row"><button class="btn ghost" id="quitT">Stop</button></div>'
+      + foot();
+    wireScript();
+    $("startS2").onclick = function(){
+      SAY.stop();
+      MOCK.part = "s2";
+      MOCK.left = CRIT.sections[1].minutes * 60;
+      MOCK.q2 = pickMove("define");
+      draw();
+    };
+    $("quitT").onclick = function(){ MOCK = null; go("mock"); };
+  }
+  function drawExit(){
+    stopClock();
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:FL.exit.name_ja, r:"mock:run" }],
+            FL.exit.name_en);
+    $("main").innerHTML = '<h2>' + ruby(FL.exit.name_ja)
+      + '<span class="en">' + esc(FL.exit.name_en) + '</span></h2>'
+      + scriptCards(FL.exit.steps)
+      + '<p>Now mark yourself against the four criteria while it is fresh. '
+      + 'The descriptors are the official ones, word for word.</p>'
+      + '<div class="row"><button class="btn" data-r="me">Mark yourself</button>'
+      + '<button class="btn ghost" data-r="mock">Run it again</button></div>'
+      + foot();
+    wireScript();
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ MOCK = null; go(b.dataset.r); };
+    });
+  }
+
+  /* ---- Section 2, steered by the student ----
+     An app with no AI cannot work out what an assessor would ask next. So
+     it does not pretend to: the student picks the direction, from the eight
+     an assessor actually goes in, while the clock runs. That is closer to
+     the room than a fixed list, and steering the questioning towards your
+     own research is something the flow sheet teaches outright. */
+  function pickMove(mv){
+    var t = topicById(MOCK.topic);
+    if (!t) return null;
+    var pool = t.questions.filter(function(q){
+      return q.move === mv && !MOCK.asked[q.id];
+    });
+    if (!pool.length){
+      pool = t.questions.filter(function(q){ return q.move === mv; });
+      if (!pool.length) return null;
+    }
+    var q = pool[Math.floor(Math.random() * pool.length)];
+    MOCK.asked[q.id] = 1;
+    return topicQ(t, q, "s2");
+  }
+  function drawDisc2(){
+    var t = topicById(MOCK.topic);
+    var q = MOCK.q2;
+    setHead([{ ja:"タイムれんしゅう", r:"mock" },
+             { ja:t ? t.name_ja : "ディスカッション", r:"mock:run" }],
+            "Section 2 · " + (t ? t.name_en : "Discussion"));
+    var left = {};
+    FL.section2.moves.forEach(function(mv){
+      left[mv.id] = t ? t.questions.filter(function(x){
+        return x.move === mv.id && !MOCK.asked[x.id];
+      }).length : 0;
+    });
+    var h = '<div class="clock" id="clock"><b id="cnum">--:--</b>'
+          + '<span>left in Section 2 · ' + esc(t ? t.name_en : "Discussion")
+          + '</span></div>' + recordBlock("disc2");
+    if (q){
+      var mvDef = FL.section2.moves.filter(function(m){
+        return m.id === MOCK.lastMove; })[0];
+      h += '<div class="step">' + esc(mvDef ? mvDef.label_en : "Opening question")
+         + '</div>'
+         + '<div class="qrow"><div class="card">' + jaLine(q.question_ja)
+         + enLine(q.question_en) + '</div>'
+         + '<button class="playbtn" id="playq2" aria-label="Hear it"></button></div>'
+         + '<p class="note">No model answer: this one is yours. If it is not a '
+         + 'question you prepared, steer them back rather than going quiet.</p>';
+    }
+    h += '<h3>What do they ask next?'
+       + qmark('You decide, because no app without AI can work out what an '
+             + 'assessor would ask next. Picking the direction is the same '
+             + 'skill as steering a real assessor towards what you '
+             + 'researched.') + '</h3>'
+       + '<div class="moves">'
+       + FL.section2.moves.map(function(mv){
+           return '<button class="movebtn" data-m="' + esc(mv.id) + '"'
+                + (left[mv.id] ? "" : " disabled")
+                + '><b>' + esc(mv.label_en) + '</b>'
+                + '<i>' + ruby(mv.label_ja) + '</i>'
+                + '<span>' + esc(mv.about) + '</span></button>';
+         }).join("")
+       + '</div>'
+       + '<details><summary>If it is going the wrong way</summary>'
+       + '<div class="dbody">'
+       + FL.section2.strategies.map(function(x){
+           return '<div class="card flat">' + jaLine(x.ja) + enLine(x.en)
+                + (x.note ? '<p class="note" style="margin:6px 0 0">'
+                          + esc(x.note) + '</p>' : "") + '</div>';
+         }).join("") + '</div></details>'
+       + '<div class="row"><button class="btn ghost" id="endS2">Finish</button>'
+       + '</div>';
+    $("main").innerHTML = h + foot();
+
+    if ($("playq2") && q) $("playq2").onclick = function(){ SAY.speak(q.question_ja); };
+    if (q && !MOCK.heard){ MOCK.heard = 1; SAY.speak(q.question_ja); }
+    each($("main"), "[data-m]", function(b){
+      b.onclick = function(){
+        SAY.stop();
+        var got = pickMove(b.dataset.m);
+        if (!got) return;
+        MOCK.q2 = got; MOCK.lastMove = b.dataset.m; MOCK.heard = 0;
+        draw();
+      };
+    });
+    $("endS2").onclick = function(){ stopClock(); MOCK.part = "exit"; draw(); };
+    wireRecorder($("main"));
+
+    paintClock();
+    stopClock();
+    clockTimer = setInterval(function(){
+      MOCK.left--;
+      paintClock();
+      if (MOCK.left <= 0){ stopClock(); MOCK.part = "exit"; draw(); }
+    }, 1000);
+  }
+
+  function drawMockRun(){
+    var sec = runSec();
+    var list = MOCK.sec === 0 ? MOCK.s1 : MOCK.s2;
+    var q = list[MOCK.at];
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:sec.name_ja, r:"mock:run" }],
+            (sec.number ? "Section " + sec.number + " · " : "")
+            + sec.name_en
+            + " · question " + (MOCK.at + 1) + " of " + list.length);
+    var m = $("main");
+    var grp = MOCK.sec === 0 ? TOPNAME[q.topic] : STAGENAME[q.topic];
+
+    var bandName = (BANDS.filter(function(b){ return b.id === MOCK.band; })[0]
+                    || BANDS[0]).lab;
+    /* Section 2 on the student's own topic says so, because that is the
+       thing they are being examined on and the strip is the only place it
+       appears while the clock is running. The band governs Section 1, so a
+       SAC run, which the band does not govern, leaves it off. */
+    var myT = MOCK.topic ? topicById(MOCK.topic) : null;
+    var h = '<div class="clock" id="clock"><b id="cnum">--:--</b>'
+          + '<span>left in '
+          + (sec.number
+             ? "Section " + sec.number + " · " + esc(sec.name_en)
+               + (sec.number === 2 && myT ? " · " + esc(myT.name_en) : "")
+             : myT ? "four minutes · " + esc(sec.name_en)
+             : "your four minutes")
+          + (MOCK.kind === "sac" ? "" : ' · ' + esc(bandName))
+          + '</span></div>' + recordBlock("mock");
+
+    var step = MOCK.kind === "sac" && MOCK.topic
+             ? sec.name_en + " · " + q.question_type
+             : (grp ? grp.en : q.topic) + (q.higher_order ? " · higher order" : "");
+    h += '<div class="step">' + esc(step) + '</div>';
+
+    if (!MOCK.shown){
+      h += '<div class="hidden-q" id="hq">The assessor has asked you something.'
+         + '<div class="row" style="justify-content:center">'
+         + '<button class="btn" id="again">Hear it again</button>'
+         + '<button class="btn ghost" id="show">Show the question</button></div>'
+         + '</div>';
+    } else {
+      h += '<div class="card">' + jaLine(q.question_ja) + enLine(q.question_en)
+         + '</div>';
+      if (MOCK.fu >= 0){
+        h += '<div class="step">Follow-up ' + (MOCK.fu + 1) + ' of '
+           + followupsFor(q).length + '</div><div class="card">'
+           + jaLine(q.followups[MOCK.fu].ja)
+           + enLine(q.followups[MOCK.fu].en) + '</div>';
+      }
+      /* A topic question carries no model answer, because the student
+         researched the topic and this app did not. Inventing one would be
+         putting words in their mouth.
+
+         Whichever question is on screen is the one the answer is for. This
+         used to show the parent question's answer under a follow-up, so a
+         student asked what their brother and sister DO was handed an answer
+         that began by saying how many of them there are. */
+      var onScreen = (MOCK.fu >= 0 && q.followups && q.followups[MOCK.fu]
+                      && q.followups[MOCK.fu].model)
+                   ? q.followups[MOCK.fu].model
+                   : (q.model_responses ? q.model_responses.developed : null);
+      if (onScreen)
+        h += '<details><summary>A developed answer'
+           + (MOCK.fu >= 0 ? ' to the follow-up' : '') + ', if you are stuck'
+           + '</summary><div class="dbody">' + jaLine(onScreen.ja)
+           + enLine(onScreen.en) + '</div></details>';
+      else
+        h += '<p class="note">No model answer here: this one is yours. If the '
+           + 'question is not one you prepared, say so in Japanese and keep '
+           + 'going.</p>';
+    }
+
+    h += '<div class="row">';
+    if (MOCK.shown){
+      if (MOCK.fu < followupsFor(q).length - 1)
+        h += '<button class="btn" id="nextfu">Next follow-up</button>';
+      h += '<button class="btn ghost" id="nextq">'
+         + (MOCK.at < list.length - 1 ? "Next question"
+            : (MOCK.kind === "sac" || MOCK.sec === 1 ? "Finish"
+               : "On to Section 2")) + '</button>';
+    }
+    h += '<button class="btn ghost" id="quit">Stop</button></div>';
+    m.innerHTML = h + foot();
+
+    paintClock();
+    stopClock();
+    clockTimer = setInterval(function(){
+      MOCK.left--;
+      paintClock();
+      if (MOCK.left <= 0){ stopClock(); nextSection(); }
+    }, 1000);
+
+    /* The question is spoken as soon as it arrives, the way it happens in the
+       room. A phone that has not been touched yet will refuse, which is why
+       Hear it again is there. */
+    if (!MOCK.shown) SAY.speak(q.question_ja);
+    if ($("again")) $("again").onclick = function(){ SAY.speak(q.question_ja); };
+    if ($("show")) $("show").onclick = function(){ MOCK.shown = true; drawMockRun(); };
+    if ($("nextfu")) $("nextfu").onclick = function(){
+      MOCK.fu++; drawMockRun();
+      SAY.speak(q.followups[MOCK.fu].ja);
+    };
+    if ($("nextq")) $("nextq").onclick = function(){
+      if (MOCK.at < list.length - 1){
+        MOCK.at++; MOCK.shown = false; MOCK.fu = -1; drawMockRun();
+      } else nextSection();
+    };
+    $("quit").onclick = function(){ stopClock(); MOCK = null; go("mock"); };
+    wireRecorder(m);
+  }
+  function nextSection(){
+    if (MOCK.kind === "sac"){ stopClock(); return drawMockDone(); }
+    stopClock();
+    MOCK.part = "trans";
+    draw();
+  }
+  function paintClock(){
+    var el = $("cnum"); if (!el) return;
+    var s = Math.max(0, MOCK.left);
+    el.textContent = Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2);
+    $("clock").classList.toggle("low", s <= 60);
+  }
+  function drawMockDone(){
+    var sac = MOCK && MOCK.kind === "sac";
+    setHead([{ ja:"タイムれんしゅう", r:"mock" }, { ja:"おわり", r:"mock:run" }],
+            sac ? "Four minutes done" : "Fifteen minutes done");
+    $("main").innerHTML = '<h2>おわりました<span class="en">'
+      + (sac ? 'That is the four minutes'
+             : 'That is the whole examination') + '</span></h2>'
+      + '<p>Now mark yourself against the four criteria while it is fresh. The '
+      + 'descriptors are the official ones, word for word.</p>'
+      + '<div class="row"><button class="btn" data-r="me">Mark yourself</button>'
+      + '<button class="btn ghost" data-r="mock">Run it again</button></div>' + foot();
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ MOCK = null; go(b.dataset.r); };
+    });
+  }
+
+  /* Particles, by recognition. The Grammar Hub drills them by typing one
+     in; this drills spotting the wrong one, which is the half you have to
+     do to your own sentence while you are still speaking it. */
+  function drawParticles(){
+    setHead([{ ja:"ドリル", r:"drill" }, { ja:"じょし", r:"drill:pt" }], "Particles");
+    var h = '<h2>じょし<span class="en">Particles</span></h2>'
+          + qmark('Reading a wrong particle in somebody else\u2019s sentence '
+                + 'is how you start catching it in your own. The explanation '
+                + 'comes up whichever way you answer.')
+          + '<div class="tiles">'
+          + PT.rounds.map(function(r){
+              return '<button class="tile" data-r="drill:r:' + esc(r.id) + '">'
+                   + '<b>' + esc(r.title) + '</b>'
+                   + '<i>' + r.items.length + ' items</i>'
+                   + '<i class="what">' + esc(r.about) + '</i></button>';
+            }).join("")
+          + '</div>'
+          + '<h3>Writing them, not just spotting them</h3>'
+          + '<p class="lede">The Grammar Hub has the other half of this: the same '
+          + 'particles, typed into the gap rather than chosen from four. Worth a '
+          + 'turn once these feel easy.</p>'
+          + '<a class="tile" style="display:block;text-decoration:none" '
+          + 'href="https://liaminhawai-cmd.github.io/japanese-hub/grammar/" '
+          + 'target="_blank" rel="noopener"><b>Grammar Hub \u203a Particles</b>'
+          + '<i>Opens in a new tab, needs a connection</i></a>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ go(b.dataset.r); };
+    });
+  }
+
+  /* ================= 3. the drills ================= */
+  var DSTATE = {};
+
+  RENDER.drill = function(args){
+    if (args[0] === "weak") return drawWeak();
+    if (args[0] === "pt") return drawParticles();
+    if (args[0] === "qw") return drawQwords();
+    if (args[0] === "r") return drawRound(args[1]);
+    if (args[0]) return drawDrill(args[0]);
+    setHead([{ ja:"ドリル", r:"drill" }], "Drills · built from what the VCAA oral exam reports mark down");
+    var weak = weakList();
+    var h = '<h2>ドリル<span class="en">Short rounds, every item from a fault '
+          + 'the VCAA oral exam reports named</span></h2>'
+          + '<div class="tiles">'
+          + ER.drills.map(function(d){
+              return '<button class="tile" data-d="' + esc(d.id) + '">'
+                   + '<b>' + esc(d.title) + '</b><i>' + d.items.length
+                   + ' items</i></button>';
+            }).join("")
+          + '<button class="tile" data-d="weak"><b>Weak-spot review</b><i>'
+          + (weak.length ? weak.length + " to come back to" : "nothing yet")
+          + '</i></button>'
+          + '<button class="tile" data-d="qw"><b>Question words</b><i>'
+          + QW.rounds.reduce(function(n, r){ return n + r.items.length; }, 0)
+          + ' items</i><i class="what">Catch what is being asked, and answer '
+          + 'that</i></button>'
+          + '<button class="tile" data-d="pt"><b>Particles</b><i>'
+          + PT.rounds.reduce(function(n, r){ return n + r.items.length; }, 0)
+          + ' items</i><i class="what">Spot the wrong one, in somebody '
+          + 'else\u2019s sentence first</i></button>'
+          + '</div>'
+          + '<h3>The nineteen faults</h3>'
+          + '<p class="lede">Every one of these is named in at least one of the '
+          + 'VCAA oral exam reports from 2020 to 2025, commonest first.</p>'
+          + ER.errors.slice().sort(function(a,b){ return b.count - a.count; })
+              .map(function(e){
+                return '<details><summary>' + esc(e.name)
+                     + ' <span class="tier">' + e.count
+                     + ' of the 6 VCAA reports</span>'
+                     + '</summary><div class="dbody">'
+                     + '<div class="en" style="margin-bottom:7px">'
+                     + esc(e.what_goes_wrong) + '</div>'
+                     + fixPair(e.wrong, e.right)
+                     + '<p class="en" style="margin-top:7px">' + esc(e.why) + '</p>'
+                     + e.report_quotes.map(function(r){
+                         return '<div class="tip"><q>' + esc(r) + '</q></div>';
+                       }).join("")
+                     + '</div></details>';
+              }).join("");
+    $("main").innerHTML = h + foot();
+    each($("main"), "[data-d]", function(b){
+      b.onclick = function(){ go("drill:" + b.dataset.d); };
+    });
+  };
+
+  function weakList(){
+    var out = [];
+    Object.keys(S.weak).forEach(function(k){
+      if (S.weak[k] && S.weak[k].miss > (S.weak[k].hit || 0)) out.push(k);
+    });
+    return out;
+  }
+  function markWeak(eid, hit){
+    if (!eid) return;
+    var w = S.weak[eid] = S.weak[eid] || { hit:0, miss:0 };
+    if (hit) w.hit++; else w.miss++;
+    save();
+  }
+
+  function drawDrill(id, only){
+    var d = null;
+    ER.drills.forEach(function(x){ if (x.id === id) d = x; });
+    if (!d) return go("drill", true);
+    var items = d.items;
+    if (only && only.length)
+      items = items.filter(function(it){ return only.indexOf(it.error_id) >= 0; });
+    if (!items.length) items = d.items;
+    var st = DSTATE[id] = DSTATE[id] || { at:0, open:false, hit:0, miss:0 };
+    if (st.at >= items.length) st.at = 0;
+    var it = items[st.at];
+
+    setHead([{ ja:"ドリル", r:"drill" }, { ja:d.title, r:"drill:" + id }],
+            d.title + " · " + (st.at + 1) + " of " + items.length);
+    var m = $("main");
+    /* The instruction used to sit across the top of every item, read once
+       and scrolled past a hundred times after. It is behind the ? now. */
+    var h = recordBlock("drill-" + id)
+          + '<div class="step">' + (st.at + 1) + ' / ' + items.length
+          + ' · <span class="score">' + st.hit + ' right'
+          + (st.miss ? ", " + st.miss + " to revisit" : "") + '</span>'
+          + qmark(d.how) + '</div>';
+
+    if (d.type === "spot"){
+      h += '<div class="card"><div class="ja" data-say="' + esc(speakable(it.wrong))
+         + '">' + ruby(it.wrong) + '</div></div>'
+         + '<div class="reveal' + (st.open ? " on" : "") + '" id="rv">'
+         + '<div class="card"><div class="tier">The fault</div><b>'
+         + esc((ERBYID[it.error_id] || {}).name || "") + '</b>'
+         + '<div class="en" style="margin:5px 0 8px">' + esc(it.fix_en) + '</div>'
+         + fixPair(it.wrong, it.right) + '</div></div>';
+    } else if (d.type === "extend"){
+      h += '<div class="card">' + jaLine(it.question) + enLine(it.question_en)
+         + '</div>'
+         + '<div class="card" style="border-color:var(--accent)">'
+         + '<div class="tier">A one-sentence answer</div>'
+         + jaLine(it.thin) + enLine(it.thin_en) + '</div>'
+         + '<p class="lede">Add two or three more things: a detail, a reason, an '
+         + 'example, an opinion. Say the long version out loud, then check.</p>'
+         + '<div class="reveal' + (st.open ? " on" : "") + '" id="rv">'
+         + '<div class="card" style="border-color:var(--ok)">'
+         + '<div class="tier">What it should sound like · added: '
+         + esc((it.added || []).join(", ")) + '</div>'
+         + jaLine(it.better) + enLine(it.better_en) + '</div></div>';
+    } else if (d.type === "upgrade"){
+      h += '<div class="card">' + jaLine(it.question) + enLine(it.question_en)
+         + '</div>'
+         + '<div class="card" style="border-color:var(--accent)">'
+         + '<div class="tier">The closed answer that stops the conversation</div>'
+         + jaLine(it.closed) + enLine(it.closed_en) + '</div>'
+         + '<p class="lede">Answer it, then keep going without being asked again.</p>'
+         + '<div class="reveal' + (st.open ? " on" : "") + '" id="rv">'
+         + '<div class="card" style="border-color:var(--ok)">'
+         + '<div class="tier">Open</div>'
+         + jaLine(it.open) + enLine(it.open_en) + '</div></div>';
+    } else if (d.type === "repair"){
+      h += '<div class="card"><b>' + esc(it.situation_en) + '</b></div>'
+         + '<p class="lede">Say it in Japanese before you look.</p>'
+         + '<div class="reveal' + (st.open ? " on" : "") + '" id="rv">'
+         + '<div class="card">' + jaLine(it.say) + enLine(it.say_en) + '</div></div>';
+    } else if (d.type === "shadow"){
+      h += '<div class="card">' + jaLine(it.ja) + enLine(it.en) + '</div>'
+         + '<div class="tip"><b>Listen for</b>' + esc(it.watch_en) + '</div>'
+         + '<p class="lede">Play it, then say it over the top of it. 0.7× first, '
+         + 'then ×1. Match the length of every sound, not just the word.</p>'
+         + '<div class="row"><button class="btn" id="play07">Play at 0.7×</button>'
+         + '<button class="btn ghost" id="play10">Play at ×1</button></div>';
+      st.open = true;
+    }
+
+    h += '<div class="row">';
+    if (!st.open) h += '<button class="btn" id="check">Check</button>';
+    else h += '<button class="btn ghost" id="got">I had it right</button>'
+            + '<button class="btn warn" id="not">Come back to this</button>';
+    h += '</div>'
+       + '<div class="row"><button class="btn ghost" id="skip">Skip ›</button></div>'
+       + foot();
+    m.innerHTML = h;
+
+    if ($("check")) $("check").onclick = function(){
+      st.open = true; drawDrill(id, only);
+    };
+    if ($("got")) $("got").onclick = function(){
+      st.hit++; markWeak(it.error_id, true); advance();
+    };
+    if ($("not")) $("not").onclick = function(){
+      st.miss++; markWeak(it.error_id, false); advance();
+    };
+    if ($("skip")) $("skip").onclick = advance;
+    if ($("play07")) $("play07").onclick = function(){
+      var keep = S.rate; S.rate = 0.7;
+      SAY.speak(it.ja, null, function(){ S.rate = keep; });
+    };
+    if ($("play10")) $("play10").onclick = function(){
+      var keep = S.rate; S.rate = 1;
+      SAY.speak(it.ja, null, function(){ S.rate = keep; });
+    };
+    wireRecorder(m);
+
+    function advance(){
+      st.at++; st.open = d.type === "shadow";
+      if (st.at >= items.length){
+        st.at = 0;
+        setHead([{ ja:"ドリル", r:"drill" }, { ja:d.title, r:"drill" }], d.title);
+        $("main").innerHTML = '<h2>ひとまわり おわり<span class="en">Round '
+          + 'finished</span></h2><p>' + st.hit + ' right, ' + st.miss
+          + ' to come back to. The ones you flagged are waiting in Weak-spot '
+          + 'review.</p><div class="row">'
+          + '<button class="btn" id="again2">Go round again</button>'
+          + '<button class="btn ghost" data-r="drill">Other drills</button></div>'
+          + foot();
+        st.hit = 0; st.miss = 0;
+        $("again2").onclick = function(){ drawDrill(id, only); };
+        each($("main"), "[data-r]", function(b){
+          b.onclick = function(){ go(b.dataset.r); };
+        });
+        return;
+      }
+      drawDrill(id, only);
+    }
+  }
+
+  function drawWeak(){
+    var weak = weakList();
+    setHead([{ ja:"ドリル", r:"drill" }, { ja:"よわい ところ", r:"drill:weak" }],
+            "Weak-spot review");
+    if (!weak.length){
+      $("main").innerHTML = '<h2>よわい ところ<span class="en">Weak-spot '
+        + 'review</span></h2><p>Nothing here yet. Work through a drill and tap '
+        + '<b>Come back to this</b> on anything you did not have, and it will '
+        + 'collect here.</p><div class="row">'
+        + '<button class="btn" data-r="drill">Pick a drill</button></div>' + foot();
+      each($("main"), "[data-r]", function(b){
+        b.onclick = function(){ go(b.dataset.r); };
+      });
+      return;
+    }
+    var h = '<h2>よわい ところ<span class="en">The faults you flagged, with the '
+          + 'items that test them</span></h2>'
+          + '<p class="lede">These are the ones you asked to come back to. Clearing '
+          + 'one takes two right answers in a row.</p>';
+    weak.forEach(function(eid){
+      var e = ERBYID[eid], w = S.weak[eid];
+      if (!e) return;
+      var found = [];
+      ER.drills.forEach(function(d){
+        if (d.error_ids.indexOf(eid) >= 0) found.push(d);
+      });
+      h += '<div class="card"><b>' + esc(e.name) + '</b> <span class="score">'
+         + (w.hit || 0) + ' right, ' + (w.miss || 0) + ' missed</span>'
+         + '<div class="en" style="margin:5px 0 7px">' + esc(e.why) + '</div>'
+         + '<div class="side yes" style="margin:6px 0"><b>\u2714 this</b>'
+         + jaLine(e.right) + '</div>'
+         + '<div class="row">'
+         + found.map(function(d){
+             return '<button class="btn ghost" data-go="' + esc(d.id)
+                  + '" data-only="' + esc(eid) + '">' + esc(d.title) + '</button>';
+           }).join("")
+         + '<button class="btn ghost" data-clear="' + esc(eid)
+         + '">Clear it</button></div></div>';
+    });
+    $("main").innerHTML = h + foot();
+    each($("main"), "[data-go]", function(b){
+      b.onclick = function(){ drawDrill(b.dataset.go, [b.dataset.only]); };
+    });
+    each($("main"), "[data-clear]", function(b){
+      b.onclick = function(){ delete S.weak[b.dataset.clear]; save(); drawWeak(); };
+    });
+  }
+
+  /* ================= 4. the discussion builder =================
+     The subtopic and the one image are the student's own. The image is held in
+     this browser as a shrunken copy and goes nowhere else. */
+  RENDER.disc = function(args){
+    if (args[0] === "practice") return drawPractice();
+    setHead([{ ja:"ディスカッション", r:"disc" }],
+            "Discussion builder · your subtopic, your image");
+    var D = S.disc;
+    var m = $("main");
+    var h = '<h2>ディスカッション<span class="en">Eight minutes on one subtopic and '
+          + 'one image you bring in yourself</span></h2>'
+          + '<label for="topja">Your subtopic, in Japanese</label>'
+          + '<input type="text" id="topja" placeholder="おまつり" value="'
+          + esc(D.topja || "") + '">'
+          + '<label for="topen">And in English, for your own notes</label>'
+          + '<input type="text" id="topen" placeholder="Japanese festivals" value="'
+          + esc(D.topen || "") + '">'
+          + '<h3>Your image'
+       + qmark(CRIT.visual_material.rules.join("\n")
+             + "\nYour copy here stays in this browser, on this phone, and is "
+             + "never uploaded anywhere.") + '</h3>';
+
+    if (D.img){
+      h += '<div class="shotwrap"><img class="shot" id="shot" src="' + D.img
+         + '" alt="Your chosen image for the discussion"></div>'
+         + '<div class="row"><button class="btn ghost" id="bigger">Full screen'
+         + '</button><button class="btn ghost" id="drop">Remove it</button></div>';
+    } else {
+      h += '<div class="card flat" style="text-align:center;color:var(--muted)">'
+         + 'No image yet.</div>';
+    }
+    h += '<div class="row"><label class="btn ghost" for="pick" '
+       + 'style="margin:0">' + (D.img ? "Choose a different one" : "Choose or take a photo")
+       + '<input type="file" id="pick" accept="image/*" hidden></label></div>';
+
+    h += '<h3>Nine stages'
+       + qmark('Write a couple of lines for each. Three of the six VCAA oral '
+             + 'exam reports say the thing that fails is not the Japanese but '
+             + 'running out of things to say, so fill all nine before you '
+             + 'polish any. Sentence frames for all of them are in the '
+             + 'Phrases tab.') + '</h3>';
+
+    QD.discussion_stages.forEach(function(st){
+      var here = DISC.filter(function(q){ return q.topic === st.id; });
+      var txt = (D.stage || {})[st.id] || "";
+      h += '<details' + (txt ? "" : "") + '><summary>' + ruby(st.ja)
+         + ' <span class="tier">' + esc(st.en) + (txt ? " · written" : "")
+         + '</span></summary><div class="dbody">'
+         + '<p class="en">' + esc(st.advice) + '</p>'
+         + here.map(function(q){
+             return '<div class="card flat" style="margin-top:8px">'
+                  + jaLine(q.question_ja) + enLine(q.question_en) + '</div>';
+           }).join("")
+         + '<label for="st-' + esc(st.id) + '">What you will say</label>'
+         + '<textarea id="st-' + esc(st.id) + '" data-stage="' + esc(st.id)
+         + '" placeholder="…">' + esc(txt) + '</textarea>'
+         + '</div></details>';
+    });
+
+    h += '<div class="row"><button class="btn wide" id="practise">'
+       + 'Practise it on the clock</button></div>' + foot();
+    m.innerHTML = h;
+
+    $("topja").oninput = function(){ S.disc.topja = this.value; save(); };
+    $("topen").oninput = function(){ S.disc.topen = this.value; save(); };
+    each(m, "[data-stage]", function(t){
+      t.oninput = function(){
+        S.disc.stage = S.disc.stage || {};
+        S.disc.stage[t.dataset.stage] = t.value;
+        save();
+      };
+    });
+    $("pick").onchange = function(){ takeImage(this.files && this.files[0]); };
+    if ($("bigger")) $("bigger").onclick = function(){ showFull(D.img); };
+    if ($("shot")) $("shot").onclick = function(){ showFull(D.img); };
+    if ($("drop")) $("drop").onclick = function(){
+      if (!confirm("Remove your image from this phone?")) return;
+      delete S.disc.img; save(); RENDER.disc([]);
+    };
+    $("practise").onclick = function(){ go("disc:practice"); };
+  };
+
+  /* Shrunk before it is stored. A phone camera file is several megabytes and
+     localStorage will not hold one; 1200px on the long edge is more than the
+     screen can show anyway, and keeps a typical photo well inside the quota. */
+  function takeImage(file){
+    if (!file) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      var im = new Image();
+      im.onload = function(){
+        var max = 1200, w = im.width, h = im.height;
+        if (Math.max(w, h) > max){
+          var k = max / Math.max(w, h); w = Math.round(w * k); h = Math.round(h * k);
+        }
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(im, 0, 0, w, h);
+        try {
+          S.disc.img = cv.toDataURL("image/jpeg", 0.75);
+          localStorage.setItem(KEY, JSON.stringify(S));
+          RENDER.disc([]);
+        } catch (e){
+          flash("This phone would not store that image. Try a smaller one.");
+        }
+      };
+      im.onerror = function(){ flash("That file did not open as an image."); };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+  function showFull(src){
+    if (!src) return;
+    $("fullimg").src = src;
+    $("full").classList.add("on");
+  }
+  $("fullx").onclick = function(){ $("full").classList.remove("on"); };
+
+  var PR = null;
+  function drawPractice(){
+    var D = S.disc;
+    if (!PR){
+      var qs = [];
+      QD.discussion_stages.forEach(function(st){
+        var here = DISC.filter(function(q){ return q.topic === st.id; });
+        if (here.length) qs.push(here[Math.floor(Math.random() * here.length)]);
+      });
+      PR = { qs:qs, at:0, left:CRIT.sections[1].minutes * 60, shown:false };
+    }
+    var q = PR.qs[PR.at];
+    setHead([{ ja:"ディスカッション", r:"disc" }, { ja:"れんしゅう", r:"disc:practice" }],
+            "Eight minutes, your own image");
+    var m = $("main");
+    var st = STAGENAME[q.topic] || { ja:q.topic, en:q.topic };
+    var h = '<div class="clock" id="clock"><b id="cnum">--:--</b>'
+          + '<span>left in the Discussion</span></div>'
+          + recordBlock("disc");
+    if (D.img){
+      h += '<div class="shotwrap"><img class="shot" id="shot" src="' + D.img
+         + '" alt="Your chosen image"></div>'
+         + '<p class="note">Tap the image for full screen, the way the assessors '
+         + 'will be looking at it.</p>';
+    } else {
+      h += '<div class="card flat" style="text-align:center;color:var(--muted)">'
+         + 'No image yet. Add one in the builder and practise with it in front of '
+         + 'you.</div>';
+    }
+    h += '<div class="step">' + ruby(st.ja) + ' · ' + esc(st.en) + '</div>';
+    if (!PR.shown){
+      h += '<div class="hidden-q">The assessor has asked you something.'
+         + '<div class="row" style="justify-content:center">'
+         + '<button class="btn" id="again">Hear it again</button>'
+         + '<button class="btn ghost" id="show">Show it</button></div></div>';
+    } else {
+      h += '<div class="card">' + jaLine(q.question_ja) + enLine(q.question_en)
+         + '</div>';
+      var mine = (D.stage || {})[q.topic];
+      if (mine)
+        h += '<details><summary>What you wrote for this stage</summary>'
+           + '<div class="dbody"><p style="white-space:pre-wrap">' + esc(mine)
+           + '</p></div></details>';
+    }
+    h += '<div class="row">'
+       + '<button class="btn ghost" id="nextq">'
+       + (PR.at < PR.qs.length - 1 ? "Next question" : "Finish") + '</button>'
+       + '<button class="btn ghost" id="quit">Stop</button></div>' + foot();
+    m.innerHTML = h;
+
+    paintPr();
+    stopClock();
+    clockTimer = setInterval(function(){
+      PR.left--; paintPr();
+      if (PR.left <= 0){ stopClock(); }
+    }, 1000);
+
+    if (!PR.shown) SAY.speak(q.question_ja);
+    if ($("again")) $("again").onclick = function(){ SAY.speak(q.question_ja); };
+    if ($("show")) $("show").onclick = function(){ PR.shown = true; drawPractice(); };
+    if ($("shot")) $("shot").onclick = function(){ showFull(D.img); };
+    $("nextq").onclick = function(){
+      if (PR.at < PR.qs.length - 1){ PR.at++; PR.shown = false; drawPractice(); }
+      else { stopClock(); PR = null; go("me"); }
+    };
+    $("quit").onclick = function(){ stopClock(); PR = null; go("disc"); };
+    wireRecorder(m);
+
+    function paintPr(){
+      var el = $("cnum"); if (!el) return;
+      var s = Math.max(0, PR.left);
+      el.textContent = Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2);
+      $("clock").classList.toggle("low", s <= 60);
+    }
+  }
+
+  /* ================= 5. the phrase bank ================= */
+  RENDER.phrase = function(args){
+    if (args[0]) return drawGroup(args[0]);
+    setHead([{ ja:"フレーズ", r:"phrase" }], "Phrases · six groups");
+    /* The front page used to describe the groups in one sentence about the
+       image, which only fitted two of the six and left a student guessing
+       which tile held what. Each tile now says what is inside it instead. */
+    var h = '<h2>フレーズ<span class="en">Lines worth knowing by heart, in six '
+          + 'groups</span></h2>'
+          + '<div class="tiles">'
+          + PH.groups.map(function(g){
+              return '<button class="tile" data-g="' + esc(g.id) + '">'
+                   + '<b>' + ruby(g.name_ja) + '</b>'
+                   + '<i>' + esc(g.name_en) + ' · ' + g.phrases.length
+                   + ' lines</i>'
+                   + '<i class="what">' + esc(g.tile_en) + '</i></button>';
+            }).join("") + '</div>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-g]", function(b){
+      b.onclick = function(){ go("phrase:" + b.dataset.g); };
+    });
+  };
+  function drawGroup(id){
+    var g = null;
+    PH.groups.forEach(function(x){ if (x.id === id) g = x; });
+    if (!g) return go("phrase", true);
+    setHead([{ ja:"フレーズ", r:"phrase" }, { ja:g.name_ja, r:"phrase" }], g.name_en);
+    var h = '<h2>' + ruby(g.name_ja) + '<span class="en">' + esc(g.name_en)
+          + '</span></h2><p class="lede">' + esc(g.about) + '</p>'
+          + g.phrases.map(function(p){
+              return '<div class="card">'
+                   + jaLine(p.ja, p.say || p.ja) + enLine(p.en)
+                   + (p.say ? '<div class="tier" style="margin-top:7px">'
+                       + 'With the blank filled</div>' + jaLine(p.say)
+                       + (p.say_en ? enLine(p.say_en) : "") : "")
+                   + '</div>';
+            }).join("")
+          + g.report_refs.map(function(r){
+              return '<div class="tip"><q>' + esc(r) + '</q></div>';
+            }).join("") + foot();
+    $("main").innerHTML = h;
+  }
+
+  /* ================= 6. my record ================= */
+  RENDER.me = function(args){
+    if (args[0] === "crit") return drawCriterion(args[1]);
+    setHead([{ ja:"じぶんで さいてん", r:"me" }], "Self-grade · stays on this phone");
+    var notes = Object.keys(S.notes).filter(function(k){ return S.notes[k]; });
+    var h = '<h2>じぶんで さいてん<span class="en">What you have written, how you '
+          + 'marked yourself, and a copy you can keep</span></h2>'
+          + '<h3>Mark yourself against the four criteria</h3>'
+          + '<p class="lede">The band descriptions are the official ones, word for '
+          + 'word, from the assessment criteria and descriptors document '
+          + '(' + esc(CRIT.sources[0].version) + '). Be honest; the point is to find '
+          + 'the band you are actually in.</p>';
+    CRIT.sections.forEach(function(s){
+      h += '<div class="step">Section ' + s.number + ' · ' + esc(s.name_en)
+         + ' · ' + s.marks + ' marks</div>';
+      s.criteria.forEach(function(c){
+        var got = S.assess[c.id];
+        h += '<button class="card" data-crit="' + esc(c.id) + '">'
+           + '<b>' + esc(c.name) + '</b>'
+           + '<div class="en" style="margin-top:4px">' + esc(c.scope) + '</div>'
+           + '<div style="margin-top:7px">'
+           + (got ? '<span class="mark">' + esc(got) + '</span>'
+                    + ' <span class="score">out of ' + c.max + '</span>'
+                  : '<span class="score">not marked yet</span>')
+           + '</div></button>';
+      });
+    });
+    var total = 0, any = false;
+    Object.keys(S.assess).forEach(function(k){
+      var v = String(S.assess[k]).split("–")[0];
+      if (v){ total += parseInt(v, 10) || 0; any = true; }
+    });
+    if (any)
+      h += '<div class="card"><b>Rough total</b> <span class="mark">'
+         + total + '</span> <span class="score">out of ' + CRIT.examination.total_marks
+         + ', using the bottom of each band you picked</span></div>';
+
+    h += '<h3>What you have written</h3>';
+    if (!notes.length){
+      h += '<p class="lede">Nothing yet. Your answers appear here as you type them '
+         + 'under a question.</p>';
+    } else {
+      h += notes.map(function(k){
+        var q = QBYID[k.replace(/^/, "")];
+        return '<button class="card" data-r="browse:q:' + esc(k) + '">'
+             + (q ? '<span class="jatext">' + ruby(q.question_ja) + '</span>'
+                  : '<b>' + esc(k) + '</b>')
+             + '<p style="white-space:pre-wrap;margin-top:6px">'
+             + esc(S.notes[k]) + '</p></button>';
+      }).join("");
+    }
+
+    h += '<h3>Keep a copy</h3>'
+       + '<p class="lede">Everything above lives in this browser only. Clearing your '
+       + 'browsing data would take it with it, so save a copy before an examination '
+       + 'or when you change phones. The file is plain text you can read.</p>'
+       + '<div class="row">'
+       + '<button class="btn" id="exp">Save a copy</button>'
+       + '<label class="btn ghost" for="imp" style="margin:0">Load a copy'
+       + '<input type="file" id="imp" accept=".json,application/json" hidden></label>'
+       + '<button class="btn warn" id="wipe">Clear everything</button></div>'
+       + '<p class="note">A saved copy does not include your image, which can be '
+       + 'large. Keep the photo itself in your own photo library.</p>'
+       + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-crit]", function(b){
+      b.onclick = function(){ go("me:crit:" + b.dataset.crit); };
+    });
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ go(b.dataset.r); };
+    });
+    $("exp").onclick = exportCopy;
+    $("imp").onchange = function(){ importCopy(this.files && this.files[0]); };
+    $("wipe").onclick = function(){
+      if (!confirm("Clear everything this app has saved on this phone, including "
+                 + "your image and your notes?")) return;
+      try { localStorage.removeItem(KEY); } catch (e){}
+      S = { furi:true, rate:1, voice:"clips", notes:{}, assess:{}, disc:{},
+            weak:{}, seen:{} };
+      paintFuri(); paintRate(); RENDER.me([]);
+    };
+  };
+
+  function drawCriterion(cid){
+    var got = CRITBYID[cid];
+    if (!got) return go("me", true);
+    var c = got.c, s = got.section;
+    setHead([{ ja:"じぶんで さいてん", r:"me" }, { ja:c.name, r:"me" }],
+            "Section " + s.number + " · " + c.name + " · " + c.max + " marks");
+    var h = '<h2>' + esc(c.name) + '<span class="en">' + esc(c.scope)
+          + '</span></h2>'
+          + '<div class="card"><b>What is being judged</b><ul '
+          + 'style="margin:6px 0 0 18px;font-size:15.5px">'
+          + c.qualities.map(function(q){ return '<li>' + esc(q) + '</li>'; }).join("")
+          + '</ul></div>'
+          + (c.source_wording ? '<p class="note">The published criteria are written '
+              + 'for every language at once. The original reads: <q>'
+              + esc(c.source_wording) + '</q></p>' : "")
+          + '<h3>Which band were you in?</h3><div class="bands">'
+          + c.descriptors.map(function(d){
+              return '<button class="band' + (S.assess[cid] === d.band ? " on" : "")
+                   + '" data-band="' + esc(d.band) + '"><b>' + esc(d.band) + '</b>'
+                   + '<span>' + d.text.map(esc).join("<br>") + '</span></button>';
+            }).join("")
+          + '</div>'
+          + '<div class="row"><button class="btn ghost" data-r="me">Done</button>'
+          + '</div>' + foot();
+    $("main").innerHTML = h;
+    each($("main"), "[data-band]", function(b){
+      b.onclick = function(){
+        S.assess[cid] = (S.assess[cid] === b.dataset.band) ? "" : b.dataset.band;
+        if (!S.assess[cid]) delete S.assess[cid];
+        save(); drawCriterion(cid);
+      };
+    });
+    each($("main"), "[data-r]", function(b){
+      b.onclick = function(){ go(b.dataset.r); };
+    });
+  }
+
+  function exportCopy(){
+    var out = { app:"oral-exam", build:BUILD, saved:new Date().toISOString(),
+                notes:S.notes, assess:S.assess, weak:S.weak,
+                disc:{ topja:S.disc.topja || "", topen:S.disc.topen || "",
+                       stage:S.disc.stage || {} } };
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type:"application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "oral-exam-notes.json";
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  }
+  function importCopy(file){
+    if (!file) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      var got;
+      try { got = JSON.parse(fr.result); }
+      catch (e){ return flash("That file is not one of these saved copies."); }
+      if (!got || got.app !== "oral-exam")
+        return flash("That file is not one of these saved copies.");
+      if (!confirm("Replace what is on this phone with the saved copy?")) return;
+      S.notes = got.notes || {};
+      S.assess = got.assess || {};
+      S.weak = got.weak || {};
+      var img = S.disc.img;
+      S.disc = got.disc || {};
+      if (img) S.disc.img = img;      /* the image is not in the file; keep it */
+      save(); RENDER.me([]);
+    };
+    fr.readAsText(file);
+  }
+
+  /* ================= recording =================
+     MediaRecorder, held in this page's memory and nowhere else. It is not
+     written to storage, because an audio file is far larger than a browser
+     will keep and this app has no server to send one to. Save it keeps it in
+     the phone's own files; otherwise it goes when the tab closes, and the UI
+     says so rather than pretending otherwise. */
+  var REC = { on:false, mr:null, chunks:[], url:null, slot:null, stream:null };
+
+  /* The record button, at the top of the page rather than below the answer.
+     A student presses it before they speak, not after they read. The
+     paragraph that used to sit under it is behind the ? instead: it is
+     reassurance, and a wall of reassurance under a button is its own reason
+     not to press the button. */
+  var RECTIP = "Nothing leaves this phone. The recording stays here, and it "
+             + "lasts until you close the app, so press Save to keep it. Your "
+             + "phone will ask for the microphone the first time.";
+  function recordBlock(slot){
+    var on = REC.on && REC.slot === slot;
+    var mine = REC.url && REC.slot === slot;
+    return '<div class="recbar" data-rec="' + esc(slot) + '">'
+         + '<button type="button" class="recbtn' + (on ? " on" : "")
+         + '" data-recbtn="1"><span class="rdot"></span>'
+         + (on ? "Stop" : "Record") + '</button>'
+         + (mine ? '<button class="btn ghost sm" data-recsave="1">Save</button>'
+                 : "")
+         + qmark(RECTIP)
+         + (mine ? '<audio controls src="' + REC.url + '"></audio>' : "")
+         + '</div>';
+  }
+  function wireRecorder(scope){
+    each(scope, "[data-recbtn]", function(b){
+      var slot = b.closest("[data-rec]").dataset.rec;
+      b.onclick = function(){
+        if (REC.on) return stopRec();
+        startRec(slot);
+      };
+    });
+    each(scope, "[data-recsave]", function(b){
+      b.onclick = function(){
+        if (!REC.url) return;
+        var a = document.createElement("a");
+        a.href = REC.url;
+        a.download = "oral-practice-" + new Date().toISOString().slice(0, 16)
+                   .replace(/[:T]/g, "-") + ".webm";
+        a.click();
+      };
+    });
+  }
+  function startRec(slot){
+    if (!navigator.mediaDevices || !window.MediaRecorder)
+      return flash("This browser cannot record. Everything else still works.");
+    SAY.stop();
+    navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+      REC.stream = stream;
+      REC.chunks = [];
+      try { REC.mr = new MediaRecorder(stream); }
+      catch (e){ return flash("This browser cannot record."); }
+      REC.mr.ondataavailable = function(ev){
+        if (ev.data && ev.data.size) REC.chunks.push(ev.data);
+      };
+      REC.mr.onstop = function(){
+        if (REC.url) URL.revokeObjectURL(REC.url);
+        REC.url = URL.createObjectURL(new Blob(REC.chunks, { type:"audio/webm" }));
+        REC.on = false;
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        draw();
+      };
+      REC.on = true; REC.slot = slot;
+      REC.mr.start();
+      draw();
+    }, function(){
+      flash("Microphone permission was refused, so recording is off.");
+    });
+  }
+  function stopRec(){
+    try { REC.mr.stop(); } catch (e){ REC.on = false; draw(); }
+  }
+
+  function foot(){
+    return '<p class="foot">VCE Japanese Second Language oral examination practice. '
+         + 'Criteria and descriptors from the VCAA assessment criteria document '
+         + esc(CRIT.sources[0].version) + '; examiner tips quoted from the '
+         + 'VCAA oral exam reports 2020 to 2025. Still a draft, still correcting it. '
+         + esc(BUILD) + '</p>';
+  }
+
+  /* ================= service worker ================= */
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").then(function(reg){
+        function offer(w){
+          if (!w) return;
+          var bar = $("upbar");
+          bar.classList.add("on");
+          $("upnow").onclick = function(){
+            w.postMessage({ type:"SKIP_WAITING" });
+            setTimeout(function(){ location.reload(); }, 150);
+          };
+          $("uplater").onclick = function(){ bar.classList.remove("on"); };
+          if (w.postMessage){
+            var ch = new MessageChannel();
+            ch.port1.onmessage = function(ev){
+              if (ev.data && ev.data.version)
+                $("upmsg").textContent = ev.data.version + " is ready.";
+            };
+            try { w.postMessage({ type:"VERSION" }, [ch.port2]); } catch (e){}
+          }
+        }
+        if (reg.waiting) offer(reg.waiting);
+        reg.addEventListener("updatefound", function(){
+          var w = reg.installing;
+          if (!w) return;
+          w.addEventListener("statechange", function(){
+            if (w.state === "installed" && navigator.serviceWorker.controller) offer(w);
+          });
+        });
+      }).catch(function(){});
+    });
+  }
+  $("uplater").onclick = function(){ $("upbar").classList.remove("on"); };
+
+  /* ================= start ================= */
+  paintFuri(); paintRate(); paintClick();
+  $("homeBtn").onclick = function(){ SAY.stop(); go("home"); };
+  route = (location.hash || "#home").slice(1) || "home";
+  go(route, true);
+})();
+</script>
+</body>
+</html>

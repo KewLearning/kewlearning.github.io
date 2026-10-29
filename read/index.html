@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>すらすら · Reading speed</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E3%81%99%3C/text%3E%3C/svg%3E">
+<style>
+  /* ======================================================================
+     すらすら — reading speed for kana.
+
+     WHY THIS EXISTS. Reading a syllabary is recognition speed, not
+     knowledge. A student who works out ひ in four seconds cannot read; the
+     same student at half a second can. That gap is closed by many short
+     retrievals with instant feedback, not by writing practice and not by
+     studying a chart.
+
+     The estate's rule is "production over recognition, recognition is a
+     check". This tool is the one place that inverts, on purpose: here
+     recognition IS the target skill, not a proxy for one. もじをあつめる is
+     the production mode and is why there are three and not two.
+
+     ON THE NUMBER ON SCREEN. The count and the clock are not points. They
+     are the measurement of the thing being trained, which is why there is a
+     clock at all and why there are no badges, no streaks and no confetti.
+     Personal best is stored on the device and shared with nobody: a
+     leaderboard would turn a low-stakes drill into a status game, and the
+     students who most need the practice are the ones who would stop playing.
+
+     The round ends on what you got wrong, phrased as the confusion it
+     actually was ("れ read as ね, twice"), because that is the learnable
+     thing. A score is not.
+     ====================================================================== */
+  :root{
+    /* Typography: the suite's two-script stack. Latin resolves inside
+       --font-en, kana falls straight through to --font-jp. Never write a
+       font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','Yu Gothic UI','Yu Gothic','Hiragino Sans','Noto Sans JP','Meiryo';
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --amber:#8a6d1e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       -webkit-text-size-adjust:100%;overflow:hidden}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+
+  /* One view, no page scroll: the shell is the viewport and exactly one
+     region inside it takes up the slack. dvh so a phone's address bar
+     sliding away does not change the layout. */
+  .app{height:100dvh;display:flex;flex-direction:column;
+       max-width:940px;margin:0 auto;padding:10px 14px 12px}
+
+  header{display:flex;align-items:baseline;gap:10px;flex:none;padding-bottom:6px}
+  h1{font-size:23px;font-weight:700;letter-spacing:.02em}
+  h1 small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.06em;
+           text-transform:uppercase;margin-left:7px}
+  .hubchip{margin-left:auto;font-size:11px;letter-spacing:.08em}
+  .hubchip a{color:var(--muted);text-decoration:none}
+  .hubchip a:hover{color:var(--accent)}
+
+  .screen{flex:1;min-height:0;display:none;flex-direction:column}
+  .screen.on{display:flex}
+
+  /* ---------- home ---------- */
+  .lede{font-size:13.5px;color:var(--muted);max-width:62ch;margin-bottom:12px}
+  .scope{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .scope .lbl{font-size:11px;font-weight:800;letter-spacing:.08em;
+              text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;
+        padding:6px 13px;font-size:14px;font-weight:600}
+  .chip.on{border:2px solid var(--accent);color:var(--accent);padding:5px 12px}
+  .chip .en{font-size:11px;color:var(--muted);margin-left:5px;font-weight:600}
+  .chip.on .en{color:var(--accent)}
+
+  .modes{display:grid;gap:11px;grid-template-columns:repeat(3,1fr);
+         flex:1;min-height:0;align-content:start}
+  .mode{border:1px solid var(--line);background:var(--paper);border-radius:12px;
+        padding:15px 15px 13px;display:flex;flex-direction:column;text-align:left;
+        gap:7px;min-height:0}
+  .mode:hover{border-color:var(--accent)}
+  .mode h2{font-size:19px;font-weight:700}
+  .mode h2 small{display:block;font-size:11px;font-weight:700;color:var(--muted);
+                 letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .mode p{font-size:13px;color:var(--muted);line-height:1.45;flex:1}
+  .mode .best{font-size:12.5px;font-weight:700;color:var(--amber)}
+  .mode .go{align-self:flex-start;border:1px solid var(--accent);color:var(--accent);
+            background:transparent;border-radius:8px;padding:8px 16px;
+            font-size:15px;font-weight:700}
+  .mode .go:hover{background:var(--accent);color:var(--paper)}
+  .foot{flex:none;font-size:11px;color:var(--muted);padding-top:10px;opacity:.85}
+
+  /* ---------- the round ---------- */
+  .hud{flex:none;display:flex;align-items:center;gap:12px;padding-bottom:9px}
+  .hud .name{font-size:15px;font-weight:700}
+  .hud .count{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+  .bar{flex:1;height:7px;background:var(--line-soft);border-radius:999px;overflow:hidden}
+  .bar i{display:block;height:100%;width:100%;background:var(--accent);
+         border-radius:999px;transform-origin:left}
+  .bar.low i{background:var(--amber)}
+  .stop{border:1px solid var(--line);background:var(--paper);border-radius:8px;
+        padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--muted)}
+
+  /* The question sits a touch above centre and the answers below it, so on a
+     phone the buttons land under the thumb and on a laptop the eye does not
+     travel far between the character and the choice. */
+  .stage{flex:1;min-height:0;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;gap:18px;padding-bottom:4vh}
+  /* The character being read. Sized off the viewport so it is the same size
+     in the hand and on a projector, and capped so it never pushes the
+     options off a short laptop screen. */
+  .glyph{font-size:min(30vh,32vw,240px);line-height:1;font-weight:700;
+         user-select:none}
+  .glyph.word{font-size:min(15vh,13vw,110px);letter-spacing:.02em}
+  /* A sign is not black text on paper. Painting the plate the colour it
+     really is, in the gothic every sign in Japan is set in, is most of what
+     makes this mode feel like the platform rather than a flashcard. Drawn in
+     CSS: nothing to download, nothing to licence. */
+  .plate{border-radius:8px;padding:.22em .5em;line-height:1.25;
+         font-family:'Yu Gothic UI','Yu Gothic','Hiragino Sans','Noto Sans JP',var(--font-jp),sans-serif;
+         border:3px solid transparent;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  .plate.station{background:#f2c027;color:#17171a;border-color:#d9a814}
+  .plate.green{background:#2e8b57;color:#fff;border-color:#256f46}
+  .plate.warn{background:#f2c027;color:#17171a;border-color:#a83232}
+  .plate.plate2{background:#fff;color:#2b2b2b;border-color:#c9c3b4}
+  .plate.shop{background:#fdf6e6;color:#3a2f20;border-color:#c3ab7c}
+  .plate.ghost{background:transparent;border:3px dashed var(--line);
+               box-shadow:none;color:transparent}
+  .prompt{font-size:15px;color:var(--muted);text-align:center}
+  .prompt b{display:block;font-size:30px;color:var(--ink);font-weight:700;
+            letter-spacing:.04em;margin-bottom:3px}
+  .prompt.after{min-height:44px}
+  .prompt.after b{display:inline-block;font-size:26px;margin:0 10px 0 0}
+  .prompt.after .kj{font-size:22px;color:var(--muted);font-weight:700}
+
+  .opts{display:grid;gap:10px;width:100%;max-width:620px;
+        grid-template-columns:repeat(4,1fr)}
+  .opts.two{grid-template-columns:repeat(2,1fr)}
+  .opt{border:1px solid var(--line);background:var(--paper);border-radius:11px;
+       padding:16px 8px;font-size:23px;font-weight:700;letter-spacing:.02em;
+       position:relative}
+  .opt:hover{border-color:var(--accent)}
+  .opt .k{position:absolute;top:4px;left:7px;font-size:10px;color:var(--muted);
+          font-weight:700}
+  .opt.long{font-size:16px;line-height:1.3;padding:14px 10px}
+  .opt.right{background:var(--okbg);border-color:var(--correct);color:var(--correct)}
+  .opt.wrongpick{background:var(--badbg);border-color:var(--wrong);color:var(--wrong)}
+
+  /* build-the-word */
+  .slots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:62px}
+  .slot{width:58px;height:62px;border:2px dashed var(--line);border-radius:10px;
+        display:flex;align-items:center;justify-content:center;font-size:30px;
+        font-weight:700;background:var(--paper)}
+  .slot.has{border-style:solid;border-color:var(--accent)}
+  .slot.right{border-color:var(--correct);background:var(--okbg);color:var(--correct)}
+  .tiles{display:grid;gap:8px;grid-template-columns:repeat(6,1fr);
+         width:100%;max-width:520px}
+  .tile{border:1px solid var(--line);background:var(--paper);border-radius:10px;
+        padding:12px 4px;font-size:26px;font-weight:700}
+  .tile:hover{border-color:var(--accent)}
+  .tile:disabled{opacity:.28;cursor:default}
+  .undo{border:1px solid var(--line);background:var(--paper);border-radius:8px;
+        padding:8px 15px;font-size:13.5px;font-weight:600;color:var(--muted)}
+
+  /* ---------- the report ---------- */
+  .report{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+  .tally{display:flex;gap:22px;align-items:baseline;flex:none;flex-wrap:wrap}
+  .tally b{font-size:44px;font-weight:700;line-height:1}
+  .tally .unit{font-size:13px;color:var(--muted);margin-left:7px}
+  .tally .pb{font-size:13px;font-weight:700;color:var(--amber)}
+  .missed{flex:1;min-height:0;overflow-y:auto;border-top:1px solid var(--line);
+          padding-top:11px}
+  .missed h3{font-size:12px;font-weight:800;letter-spacing:.08em;
+             text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .mrow{display:flex;align-items:center;gap:11px;padding:7px 0;
+        border-bottom:1px solid var(--line-soft);font-size:14px}
+  .mrow .a{font-size:30px;font-weight:700;min-width:48px;text-align:center}
+  .mrow .arrow{color:var(--muted);font-size:13px}
+  .mrow .b{font-size:26px;font-weight:700;color:var(--wrong);min-width:44px;
+           text-align:center}
+  .mrow .say{color:var(--muted);font-size:13px}
+  .mrow .n{margin-left:auto;font-size:12.5px;color:var(--muted);font-weight:700}
+  .clean{font-size:14px;color:var(--correct);font-weight:600}
+  .again{display:flex;gap:9px;flex:none;padding-top:4px}
+  .again button{border:1px solid var(--accent);color:var(--accent);background:transparent;
+                border-radius:9px;padding:10px 20px;font-size:15px;font-weight:700}
+  .again button:hover{background:var(--accent);color:var(--paper)}
+  .again .quiet{border-color:var(--line);color:var(--muted)}
+  .again .quiet:hover{background:var(--paper);color:var(--ink)}
+
+  /* Wide and short is the school laptop; narrow and tall is the phone. */
+  @media (max-width:760px){
+    .modes{grid-template-columns:1fr;gap:9px}
+    .mode{padding:12px 13px 11px;gap:5px}
+    .mode p{display:none}
+    .opts{grid-template-columns:repeat(2,1fr)}
+    .tiles{grid-template-columns:repeat(5,1fr)}
+    .opt .k{display:none}
+  }
+  @media (max-height:560px){
+    .glyph{font-size:min(26vh,26vw,150px)}
+    .mode p{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>すらすら<small>Reading speed</small></h1>
+    <span class="hubchip"><a href="../">⌂ ジャプリ</a></span>
+  </header>
+
+  <!-- ---------- home ---------- -->
+  <section class="screen on" id="s-home">
+    <p class="lede">Short rounds against the clock. The point is not to know the
+      characters, it is to know them fast enough to read a sign before the train
+      goes. Your best is kept on this device and nobody else sees it.</p>
+
+    <div class="scope" id="scope"></div>
+
+    <div class="modes" id="modes"></div>
+
+    <p class="foot" id="foot"></p>
+  </section>
+
+  <!-- ---------- a round ---------- -->
+  <section class="screen" id="s-play">
+    <div class="hud">
+      <span class="name" id="pname"></span>
+      <span class="bar" id="bar"><i></i></span>
+      <span class="count" id="pcount">0</span>
+      <button class="stop" id="stop">やめる</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </section>
+
+  <!-- ---------- the report ---------- -->
+  <section class="screen" id="s-done">
+    <div class="report">
+      <div class="tally" id="tally"></div>
+      <div class="missed" id="missed"></div>
+      <div class="again">
+        <button id="againBtn">もういちど <span style="font-weight:600;font-size:12px">Again</span></button>
+        <button class="quiet" id="homeBtn">もどる <span style="font-weight:600;font-size:12px">Back</span></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var rnd = function (n) { return Math.floor(Math.random() * n); };
+  function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=rnd(i+1), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+  var READ = {};                       /* character -> sound */
+  KANA.forEach(function (k) { READ[k.ch] = k.read; });
+
+  /* Confusion groups, indexed the other way round: for any character, who
+     does it get taken for. A group written with spaces holds digraphs. */
+  var NEARBY = {};
+  NEAR.forEach(function (g) {
+    var mem = g.indexOf(" ") >= 0 ? g.split(" ") : g.split("");
+    mem.forEach(function (c) {
+      NEARBY[c] = (NEARBY[c] || []).concat(mem.filter(function (x) { return x !== c; }));
+    });
+  });
+
+  /* ---------- what is remembered, and where ----------
+     One key, this device only, nothing sent anywhere. `chars` is what makes
+     the drill adaptive: how often each character has been seen, how often it
+     was missed, and the last few response times. */
+  var KEY = "japri.read.v1";
+  var S = { scope: { script: "hira", ten: false, yoon: false }, best: {}, chars: {} };
+  try { var raw = localStorage.getItem(KEY); if (raw) S = JSON.parse(raw); } catch (e) {}
+  S.scope = S.scope || { script: "hira", ten: false, yoon: false };
+  S.best = S.best || {}; S.chars = S.chars || {};
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  function stat(ch){ return S.chars[ch] || (S.chars[ch] = { n: 0, miss: 0, ms: [] }); }
+  function median(a){ if (!a.length) return 0; var b = a.slice().sort(function(x,y){return x-y;});
+    return b[Math.floor(b.length/2)]; }
+
+  /* Weight: missed often, or slow, or never seen, comes round sooner. This is
+     the whole of the adaptation. Nothing here claims mastery, and nothing is
+     ever taken out of the pool. */
+  function weight(ch){
+    var s = S.chars[ch];
+    if (!s || !s.n) return 2.2;
+    var w = 1 + 3 * (s.miss / s.n);
+    var m = median(s.ms);
+    if (m > 2200) w += 1.2; else if (m > 1400) w += 0.6;
+    return w;
+  }
+  function pickWeighted(pool, avoid){
+    var use = pool.length > 1 ? pool.filter(function (k) { return k.ch !== avoid; }) : pool;
+    var tot = 0, i, w = [];
+    for (i = 0; i < use.length; i++){ w[i] = weight(use[i].ch); tot += w[i]; }
+    var r = Math.random() * tot;
+    for (i = 0; i < use.length; i++){ r -= w[i]; if (r <= 0) return use[i]; }
+    return use[use.length - 1];
+  }
+
+  /* ---------- scope ---------- */
+  var SCRIPTS = [ { id: "hira", ja: "ひらがな", en: "Hiragana" },
+                  { id: "kata", ja: "カタカナ", en: "Katakana" },
+                  { id: "both", ja: "りょうほう", en: "Both" } ];
+  function inScope(k){
+    if (S.scope.script !== "both" && k.script !== S.scope.script) return false;
+    if (k.set === "ten" && !S.scope.ten) return false;
+    if (k.set === "yoon" && !S.scope.yoon) return false;
+    return true;
+  }
+  function pool(){ return KANA.filter(inScope); }
+  function scopeKey(){ return S.scope.script + (S.scope.ten ? "+t" : "") + (S.scope.yoon ? "+y" : ""); }
+
+  function drawScope(){
+    var h = '<span class="lbl">Which characters</span>';
+    SCRIPTS.forEach(function (s) {
+      h += '<button class="chip' + (S.scope.script === s.id ? " on" : "") + '" data-script="' + s.id + '">' +
+           esc(s.ja) + '<span class="en">' + esc(s.en) + '</span></button>';
+    });
+    h += '<button class="chip' + (S.scope.ten ? " on" : "") + '" data-set="ten">だくおん' +
+         '<span class="en">が ば ぱ</span></button>' +
+         '<button class="chip' + (S.scope.yoon ? " on" : "") + '" data-set="yoon">ようおん' +
+         '<span class="en">きゃ しゅ</span></button>';
+    $("scope").innerHTML = h;
+    $("foot").textContent = pool().length + " characters in play. Nothing is locked: " +
+      "these choose what comes up, not what you are allowed to do.";
+  }
+
+  /* ---------- the three modes ---------- */
+  var MODES = {
+    fast: { ja: "はやよみ", en: "Sixty seconds", secs: 60,
+      blurb: "One character at a time, four sounds to choose from. As many as you can. " +
+             "The ones you miss come back sooner.",
+      unit: "characters" },
+    sign: { ja: "かんばん", en: "Sign snap", secs: 75,
+      blurb: "A real sign flashes up and disappears. Read it while it is there, then say " +
+             "what it meant. This is the one that is actually like Japan.",
+      unit: "signs" },
+    build: { ja: "もじをあつめる", en: "Build the word", secs: 90,
+      blurb: "You are given the sound. Tap the characters in order. The only mode where " +
+             "you make the word instead of recognising it.",
+      unit: "words" }
+  };
+  function bestKey(m){ return m + "|" + scopeKey(); }
+
+  function drawModes(){
+    var h = "";
+    Object.keys(MODES).forEach(function (id) {
+      var m = MODES[id], b = S.best[bestKey(id)];
+      h += '<div class="mode"><h2>' + esc(m.ja) + '<small>' + esc(m.en) + '</small></h2>' +
+           '<p>' + esc(m.blurb) + '</p>' +
+           '<div class="best">' + (b ? "Your best: " + b + " " + m.unit : "No round yet") + '</div>' +
+           '<button class="go" data-mode="' + id + '">はじめる · Start</button></div>';
+    });
+    $("modes").innerHTML = h;
+  }
+
+  function screen(id){
+    ["home", "play", "done"].forEach(function (s) {
+      $("s-" + s).className = "screen" + (s === id ? " on" : "");
+    });
+  }
+
+  /* ======================================================================
+     A round. One object holds everything: the clock, the tally, and the
+     misses, which are recorded as the pair they were (shown -> chosen) so
+     the report can name the confusion rather than count errors.
+     ====================================================================== */
+  var R = null, tick = null, shownAt = 0;
+
+  function start(mode){
+    if (mode !== "sign" && !pool().length) return;
+    R = { mode: mode, right: 0, wrong: 0, misses: [], times: [], last: "",
+          ends: Date.now() + MODES[mode].secs * 1000, lock: false, show: 2600 };
+    $("pname").textContent = MODES[mode].ja;
+    $("pcount").textContent = "0";
+    screen("play");
+    clearInterval(tick);
+    tick = setInterval(clock, 100);
+    clock();
+    next();
+  }
+  function clock(){
+    if (!R) return;
+    var left = R.ends - Date.now(), full = MODES[R.mode].secs * 1000;
+    var f = Math.max(0, left / full);
+    $("bar").firstChild.style.transform = "scaleX(" + f + ")";
+    $("bar").className = "bar" + (f < 0.2 ? " low" : "");
+    if (left <= 0) finish();
+  }
+  function stopRound(){ clearInterval(tick); tick = null; }
+
+  function scored(ok, shown, chose){
+    if (ok) R.right++; else { R.wrong++; R.misses.push({ a: shown, b: chose }); }
+    $("pcount").textContent = R.right;
+  }
+  /* Only the single-character mode feeds the adaptive weights: a whole sign
+     read wrongly does not tell you which character went wrong, and guessing
+     would corrupt the thing that decides what comes up next. */
+  function record(ch, ok, ms){
+    var s = stat(ch);
+    s.n++; if (!ok) s.miss++;
+    s.ms.push(ms); if (s.ms.length > 5) s.ms.shift();
+  }
+
+  /* ---------- mode 1: one character, four sounds ---------- */
+  function askFast(){
+    var p = pool(), item = pickWeighted(p, R.last);
+    R.last = item.ch;
+    /* Wrong answers are the sounds of the characters this one actually gets
+       taken for. That is what makes it discrimination practice rather than a
+       guessing game, and it is why the report can be specific. */
+    var wrongs = [], seen = { };
+    seen[item.read] = 1;
+    (NEARBY[item.ch] || []).forEach(function (c) {
+      var r = READ[c]; if (r && !seen[r]) { seen[r] = 1; wrongs.push(r); }
+    });
+    shuffle(wrongs);
+    var spare = shuffle(p.slice());
+    for (var i = 0; wrongs.length < 3 && i < spare.length; i++){
+      var r = spare[i].read; if (!seen[r]) { seen[r] = 1; wrongs.push(r); }
+    }
+    var opts = shuffle([item.read].concat(wrongs.slice(0, 3)));
+    $("stage").innerHTML =
+      '<div class="glyph">' + esc(item.ch) + '</div>' +
+      '<div class="opts">' + opts.map(function (o, i) {
+        return '<button class="opt" data-pick="' + esc(o) + '"><span class="k">' +
+               (i + 1) + '</span>' + esc(o) + '</button>'; }).join("") + '</div>';
+    R.answer = item.read; R.ch = item.ch; R.kind = "fast";
+    shownAt = performance.now();
+  }
+
+  /* ---------- mode 2: the sign that disappears ---------- */
+  function signPool(){
+    /* Respect the script choice where it is meaningful: a katakana round
+       should not be asking for でぐち. */
+    var s = S.scope.script;
+    return SIGNS.filter(function (x) {
+      var hasKata = /[゠-ヿ]/.test(x.ja);
+      return s === "both" ? true : s === "kata" ? hasKata : !hasKata;
+    });
+  }
+  function askSign(){
+    var p = signPool(); if (!p.length) p = SIGNS;
+    var item = p[rnd(p.length)];
+    if (item.ja === R.last && p.length > 1) return askSign();
+    R.last = item.ja;
+    var kind = item.kind === "plate" ? "plate2" : (item.kind || "plate2");
+    $("stage").innerHTML =
+      '<div class="glyph word plate ' + esc(kind) + '">' + esc(item.ja) + '</div>' +
+      '<div class="prompt">Read it before it goes</div>';
+    R.kind = "sign"; R.sign = item;
+    shownAt = performance.now();
+    /* The window shortens as the round goes well, so the mode keeps up with
+       the student rather than staying easy. */
+    R.timer = setTimeout(function () { signOptions(item, p); },
+                         Math.max(1100, R.show - R.right * 60));
+  }
+  function signOptions(item, p){
+    var wrongs = shuffle(p.filter(function (x) { return x.en !== item.en; }))
+                 .slice(0, 3).map(function (x) { return x.en; });
+    var opts = shuffle([item.en].concat(wrongs));
+    /* The sign's space is kept, empty, so the options do not jump up into
+       where the student was just looking, and "it is gone" is literal. */
+    $("stage").innerHTML =
+      '<div class="glyph word plate ghost">' + esc(item.ja.replace(/./g, "\u3000")) + '</div>' +
+      '<div class="prompt">What did it say?</div>' +
+      '<div class="opts two">' + opts.map(function (o, i) {
+        return '<button class="opt long" data-pick="' + esc(o) + '"><span class="k">' +
+               (i + 1) + '</span>' + esc(o) + '</button>'; }).join("") + '</div>' +
+      '<div class="prompt after" id="after"></div>';
+    R.answer = item.en; R.sign = item;
+  }
+
+  /* ---------- mode 3: build it ---------- */
+  function splitKana(s){
+    var out = [], i = 0;
+    while (i < s.length){
+      var two = s.substr(i, 2);
+      if (READ[two]) { out.push(two); i += 2; } else { out.push(s[i]); i += 1; }
+    }
+    return out;
+  }
+  function romaji(parts){
+    return parts.map(function (c) {
+      if (c === "ー") return "-";
+      if (c === "っ" || c === "ッ") return "*";
+      return READ[c] || c;
+    }).join("");
+  }
+  function buildPool(){
+    var s = S.scope.script;
+    return WORDS.filter(function (w) {
+      var hasKata = /[゠-ヿ]/.test(w.ja);
+      return s === "both" ? true : s === "kata" ? hasKata : !hasKata;
+    });
+  }
+  function askBuild(){
+    var p = buildPool(); if (!p.length) p = WORDS;
+    var item = p[rnd(p.length)];
+    if (item.ja === R.last && p.length > 1) return askBuild();
+    R.last = item.ja;
+    var parts = splitKana(item.ja);
+    /* The grid is the word's own characters plus near-misses for them, so the
+       distractors are again the confusions rather than noise. */
+    var extras = [], seen = {};
+    parts.forEach(function (c) { seen[c] = 1; });
+    parts.forEach(function (c) {
+      (NEARBY[c] || []).forEach(function (x) { if (!seen[x]) { seen[x] = 1; extras.push(x); } });
+    });
+    shuffle(extras);
+    var want = Math.min(12, Math.max(8, parts.length + 5));
+    /* Spare distractors come from the same script as the word: a katakana
+       tile under a hiragana word is a puzzle about the app, not the word. */
+    var wordScript = /[\u30a0-\u30ff]/.test(item.ja) ? "kata" : "hira";
+    var spare = shuffle(KANA.filter(function (k) {
+      return k.script === wordScript && k.set !== "yoon";
+    }));
+    for (var i = 0; parts.length + extras.length < want && i < spare.length; i++){
+      if (!seen[spare[i].ch]) { seen[spare[i].ch] = 1; extras.push(spare[i].ch); }
+    }
+    var tiles = shuffle(parts.concat(extras.slice(0, want - parts.length)));
+    $("stage").innerHTML =
+      '<div class="prompt"><b>' + esc(romaji(parts)) + '</b>' + esc(item.en) + '</div>' +
+      '<div class="slots" id="slots">' + parts.map(function () {
+        return '<span class="slot"></span>'; }).join("") + '</div>' +
+      '<div class="tiles" style="grid-template-columns:repeat(' +
+        Math.min(6, Math.ceil(tiles.length / 2)) + ',1fr)">' + tiles.map(function (t) {
+        return '<button class="tile" data-tile="' + esc(t) + '">' + esc(t) + '</button>'; }).join("") + '</div>' +
+      '<button class="undo" id="undo">けす · undo the last one</button>';
+    R.kind = "build"; R.parts = parts; R.at = 0; R.item = item;
+    shownAt = performance.now();
+  }
+  function tapTile(ch, btn){
+    if (R.lock) return;
+    var slots = $("slots").children, want = R.parts[R.at];
+    if (ch !== want){
+      /* A wrong tap is shown and undone rather than ending the word: this is
+         the production mode, and production you can back out of. */
+      btn.classList.add("wrongpick");
+      setTimeout(function (){ btn.classList.remove("wrongpick"); }, 320);
+      R.wrong++; R.misses.push({ a: want, b: ch });
+      return;
+    }
+    slots[R.at].textContent = ch;
+    slots[R.at].className = "slot has";
+    btn.disabled = true;
+    R.at++;
+    if (R.at === R.parts.length){
+      R.lock = true;
+      for (var i = 0; i < slots.length; i++) slots[i].className = "slot right";
+      R.right++; $("pcount").textContent = R.right;
+      R.times.push(performance.now() - shownAt);
+      setTimeout(function (){ R.lock = false; next(); }, 480);
+    }
+  }
+
+  function next(){
+    if (!R || R.ends - Date.now() <= 0) return;
+    R.lock = false;
+    if (R.mode === "fast") askFast();
+    else if (R.mode === "sign") askSign();
+    else askBuild();
+  }
+
+  function answer(pick, btn){
+    if (!R || R.lock || !R.answer) return;
+    R.lock = true;
+    var ok = pick === R.answer, ms = performance.now() - shownAt;
+    if (ok) R.times.push(ms);
+    scored(ok, R.kind === "fast" ? R.ch : R.sign.ja, pickedChar(pick));
+    if (R.kind === "fast") record(R.ch, ok, ms);
+    btn.classList.add(ok ? "right" : "wrongpick");
+    if (R.kind === "sign" && $("after")){
+      /* Show what it was, in both scripts. The kana is what they sounded out;
+         the kanji is what the sign will actually be, half the time. */
+      $("after").innerHTML = '<b>' + esc(R.sign.ja) + '</b>' +
+        (R.sign.kanji ? '<span class="kj">' + esc(R.sign.kanji) + '</span>' : "");
+    }
+    if (!ok){
+      /* The right answer is always shown, and shown for long enough to be
+         read. A round that only says "wrong" teaches nothing. */
+      var all = $("stage").querySelectorAll(".opt");
+      for (var i = 0; i < all.length; i++)
+        if (all[i].dataset.pick === R.answer) all[i].classList.add("right");
+    }
+    R.answer = null;
+    setTimeout(function (){ R.lock = false; next(); }, ok ? 140 : 900);
+  }
+  /* In はやよみ the option is a sound, so the miss is recorded as the
+     character that sound belongs to: that is the confusion worth naming. */
+  function pickedChar(pick){
+    if (R.kind !== "fast") return pick;
+    var near = NEARBY[R.ch] || [];
+    for (var i = 0; i < near.length; i++) if (READ[near[i]] === pick) return near[i];
+    for (var j = 0; j < KANA.length; j++)
+      if (KANA[j].read === pick && KANA[j].script === (READ[R.ch] ? charScript(R.ch) : "hira"))
+        return KANA[j].ch;
+    return pick;
+  }
+  function charScript(ch){ return /[゠-ヿ]/.test(ch) ? "kata" : "hira"; }
+
+  /* ---------- the report ---------- */
+  function finish(){
+    stopRound();
+    if (R && R.timer) clearTimeout(R.timer);
+    var m = MODES[R.mode], k = bestKey(R.mode);
+    var pb = !S.best[k] || R.right > S.best[k];
+    if (pb && R.right > 0) S.best[k] = R.right;
+    save();
+
+    var med = median(R.times);
+    $("tally").innerHTML =
+      '<span><b>' + R.right + '</b><span class="unit"> ' + esc(m.unit) + ' in ' + m.secs + ' seconds</span></span>' +
+      (med ? '<span><b>' + (med / 1000).toFixed(1) + '</b><span class="unit"> seconds each, typically</span></span>' : "") +
+      (pb && R.right > 0 ? '<span class="pb">A new best for you</span>'
+                         : (S.best[k] ? '<span class="pb">Your best is ' + S.best[k] + '</span>' : ""));
+
+    /* Group the misses into pairs, commonest first. "れ read as ね, twice" is
+       a thing a student can do something about; "17/22" is not. */
+    var pairs = {}, order = [];
+    R.misses.forEach(function (x) {
+      var key = x.a + ">" + x.b;
+      if (!pairs[key]) { pairs[key] = { a: x.a, b: x.b, n: 0 }; order.push(key); }
+      pairs[key].n++;
+    });
+    order.sort(function (p, q) { return pairs[q].n - pairs[p].n; });
+    var h = "";
+    if (!order.length){
+      h = '<h3>What you missed</h3><p class="clean">Nothing. Every one right.</p>';
+    } else {
+      h = '<h3>What you missed</h3>';
+      order.slice(0, 12).forEach(function (key) {
+        var x = pairs[key], saidA = READ[x.a], saidB = READ[x.b];
+        h += '<div class="mrow"><span class="a">' + esc(x.a) + '</span>' +
+             '<span class="say">' + (saidA ? esc(saidA) : "") + '</span>' +
+             '<span class="arrow">you read as</span>' +
+             '<span class="b">' + esc(x.b) + '</span>' +
+             '<span class="say">' + (saidB ? esc(saidB) : "") + '</span>' +
+             '<span class="n">' + (x.n > 1 ? "×" + x.n : "") + '</span></div>';
+      });
+    }
+    /* Slow but right is the other half of reading speed, and it is invisible
+       in a score, so it gets said out loud. */
+    if (R.mode === "fast"){
+      var slow = pool().map(function (k2) { return { ch: k2.ch, m: median((S.chars[k2.ch] || {}).ms || []) }; })
+                 .filter(function (x) { return x.m > 1800; })
+                 .sort(function (p, q) { return q.m - p.m; }).slice(0, 8);
+      if (slow.length)
+        h += '<h3 style="margin-top:14px">Right, but slow</h3><div class="mrow">' +
+             slow.map(function (x) { return '<span class="a">' + esc(x.ch) + '</span>'; }).join("") +
+             '</div>';
+    }
+    $("missed").innerHTML = h;
+    screen("done");
+  }
+
+  /* ---------- wiring ---------- */
+  document.addEventListener("click", function (e) {
+    var t;
+    if ((t = e.target.closest("[data-script]"))){
+      S.scope.script = t.dataset.script; save(); drawScope(); drawModes(); return; }
+    if ((t = e.target.closest("[data-set]"))){
+      S.scope[t.dataset.set] = !S.scope[t.dataset.set]; save(); drawScope(); drawModes(); return; }
+    if ((t = e.target.closest("[data-mode]"))) return start(t.dataset.mode);
+    if ((t = e.target.closest("[data-pick]"))) return answer(t.dataset.pick, t);
+    if ((t = e.target.closest("[data-tile]"))) return tapTile(t.dataset.tile, t);
+    if (e.target.closest("#undo")){
+      if (R && R.at > 0){
+        R.at--;
+        var s = $("slots").children[R.at]; s.textContent = ""; s.className = "slot";
+        var tiles = $("stage").querySelectorAll(".tile");
+        for (var i = 0; i < tiles.length; i++)
+          if (tiles[i].disabled && tiles[i].dataset.tile === R.parts[R.at]) { tiles[i].disabled = false; break; }
+      }
+      return;
+    }
+    if (e.target.closest("#stop")){ stopRound(); if (R && R.timer) clearTimeout(R.timer); finish(); return; }
+    if (e.target.closest("#againBtn")) return start(R.mode);
+    if (e.target.closest("#homeBtn")){ drawModes(); screen("home"); return; }
+  });
+
+  /* A laptop should not need the mouse: 1 to 4 pick, Enter starts again,
+     Escape stops. */
+  document.addEventListener("keydown", function (e) {
+    if ($("s-play").className.indexOf("on") >= 0){
+      if (e.key === "Escape"){ stopRound(); if (R && R.timer) clearTimeout(R.timer); finish(); return; }
+      var n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4){
+        var opts = $("stage").querySelectorAll(".opt");
+        if (opts[n - 1]) opts[n - 1].click();
+      }
+      return;
+    }
+    if ($("s-done").className.indexOf("on") >= 0 && e.key === "Enter") $("againBtn").click();
+  });
+
+  drawScope(); drawModes();
+})();
+</script>
+</body>
+</html>

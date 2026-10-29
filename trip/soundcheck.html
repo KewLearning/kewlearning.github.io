@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Sound check</title>
+<!--
+  A page that answers one question: can this phone say anything in Japanese?
+  The app hides its play buttons when it cannot find a Japanese voice, which
+  is honest but tells you nothing about why. This says why.
+
+  Deliberately standalone: no service worker, no shared code, nothing cached.
+  If the app is misbehaving, a diagnostic that shares its plumbing is worth
+  very little.
+-->
+<style>
+  :root{--ink:#1c1808;--deep:#16375e;--line:#d4be8c;--paper:#fffdf4;
+        --bg:#e3c273;--muted:#453a20;--bad:#a83232;--ok:#2f6a3e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Calibri,Carlito,'Segoe UI',Tahoma,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.6;font-size:17px;
+       padding:16px;padding-top:calc(16px + env(safe-area-inset-top))}
+  .card{max-width:620px;margin:0 auto 14px;background:var(--paper);
+        border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  h1{font-size:23px;line-height:1.25;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:15px;margin-bottom:14px}
+  h2{font-size:17px;margin:0 0 8px}
+  p{margin:0 0 10px}
+  button{display:block;width:100%;margin:0 0 10px;padding:16px;
+         font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;
+         border:2px solid var(--deep);border-radius:13px;
+         background:#fff;color:var(--deep)}
+  button:active{background:#eef2f7}
+  .out{font-size:16px;padding:12px 14px;border-radius:11px;
+       background:#f3f0e6;border:1px solid var(--line);margin-bottom:10px;
+       white-space:pre-wrap;word-break:break-word}
+  .verdict{font-weight:700;font-size:18px;padding:14px 16px;border-radius:12px;
+           margin-bottom:12px;border:2px solid}
+  .verdict.good{border-color:var(--ok);color:var(--ok);background:#eef5ef}
+  .verdict.bad{border-color:var(--bad);color:var(--bad);background:#f8eded}
+  .verdict.wait{border-color:var(--line);color:var(--muted);background:#f3f0e6}
+  ul{margin:0 0 4px 20px}
+  li{font-size:15.5px;line-height:1.5}
+  li b{color:var(--ok)}
+  .small{font-size:13.5px;color:var(--muted);word-break:break-all}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Sound check</h1>
+  <div class="sub">Japan Study Tour app &middot; tells you whether this
+    phone can speak Japanese</div>
+  <div class="verdict wait" id="verdict">Looking for voices&hellip;</div>
+  <p class="small">Turn the volume up and make sure the silent switch on the
+    side of the phone is off before you test.</p>
+</div>
+
+<div class="card">
+  <h2>1. Try it</h2>
+  <button id="bJa">Say something in Japanese</button>
+  <div class="out" id="oJa">Not tried yet.</div>
+  <button id="bEn">Say something in English</button>
+  <div class="out" id="oEn">Not tried yet.</div>
+  <p class="small">If English speaks and Japanese does not, the phone is
+    missing a Japanese voice. If neither speaks, the sound is being blocked
+    somewhere before it reaches the app.</p>
+</div>
+
+<div class="card">
+  <h2>2. What this phone reports</h2>
+  <div class="out" id="summary">Checking&hellip;</div>
+  <div id="list"></div>
+</div>
+
+<div class="card">
+  <h2>3. Send this to your teacher</h2>
+  <p class="small" id="tech">&hellip;</p>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var can = "speechSynthesis" in window;
+  var voices = [];
+
+  function jaVoices(){
+    return voices.filter(function(v){ return /^ja(-|_|$)/i.test(v.lang); });
+  }
+
+  function refresh(){
+    try { voices = window.speechSynthesis.getVoices() || []; } catch (e){ voices = []; }
+    var ja = jaVoices();
+
+    var v = $("verdict");
+    if (!can){
+      v.className = "verdict bad";
+      v.textContent = "This browser cannot speak at all.";
+    } else if (!voices.length){
+      v.className = "verdict wait";
+      v.textContent = "This phone has not offered any voices yet. "
+                    + "Wait a few seconds, or press a button above.";
+    } else if (!ja.length){
+      v.className = "verdict bad";
+      v.textContent = "No Japanese voice on this phone. That is why the app "
+                    + "has no play buttons.";
+    } else {
+      v.className = "verdict good";
+      v.textContent = "Japanese voice found: " + ja[0].name
+                    + ". The app should be able to speak.";
+    }
+
+    $("summary").textContent =
+      "Voices offered: " + voices.length + "\n" +
+      "Japanese voices: " + ja.length +
+      (ja.length ? " (" + ja.map(function(x){ return x.name; }).join(", ") + ")" : "");
+
+    $("list").innerHTML = voices.length
+      ? "<ul>" + voices.map(function(x){
+          var isJa = /^ja(-|_|$)/i.test(x.lang);
+          var row = x.name + " &mdash; " + x.lang;
+          return "<li>" + (isJa ? "<b>" + row + "</b>" : row) + "</li>";
+        }).join("") + "</ul>"
+      : "";
+  }
+
+  function say(text, wantJa, out){
+    var el = $(out);
+    if (!can){ el.textContent = "This browser has no speech at all."; return; }
+    refresh();
+    var pick = null;
+    if (wantJa){
+      pick = jaVoices()[0];
+      if (!pick){
+        el.textContent = "No Japanese voice to use. Nothing was played.";
+        return;
+      }
+    }
+    try { window.speechSynthesis.cancel(); } catch (e){}
+    var u = new SpeechSynthesisUtterance(text);
+    if (pick) u.voice = pick;
+    u.lang = wantJa ? "ja-JP" : "en-AU";
+    u.rate = 0.9;
+    var started = false;
+    el.textContent = "Asked the phone to say: " + text + "\nWaiting…";
+    u.onstart = function(){ started = true;
+      el.textContent = "Speaking: " + text
+        + (pick ? "\nVoice: " + pick.name : "")
+        + "\nIf you heard nothing, the sound is muted or routed elsewhere."; };
+    u.onend = function(){
+      if (!started) el.textContent = "Finished without ever starting. "
+        + "The phone accepted it and played nothing.";
+      else el.textContent += "\nFinished."; };
+    u.onerror = function(ev){
+      el.textContent = "The phone refused: "
+        + ((ev && ev.error) ? ev.error : "no reason given"); };
+    try { window.speechSynthesis.speak(u); }
+    catch (err){ el.textContent = "Could not even ask: " + err; }
+    // Some phones never fire any of the three events.
+    setTimeout(function(){
+      if (!started && el.textContent.indexOf("Waiting") > -1){
+        el.textContent = "No response from the phone after three seconds. "
+          + "It did not start, finish or report an error.";
+      }
+    }, 3000);
+  }
+
+  $("bJa").onclick = function(){ say("こんにちは。はじめまして。", true, "oJa"); };
+  $("bEn").onclick = function(){ say("Hello. This is a test.", false, "oEn"); };
+
+  $("tech").textContent =
+    "speech available: " + can
+    + " | home screen app: " + (window.navigator.standalone === true)
+    + " | language: " + (navigator.language || "?")
+    + " | " + navigator.userAgent;
+
+  if (can){
+    refresh();
+    try { window.speechSynthesis.addEventListener("voiceschanged", refresh); } catch (e){}
+    [400, 1200, 3000, 6000, 10000].forEach(function(t){ setTimeout(refresh, t); });
+  } else {
+    refresh();
+  }
+})();
+</script>
+</body>
+</html>

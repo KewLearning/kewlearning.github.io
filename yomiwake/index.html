@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>よみわけ · Yomiwake</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E5%85%84%3C/text%3E%3C/svg%3E">
+<style>
+  /* Same suite palette as the Grammar Hub. PROOF OF CONCEPT: one kanji,
+     more than one reading, and the word around it decides which. Built
+     from Lisa's request (reading of 兄 vs お兄さん). The kanji set is a
+     draft seed for review, not agreed content. */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --head:#7a4a21;   --head-bg:#f3e7d8;   /* the kanji under study */
+    --read:#1f6f78;   --read-bg:#dceef0;   /* a reading (kana) */
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);
+       min-height:100vh;padding:16px;display:flex;justify-content:center;align-items:flex-start;color:var(--ink)}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       max-width:720px;width:100%;padding:26px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+  .btn{padding:11px 18px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+  .center{text-align:center}
+  .groupname{font-size:12px;font-weight:800;letter-spacing:.05em;color:var(--muted);margin:16px 0 8px;text-align:center}
+  .idea{font-size:12.5px;color:var(--muted);text-align:center;max-width:480px;margin:0 auto 4px;line-height:1.55}
+
+  /* ---- head cards ---- */
+  .fam-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+  .fam-card{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:14px;
+       cursor:pointer;text-align:center;transition:border-color .12s ease}
+  .fam-card:hover{border-color:var(--accent)}
+  .fam-kanji{font-size:44px;font-family:var(--font);color:var(--head)}
+  .fam-gloss{font-size:12px;color:var(--muted);margin-top:4px}
+  .fam-count{font-size:11px;font-weight:700;color:var(--accent);margin-top:6px}
+
+  /* ---- MEET ---- */
+  .map-head{text-align:center;margin:10px 0 2px}
+  .map-head .fam-kanji{font-size:56px}
+  .readlist{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:8px 0 4px}
+  .readlist span{font-size:12px;font-weight:700;border:1px solid var(--read);color:var(--read);
+       background:var(--read-bg);border-radius:9px;padding:2px 10px}
+  .readlist span small{font-weight:400;color:var(--muted)}
+  .map-note{text-align:center;font-size:12px;color:var(--muted);margin:6px auto 14px;max-width:460px;line-height:1.55}
+  .words{display:flex;flex-direction:column;gap:8px;max-width:460px;margin:0 auto}
+  .word-row{display:flex;align-items:center;gap:12px;border:1px solid var(--line-soft);border-radius:10px;
+       background:var(--bg);padding:10px 14px}
+  .word-jp{font-size:26px;font-family:var(--font);min-width:150px;cursor:pointer;line-height:1.9}
+  .word-jp .h{color:var(--head)}
+  .word-jp rt{font-size:11px;color:var(--read);font-weight:600}
+  .word-reveal{font-size:13px;color:var(--muted);flex:1}
+  .tap-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+
+  /* ---- tasks ---- */
+  .task-prompt{font-family:var(--font);font-size:17px;text-align:center;margin:14px 0 4px;line-height:1.6}
+  .task-word{font-size:44px;font-family:var(--font);text-align:center;margin:8px 0 14px}
+  .task-word b{color:var(--head);font-weight:700}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:520px;margin:0 auto}
+  .options.kana .option{font-size:22px;font-family:var(--font);text-align:center}
+  .option{font-size:15px;font-weight:600;text-align:left;padding:12px 14px;border-radius:10px;
+       border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+  .option[data-sel="1"]{border-color:var(--accent)}
+  .option.correct{background:var(--okbg);border-color:var(--correct);color:var(--correct)}
+  .option.incorrect{background:var(--badbg);border-color:var(--wrong);color:var(--wrong)}
+  @media(max-width:480px){.options{grid-template-columns:1fr}}
+  .feedback{font-size:14px;line-height:1.6;margin-top:12px;padding:12px;border-radius:10px;min-height:20px;color:var(--muted);text-align:center}
+  .feedback.good{background:var(--okbg);color:#234e2c}
+  .feedback.bad{background:var(--badbg);color:#7a2020}
+  .actions{display:flex;justify-content:center;gap:10px;margin-top:16px}
+  .progress{text-align:center;font-size:11px;color:var(--muted);margin-top:10px}
+  .big-stat{font-family:var(--font);font-size:40px;font-weight:700;color:var(--accent);text-align:center}
+  .stat-label{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .back{background:none;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:8px}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);opacity:.45;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="jt-tap" data-jt="title">よみわけ</h1>
+  <p class="subtitle jt-tap" data-jt="subtitle">One kanji, more than one reading</p>
+  <span class="poc"><b>Proof of concept</b> for review — built from a Japanese teacher's request: exercises on the furigana a kanji takes in different words (兄 vs お兄さん). The kanji set here is a draft seed, not agreed content.</span>
+
+  <!-- PICK -->
+  <div class="screen active" id="pick">
+    <p class="idea">A kanji does not carry one fixed sound. The word around it decides how it is read. Pick a kanji and meet its readings.</p>
+    <div id="groups"></div>
+  </div>
+
+  <!-- MEET -->
+  <div class="screen" id="meet">
+    <button class="back" id="backBtn">← all kanji</button>
+    <div class="map-head"><span class="fam-kanji" id="meetKanji"></span></div>
+    <div class="readlist" id="meetReads"></div>
+    <p class="map-note" id="meetNote"></p>
+    <div class="words" id="meetWords"></div>
+    <p class="tap-hint">Tap a word: furigana first, then meaning. It fades back to plain kanji by itself.</p>
+    <div class="actions"><button class="btn btn-primary" id="toTasks">Try the readings</button></div>
+  </div>
+
+  <!-- TASK -->
+  <div class="screen" id="task">
+    <button class="back" id="backBtn2">← all kanji</button>
+    <div id="taskArea"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="checkBtn" disabled>Check</button>
+      <button class="btn btn-primary" id="nextBtn" style="display:none">Next</button>
+    </div>
+    <p class="progress" id="progress"></p>
+  </div>
+
+  <!-- REPORT -->
+  <div class="screen" id="report">
+    <div class="big-stat" id="stat"></div>
+    <p class="stat-label">right first try. Missed ones came back until you got them.</p>
+    <div class="actions">
+      <button class="btn" id="againBtn">Run again</button>
+      <button class="btn btn-primary" id="homeBtn">All kanji</button>
+    </div>
+  </div>
+</div>
+
+<div class="build-tag">Yomiwake PoC 2026-09-06</div>
+
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT — six kanji whose reading changes with the word.
+   Draft seed (J15): the family terms Lisa pointed at, where the
+   お〜さん frame changes reading AND register, plus 人 and 日,
+   the two everyday kanji whose readings rotate hardest.
+   For each word: read = full furigana; probes = which instance
+   of the head kanji is asked, and what it is read there;
+   traps = wrong spellings for the spelling task (only where a
+   spelling is genuinely trapped).
+   ============================================================ */
+const HEADS = [
+  { head:"兄", gloss:"older brother", group:0,
+    reads:[["あに","on its own"],["にい","in お兄さん"],["きょう","in 兄弟"]],
+    note:"Plain 兄 (あに) is for your own older brother when you talk about him. お兄さん is for someone else's, and what you call yours at home. Same kanji, different reading, different politeness.",
+    words:[
+      { jp:"兄", read:"あに", gloss:"my older brother", ruby:"<ruby class='h'>兄<rt>あに</rt></ruby>",
+        probes:[{html:"<b>兄</b>", read:"あに"}],
+        why:"On its own, 兄 is read あに. It is the plain word for your own older brother." },
+      { jp:"お兄さん", read:"おにいさん", gloss:"someone else's older brother; big brother!", ruby:"お<ruby class='h'>兄<rt>にい</rt></ruby>さん",
+        probes:[{html:"お<b>兄</b>さん", read:"にい"}],
+        traps:["おにさん","おにーさん"],
+        why:"In お兄さん the same kanji is read にい, and the long sound is spelled にい, with い. The お〜さん frame is the polite one: other people's family, or calling out at home." },
+      { jp:"兄弟", read:"きょうだい", gloss:"brothers and sisters", ruby:"<ruby class='h'>兄<rt>きょう</rt></ruby><ruby>弟<rt>だい</rt></ruby>",
+        probes:[{html:"<b>兄</b>弟", read:"きょう"}],
+        traps:["きょおだい","きようだい"],
+        why:"In the two-kanji compound 兄弟 the reading switches to きょう, the Chinese-style reading. Watch the small ょ: きょう, not きよう." },
+    ]},
+  { head:"姉", gloss:"older sister", group:0,
+    reads:[["あね","on its own"],["ねえ","in お姉さん"],["し","in 姉妹"]],
+    note:"The same pattern as 兄: plain あね for your own older sister, お姉さん for someone else's. The spelling of the long sound is the trap here.",
+    words:[
+      { jp:"姉", read:"あね", gloss:"my older sister", ruby:"<ruby class='h'>姉<rt>あね</rt></ruby>",
+        probes:[{html:"<b>姉</b>", read:"あね"}],
+        why:"On its own, 姉 is read あね: the plain word for your own older sister." },
+      { jp:"お姉さん", read:"おねえさん", gloss:"someone else's older sister; big sister!", ruby:"お<ruby class='h'>姉<rt>ねえ</rt></ruby>さん",
+        probes:[{html:"お<b>姉</b>さん", read:"ねえ"}],
+        traps:["おねいさん","おねーさん"],
+        why:"おねえさん is spelled with え: ねえ. That is unusual. Long e sounds are mostly written with い (せんせい), but the family words use え. This is the most common furigana mistake in the set." },
+      { jp:"姉妹", read:"しまい", gloss:"sisters", ruby:"<ruby class='h'>姉<rt>し</rt></ruby><ruby>妹<rt>まい</rt></ruby>",
+        probes:[{html:"<b>姉</b>妹", read:"し"}],
+        traps:["あねまい","じまい"],
+        why:"In the compound 姉妹 the kanji takes its Chinese-style reading し. Reading it あねまい, kanji by kanji, is the classic miss." },
+    ]},
+  { head:"父", gloss:"father", group:0,
+    reads:[["ちち","on its own"],["とう","in お父さん"]],
+    note:"Plain ちち for your own dad when you talk about him; お父さん for someone else's, and to his face. The long sound in おとうさん is written with う.",
+    words:[
+      { jp:"父", read:"ちち", gloss:"my father", ruby:"<ruby class='h'>父<rt>ちち</rt></ruby>",
+        probes:[{html:"<b>父</b>", read:"ちち"}],
+        why:"On its own, 父 is read ちち: the plain word for your own father." },
+      { jp:"お父さん", read:"おとうさん", gloss:"someone else's father; Dad!", ruby:"お<ruby class='h'>父<rt>とう</rt></ruby>さん",
+        probes:[{html:"お<b>父</b>さん", read:"とう"}],
+        traps:["おとおさん","おとーさん"],
+        why:"In お父さん the kanji is read とう, spelled with う. Not おとおさん, and ー never appears in hiragana words." },
+      { jp:"父の日", read:"ちちのひ", gloss:"Father's Day", ruby:"<ruby class='h'>父<rt>ちち</rt></ruby>の<ruby>日<rt>ひ</rt></ruby>",
+        probes:[{html:"<b>父</b>の日", read:"ちち"}],
+        traps:["とうのひ","ちちのにち"],
+        why:"父の日 keeps the plain reading ちち, because it is not the polite お〜さん frame. And 日 on its own here is ひ." },
+    ]},
+  { head:"母", gloss:"mother", group:0,
+    reads:[["はは","on its own"],["かあ","in お母さん"]],
+    note:"Plain はは for your own mum; お母さん for someone else's, and to her face. The long sound in おかあさん is written with あ.",
+    words:[
+      { jp:"母", read:"はは", gloss:"my mother", ruby:"<ruby class='h'>母<rt>はは</rt></ruby>",
+        probes:[{html:"<b>母</b>", read:"はは"}],
+        why:"On its own, 母 is read はは: the plain word for your own mother." },
+      { jp:"お母さん", read:"おかあさん", gloss:"someone else's mother; Mum!", ruby:"お<ruby class='h'>母<rt>かあ</rt></ruby>さん",
+        probes:[{html:"お<b>母</b>さん", read:"かあ"}],
+        traps:["おかーさん","おかさん"],
+        why:"In お母さん the kanji is read かあ, spelled with あ. The four family words cover all four long-vowel spellings: にい, ねえ, とう, かあ." },
+      { jp:"母の日", read:"ははのひ", gloss:"Mother's Day", ruby:"<ruby class='h'>母<rt>はは</rt></ruby>の<ruby>日<rt>ひ</rt></ruby>",
+        probes:[{html:"<b>母</b>の日", read:"はは"}],
+        traps:["かあのひ","ははのび"],
+        why:"母の日 keeps the plain reading はは. かあ only appears inside the お〜さん frame." },
+    ]},
+  { head:"人", gloss:"person", group:1,
+    reads:[["ひと","on its own"],["じん","after a country"],["にん","after most numbers"],["り","in 一人・二人"]],
+    note:"人 rotates through four readings. Alone it is ひと. After a country it says where someone is from (じん). After a number it counts people (にん), except the first two numbers, which have their own fused words.",
+    words:[
+      { jp:"人", read:"ひと", gloss:"a person", ruby:"<ruby class='h'>人<rt>ひと</rt></ruby>",
+        probes:[{html:"<b>人</b>", read:"ひと"}],
+        why:"On its own, 人 is read ひと." },
+      { jp:"日本人", read:"にほんじん", gloss:"a Japanese person", ruby:"<ruby>日本<rt>にほん</rt></ruby><ruby class='h'>人<rt>じん</rt></ruby>",
+        probes:[{html:"日本<b>人</b>", read:"じん"}],
+        traps:["にほんにん","にほんひと"],
+        why:"After a country name, 人 is read じん and means a person from there. オーストラリア人, 日本人." },
+      { jp:"三人", read:"さんにん", gloss:"three people", ruby:"<ruby>三<rt>さん</rt></ruby><ruby class='h'>人<rt>にん</rt></ruby>",
+        probes:[{html:"三<b>人</b>", read:"にん"}],
+        traps:["さんじん","さんひと"],
+        why:"After a number, 人 is read にん and counts people. 三人, 四人, 五人." },
+      { jp:"一人", read:"ひとり", gloss:"one person, alone", ruby:"<ruby class='h'>一人<rt>ひとり</rt></ruby>",
+        probes:[{html:"一<b>人</b>", read:"り"}],
+        traps:["いちにん","いちじん"],
+        why:"一人 is its own fused word, ひとり, and 二人 is ふたり. The counting pattern with にん only starts at three. Reading it いちにん is the trap this word exists to catch." },
+    ]},
+  { head:"日", gloss:"day, sun", group:1,
+    reads:[["ひ","on its own"],["にち","in compounds"],["び","softened, at the end"],["に","squashed, in 日本"]],
+    note:"日 can change its sound twice in a single word. 日曜日 starts with にち and ends with び: the same kanji, read two ways, three characters apart.",
+    words:[
+      { jp:"日曜日", read:"にちようび", gloss:"Sunday", ruby:"<ruby class='h'>日<rt>にち</rt></ruby><ruby>曜<rt>よう</rt></ruby><ruby class='h'>日<rt>び</rt></ruby>",
+        probes:[{html:"<b>日</b>曜日", read:"にち"},{html:"日曜<b>日</b>", read:"び"}],
+        traps:["にちようひ","ひようび"],
+        why:"日曜日 has 日 twice. At the front it is にち; at the end the sound softens to び. One kanji, two readings, one word." },
+      { jp:"毎日", read:"まいにち", gloss:"every day", ruby:"<ruby>毎<rt>まい</rt></ruby><ruby class='h'>日<rt>にち</rt></ruby>",
+        probes:[{html:"毎<b>日</b>", read:"にち"}],
+        traps:["まいひ","まいび"],
+        why:"In 毎日 the reading is にち. まいにち, every day." },
+      { jp:"日本", read:"にほん", gloss:"Japan", ruby:"<ruby class='h'>日<rt>に</rt></ruby><ruby>本<rt>ほん</rt></ruby>",
+        probes:[{html:"<b>日</b>本", read:"に"}],
+        traps:["ひほん","にちほん"],
+        why:"In 日本 the reading にち is squashed down to just に. にほん." },
+    ]},
+];
+const GROUPS = [
+  { name:"かぞく · family words", blurb:"One frame, four kanji: plain reading for your own family, お〜さん for everyone else's. The four long sounds are spelled four different ways: にい・ねえ・とう・かあ." },
+  { name:"人と日 · two busy kanji", blurb:"The two everyday kanji whose readings rotate hardest. 日 can even change its sound twice inside one word." },
+];
+
+/* ============================================================
+   ENGINE — pick head -> meet -> reading picks, then spelling
+   picks -> report. First-try scoring; missed items come back.
+   ============================================================ */
+/* Japanese-led chrome. Task prompts stay English for now (J11). */
+const UI = {
+  title:    ["読み分け","よみわけ","yomiwake","Which reading?"],
+  subtitle: ["一つの漢字、読み方はいくつも","ひとつのかんじ、よみかたはいくつも",
+             "hitotsu no kanji, yomikata wa ikutsumo","one kanji, more than one reading"],
+};
+const UI_RUBY = {
+  title: "<ruby>読<rt>よ</rt></ruby>み<ruby>分<rt>わ</rt></ruby>け",
+  subtitle: "<ruby>一<rt>ひと</rt></ruby>つの<ruby>漢字<rt>かんじ</rt></ruby>、<ruby>読<rt>よ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>はいくつも",
+};
+
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const screens={pick:$("pick"),meet:$("meet"),task:$("task"),report:$("report")};
+  const show=(n)=>{Object.values(screens).forEach(s=>s.classList.remove("active"));screens[n].classList.add("active");};
+  const esc=(s)=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const shuffle=(a)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  let head=null, queue=[], idx=0, first={}, graded=false;
+
+  /* pick screen: two labelled groups of head cards */
+  GROUPS.forEach((g,gi)=>{
+    const name=document.createElement("div");name.className="groupname";name.textContent=g.name;
+    const blurb=document.createElement("p");blurb.className="idea";blurb.textContent=g.blurb;
+    const grid=document.createElement("div");grid.className="fam-grid";
+    HEADS.filter(h=>h.group===gi).forEach(h=>{
+      const c=document.createElement("div");
+      c.className="fam-card";
+      c.innerHTML=`<span class="fam-kanji">${h.head}</span><div class="fam-gloss">${esc(h.gloss)}</div><div class="fam-count">${h.reads.length} readings</div>`;
+      c.addEventListener("click",()=>{head=h;meet();});
+      grid.appendChild(c);
+    });
+    const wrap=$("groups");wrap.appendChild(name);wrap.appendChild(blurb);wrap.appendChild(grid);
+  });
+
+  /* MEET: readings chips + tap-to-reveal words, decaying back to kanji */
+  function wordHtml(w,stage){
+    if(stage===0)return w.jp.split("").map(ch=>head.head===ch?`<span class="h">${ch}</span>`:ch).join("");
+    if(stage===1)return w.ruby;
+    return `${w.ruby} <small style="color:var(--muted)">· ${esc(w.gloss)}</small>`;
+  }
+  function meet(){
+    $("meetKanji").textContent=head.head;
+    $("meetReads").innerHTML=head.reads.map(r=>`<span>${esc(r[0])} <small>${esc(r[1])}</small></span>`).join("");
+    $("meetNote").textContent=head.note;
+    const wrap=$("meetWords");wrap.innerHTML="";
+    head.words.forEach(w=>{
+      const row=document.createElement("div");row.className="word-row";
+      const jp=document.createElement("div");jp.className="word-jp";jp.innerHTML=wordHtml(w,0);
+      const gl=document.createElement("div");gl.className="word-reveal";gl.textContent=w.gloss;
+      let stage=0,timer=null;
+      jp.addEventListener("click",()=>{
+        stage=Math.min(2,stage+1);jp.innerHTML=wordHtml(w,stage);
+        clearTimeout(timer);
+        const decay=()=>{if(stage<=0)return;stage--;jp.innerHTML=wordHtml(w,stage);timer=setTimeout(decay,1667);};
+        timer=setTimeout(decay,1667);
+      });
+      row.appendChild(jp);row.appendChild(gl);wrap.appendChild(row);
+    });
+    show("meet");
+  }
+  $("toTasks").addEventListener("click",startTasks);
+  $("backBtn").addEventListener("click",()=>show("pick"));
+  $("backBtn2").addEventListener("click",()=>show("pick"));
+
+  /* tasks: every READ probe first (which reading here?), then the
+     SPELL items (pick the right furigana spelling). Wrong ones
+     come back until right; only the first try scores. */
+  function startTasks(){
+    queue=[];
+    head.words.forEach(w=>w.probes.forEach((p,pi)=>queue.push({type:"read",w,p,pi})));
+    shuffle(queue);
+    const spells=shuffle(head.words.filter(w=>w.traps).map(w=>({type:"spell",w})));
+    queue=queue.concat(spells);
+    idx=0;first={};show("task");render();
+  }
+  function key(q){return q.type+"|"+q.w.jp+"|"+(q.pi||0);}
+
+  function render(){
+    graded=false;
+    const q=queue[idx];const area=$("taskArea");
+    $("feedback").className="feedback";$("feedback").textContent="";
+    $("checkBtn").style.display="";$("checkBtn").disabled=true;$("nextBtn").style.display="none";
+    $("progress").textContent=`${Math.min(idx+1,queue.length)} of ${queue.length}${queue.length>head.words.length*2?" (missed ones come back)":""}`;
+    if(q.type==="read"){
+      const opts=shuffle(head.reads.map(r=>r[0]));
+      area.innerHTML=`<div class="task-prompt">How is <b style="color:var(--head)">${head.head}</b> read in this word?</div>
+        <div class="task-word">${q.p.html}</div>
+        <div class="options kana">${opts.map(o=>`<button type="button" class="option" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+    }else{
+      const opts=shuffle([q.w.read].concat(q.w.traps));
+      area.innerHTML=`<div class="task-prompt">Which is the correct furigana for the whole word?</div>
+        <div class="task-word">${q.w.jp.split("").map(ch=>head.head===ch?`<b>${ch}</b>`:ch).join("")}</div>
+        <div class="options kana">${opts.map(o=>`<button type="button" class="option" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+    }
+    area.querySelectorAll(".option").forEach(b=>b.addEventListener("click",()=>{
+      if(graded)return;
+      area.querySelectorAll(".option").forEach(x=>x.dataset.sel="");b.dataset.sel="1";$("checkBtn").disabled=false;
+    }));
+  }
+  $("checkBtn").addEventListener("click",()=>{
+    if(graded)return;graded=true;
+    const q=queue[idx];
+    const want=q.type==="read"?q.p.read:q.w.read;
+    const sel=document.querySelector('.option[data-sel="1"]');
+    const ok=!!sel&&sel.dataset.v===want;
+    document.querySelectorAll(".option").forEach(b=>{
+      b.disabled=true;
+      if(b.dataset.v===want)b.classList.add("correct");
+      else if(b.dataset.sel==="1")b.classList.add("incorrect");
+    });
+    const k=key(q);
+    if(!(k in first))first[k]=ok;
+    if(!ok)queue.push(q); /* mastery: it comes back around */
+    const fb=$("feedback");
+    fb.className="feedback "+(ok?"good":"bad");
+    fb.innerHTML=(ok?"✓ ":"✗ ")+esc(q.w.why)+(ok?"":" This one will come back around.");
+    $("checkBtn").style.display="none";$("nextBtn").style.display="";$("nextBtn").focus();
+  });
+  $("nextBtn").addEventListener("click",()=>{
+    idx++;
+    if(idx>=queue.length){
+      const total=Object.keys(first).length;
+      const right=Object.values(first).filter(Boolean).length;
+      $("stat").textContent=`${right}/${total}`;
+      show("report");
+    } else render();
+  });
+  $("againBtn").addEventListener("click",startTasks);
+  $("homeBtn").addEventListener("click",()=>{show("pick");});
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+})();
+</script>
+</body>
+</html>

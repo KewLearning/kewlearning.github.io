@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="description" content="タイマー — a classroom timer that counts in kanji numerals.">
+<title>タイマー</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Ctext x='32' y='46' font-size='44' text-anchor='middle'%3E%E5%8D%81%3C/text%3E%3C/svg%3E">
+<style>
+  /* TAIMAA — a classroom timer that counts in kanji numerals.
+
+     Andrew: "The timer must be in kanji numbers. I know this is unusual
+     because Japanese people never use this format for digital clocks or
+     timers." It is unusual, and that is the point: a class reads 三十六
+     off the wall a hundred times a lesson without being asked to, which
+     is a hundred readings nobody had to mark.
+
+     THE COLUMN RULE, which is the whole design:
+     "Each level of numbers should remain in the same column. for example
+     12:36pm should have ten-two:three-ten-six in separate, unchanging
+     columns. The 'ten' columns will only alternate between ten and
+     nothing."
+
+     So each half of the time is three fixed cells:
+
+         [ tens ][ 十 ][ ones ]        12 →  _  十 二
+                                       36 →  三 十 六
+                                        5 →  _  _  五
+                                        0 →  _  _  〇
+
+     The cells never move and never resize, so the only thing that
+     changes on screen is which character is in which cell. A number that
+     jumps sideways as it counts is unreadable from the back of a room,
+     and every digital clock face solves that with a monospaced font;
+     this one solves it with a grid, because kanji numerals are not a
+     fixed number of characters.
+
+     Nothing is loaded from anywhere: one file, no data, no fonts to
+     fetch, no sound files. The chimes are built out of sine waves when
+     they are needed. It works with the wifi off. */
+  :root{
+    /* The same two stacks as the rest of the suite. UD Digi Kyokasho N-R
+       is the UD textbook face, which is what the numerals have to be:
+       its 十 and 一 carry the stroke shapes students are taught to
+       write. Everything after it is a fallback for a machine without
+       the UD family, textbook faces first. Never name a font outside
+       this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+    --ink:#000; --paper:#fff; --muted:#8a8a8a; --line:#d9d9d9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:var(--font);
+       display:flex;flex-direction:column;overflow:hidden;
+       -webkit-text-size-adjust:100%}
+
+  .screen{flex:1;min-height:0;display:flex;flex-direction:column;
+       align-items:center;justify-content:center;gap:.5vh;padding:8px}
+  /* the small line above the numbers: 午前 / 午後 in clock mode, and the
+     set time while the timer is stopped */
+  .over{font-family:var(--font-jp);font-size:clamp(14px,3.4vh,34px);
+       color:var(--muted);min-height:1.2em;letter-spacing:.08em}
+
+  /* The grid is the design. Seven cells, each exactly one em wide, so a
+     character can change without anything beside it moving. The colon
+     keeps a cell of its own at half width. */
+  .face{display:grid;grid-template-columns:repeat(3,1em) .5em repeat(3,1em);
+       font-family:var(--font-jp);line-height:1;
+       font-size:min(14.2vw,58vh);
+       font-variant-east-asian:proportional-width}
+  .cell{text-align:center;font-feature-settings:"palt" 0}
+  /* The separator is drawn rather than typed. A full width colon is two
+     dots in whichever font the machine happens to fall back to, and in
+     some of them they are specks: from the back of a room the time has
+     to read as two numbers with a break between them. These are the
+     same two dots at a size that carries. */
+  .sep{position:relative}
+  .sep::before,.sep::after{content:"";position:absolute;left:50%;
+       width:.115em;height:.115em;background:currentColor;border-radius:50%;
+       transform:translateX(-50%)}
+  .sep::before{top:.3em}
+  .sep::after{top:.6em}
+  /* ---- the dots blink, one blink a second ----
+     Andrew: the timer "holds for two seconds" going from 30 to 29 and
+     from 20 to 19. It does not: every face is on screen for a second,
+     to the millisecond. What he was reading is the kanji themselves.
+     三十一 loses its 一 and becomes 三十, and a glance from across a
+     room sees 三十 in both, so thirty looks like it lasts twice as
+     long. Every tens boundary does it, and it is the price of correct
+     numerals: 三十 is how thirty is written, and 三十〇 is not.
+     So the seconds are counted somewhere that never looks the same
+     twice running. The dots are dark for the first half of each
+     second and pale for the second half, in step with the numbers,
+     which is what every digital clock has always done and for this
+     same reason. */
+  .sep::before,.sep::after{transition:opacity .12s linear}
+  .face.tock .sep::before,.face.tock .sep::after{opacity:.16}
+  /* the last ten seconds do not flash or go red: a timer that changes
+     its appearance near the end is a timer students watch instead of
+     working. The numbers only get out of the way at the end. */
+  .face.done{color:var(--ink)}
+  .word{font-family:var(--font-jp);font-size:clamp(18px,5vh,54px);
+       min-height:1.2em;letter-spacing:.3em;padding-left:.3em}
+
+  /* The controls sit under the numbers and fade out while the timer
+     runs, because the back row needs the digits and nothing else. Any
+     touch, click, key or mouse move brings them back. */
+  .bar{flex:none;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;
+       align-items:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+       border-top:1px solid var(--line);background:var(--paper);
+       transition:opacity .5s}
+  .bar.away{opacity:0;pointer-events:none}
+  button{font-family:var(--font);font-size:15px;color:var(--ink);
+       background:var(--paper);border:1.5px solid var(--line);border-radius:9px;
+       min-height:40px;padding:0 13px;cursor:pointer}
+  button:hover{border-color:#9a9a9a}
+  button.jp{font-family:var(--font-jp);font-size:17px}
+  button.go{border-color:var(--ink);font-weight:700;min-width:104px}
+  button[aria-pressed="true"]{background:#f1f1f1;border-color:#9a9a9a}
+  .gap{width:14px}
+  .hint{color:var(--muted);font-size:12px}
+  /* display:flex beats the browser's own hiding of [hidden], and a
+     placeholder that will not hide is a placeholder in the way */
+  [hidden]{display:none !important}
+  .gone{flex:1;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;gap:12px;color:var(--muted)}
+  .gone p{font-size:clamp(15px,2.6vw,20px)}
+  .gone button{font-size:16px;min-height:44px;padding:0 16px;border:1.5px solid var(--ink);
+       border-radius:9px;background:var(--paper);cursor:pointer}
+  /* opened as the small window: the numbers and nothing else */
+  body.small .bar{padding:4px 6px;gap:4px;justify-content:center}
+  body.small .bar button{min-height:32px;font-size:13px;padding:0 9px}
+  body.small .hint,body.small #pop,body.small #full,body.small #mode{display:none}
+  body.small .build{display:none}
+  .build{position:fixed;right:4px;bottom:2px;z-index:70;pointer-events:none;
+       font-family:var(--font-en);font-size:9px;letter-spacing:.04em;
+       color:#cfcfcf;user-select:none}
+
+  /* The end of the timer has to be visible from across a room with the
+     sound off, so the page inverts three times. Reduced motion gets the
+     word おわり and no flashing. */
+  body.flash{background:var(--ink);color:var(--paper)}
+  body.flash .bar{background:var(--ink);border-top-color:#333}
+  body.flash button{background:var(--ink);color:var(--paper);border-color:#555}
+  @media (prefers-reduced-motion:reduce){ body.flash{background:var(--paper);color:var(--ink)} }
+
+  @media (max-width:560px){
+    .face{font-size:min(15vw,34vh)}
+    button{font-size:14px;min-height:38px;padding:0 10px}
+  }
+  /* a projector is wide and short: height, not width, is what runs out */
+  @media (max-height:560px){ .face{font-size:min(12.6vw,46vh)} }
+</style>
+</head>
+<body>
+
+<div class="screen" id="screen">
+  <div class="over" id="over"></div>
+  <div class="face" id="face" role="timer" aria-live="off">
+    <span class="cell" id="h2"></span><span class="cell" id="h1"></span><span class="cell" id="h0"></span>
+    <span class="sep" aria-hidden="true"></span>
+    <span class="cell" id="m2"></span><span class="cell" id="m1"></span><span class="cell" id="m0"></span>
+  </div>
+  <div class="word" id="word"></div>
+</div>
+<div class="gone" id="gone" hidden>
+  <p>The timer is in the small window.</p>
+  <button id="back">Bring it back</button>
+</div>
+
+<div class="bar" id="bar">
+  <button class="jp" data-min="1">一分</button>
+  <button class="jp" data-min="3">三分</button>
+  <button class="jp" data-min="5">五分</button>
+  <button class="jp" data-min="10">十分</button>
+  <button class="jp" data-min="15">十五分</button>
+  <button class="jp" data-min="20">二十分</button>
+  <span class="gap"></span>
+  <!-- English on these two on purpose: − beside 一 reads as 一一 -->
+  <button id="less">−1 min</button>
+  <button id="more">+1 min</button>
+  <span class="gap"></span>
+  <button class="go" id="go">Start</button>
+  <button id="reset">Reset</button>
+  <span class="gap"></span>
+  <button id="chime">Chime: チャイム</button>
+  <button id="mode">Clock</button>
+  <button id="pop">Small window</button>
+  <button id="full">Full screen</button>
+  <span class="hint" id="hint">Space starts and stops. R resets.</span>
+</div>
+
+<div class="build" aria-hidden="true">build 2026-10-25d</div>
+
+<script>
+(function(){
+  "use strict";
+  /* The numbers move house. When the timer is popped out, the six
+     cells, the colon and the word おわり are in the small window's
+     document and not in this one, so everything that paints them has
+     to look in both. One line here rather than a cached reference at
+     every call site. */
+  var pipWin = null, pipDoc = null;
+  var $ = function(id){
+    return document.getElementById(id)
+      || (pipDoc ? pipDoc.getElementById(id) : null);
+  };
+
+  /* ---- the numerals ----
+     0 to 99 in three cells. The tens cell carries the multiplier and is
+     empty below twenty, because 十五 is fifteen and 一十五 is nothing;
+     the 十 cell is 十 or empty; the ones cell is the last digit, empty
+     when the number is a round ten, and 〇 when the whole number is
+     zero. That last one is the only place a zero is ever written: 〇分
+     〇秒 is not a thing anybody says, but a blank half of the clock
+     reads as broken. */
+  var DIG = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  function cells(n){
+    n = Math.max(0, Math.min(99, Math.floor(n)));
+    var t = Math.floor(n / 10), o = n % 10;
+    return [ t >= 2 ? DIG[t] : "",
+             t >= 1 ? "十" : "",
+             n === 0 ? "〇" : (o ? DIG[o] : "") ];
+  }
+  var CELL = ["h2", "h1", "h0", "m2", "m1", "m0"];
+  function paint(left, right){
+    var c = cells(left).concat(cells(right));
+    for (var i = 0; i < 6; i++){
+      var el = $(CELL[i]);
+      if (el.textContent !== c[i]) el.textContent = c[i];
+    }
+  }
+
+  /* ---- what is kept between lessons ---- */
+  /* v2 because the default chime changed from the bowl to the school
+     bell: a machine that had already stored v1 would have kept the
+     bowl and never seen it. */
+  var KEY = "jgh-timer-v2";
+  var S = { mins: 5, chime: "chime", mode: "timer" };
+  try { var raw = localStorage.getItem(KEY); if (raw){
+    var o = JSON.parse(raw); for (var k in S) if (o[k] !== undefined) S[k] = o[k];
+  } } catch(e){}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+  /* ---- the chimes ----
+     Three, all built here out of sine waves, so there is no file to
+     load and nothing to licence. A bell is a handful of partials that
+     are not whole multiples of each other, each dying away at its own
+     speed: the high ones go first, which is what makes a struck metal
+     sound rather than an organ. */
+  var AC = null;
+  function ac(){
+    if (!AC){
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      AC = new C();
+    }
+    if (AC.state === "suspended") AC.resume();
+    return AC;
+  }
+  function strike(at, f, dur, vol, parts){
+    var c = ac(); if (!c) return;
+    parts.forEach(function(p){
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = "sine";
+      o.frequency.value = f * p[0];
+      var v = vol * p[1], d = dur * p[2];
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), at + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+      o.connect(g); g.connect(c.destination);
+      o.start(at); o.stop(at + d + 0.05);
+    });
+  }
+  /* りん: the bowl struck twice. Its partials are the inharmonic set a
+     round bowl actually rings with, which is why it sounds like metal
+     and not like a flute. Long tail, nothing startling. */
+  function rin(at){
+    var P = [[1, 0.9, 1], [2.76, 0.42, 0.62], [5.40, 0.2, 0.34], [8.93, 0.1, 0.2]];
+    strike(at, 523.25, 6.5, 0.26, P);
+    strike(at + 3.2, 523.25, 6.5, 0.22, P);
+  }
+  /* チャイム: the four notes a Japanese school bell plays, down and then
+     back up. The tune is the Westminster quarters, written in 1793 and
+     long out of copyright. */
+  function chime(at){
+    var P = [[1, 0.8, 1], [2, 0.3, 0.6], [3.01, 0.14, 0.4], [4.2, 0.07, 0.25]];
+    var down = [659.26, 587.33, 523.25, 392.00];
+    down.forEach(function(f, i){ strike(at + i * 0.72, f, 2.6, 0.24, P); });
+    [392.00, 523.25, 587.33, 659.26].forEach(function(f, i){
+      strike(at + 3.3 + i * 0.72, f, 2.6, 0.24, P);
+    });
+  }
+  /* ベル: two bright dings, for when a room is loud. */
+  function bell(at){
+    var P = [[1, 0.9, 1], [2.4, 0.4, 0.5], [4.1, 0.2, 0.3]];
+    strike(at, 1046.5, 1.4, 0.3, P);
+    strike(at + 0.42, 1046.5, 1.6, 0.3, P);
+  }
+  var CHIMES = { rin: { ja: "りん", play: rin },
+                 chime: { ja: "チャイム", play: chime },
+                 bell: { ja: "ベル", play: bell } };
+  var ORDER = ["rin", "chime", "bell"];
+  function ring(){
+    var c = ac(); if (!c) return;
+    (CHIMES[S.chime] || CHIMES.chime).play(c.currentTime + 0.05);
+  }
+
+  /* ---- the timer ----
+     The remaining time is worked out from the clock, never counted down
+     by adding up ticks: a tab in the background is throttled to a tick
+     every second or worse, and a timer that loses a minute over twenty
+     is worse than no timer. The paint runs on a frame. */
+  var left = S.mins * 60000, endAt = 0, running = false, finished = false;
+  function remaining(){
+    return running ? Math.max(0, endAt - Date.now()) : left;
+  }
+  function setMins(m){
+    stop();
+    S.mins = Math.max(1, Math.min(99, m)); save();
+    left = S.mins * 60000; finished = false;
+    $("word").textContent = ""; show();
+  }
+  function start(){
+    if (running || S.mode === "clock") return;
+    if (finished || left <= 0) setMins(S.mins);
+    ac();                       /* the gesture that lets a tab play sound */
+    endAt = Date.now() + left;
+    running = true; finished = false;
+    $("go").textContent = "Stop";
+    $("word").textContent = "";
+    idleFrom = Date.now();
+  }
+  function stop(){
+    if (!running) return;
+    left = remaining(); running = false;
+    $("go").textContent = "Start";
+    bar(true);
+  }
+  function done(){
+    running = false; finished = true; left = 0;
+    $("go").textContent = "Start";
+    $("word").textContent = "おわり";
+    ring(); bar(true); flash();
+  }
+  function flash(){
+    var n = 0;
+    (function go(){
+      if (n >= 6) { document.body.classList.remove("flash"); return; }
+      document.body.classList.toggle("flash");
+      n++; setTimeout(go, 380);
+    })();
+  }
+
+  /* ---- what is on screen ---- */
+  function show(){
+    if (S.mode === "clock"){
+      var d = new Date(), h = d.getHours();
+      $("over").textContent = h < 12 ? "午前" : "午後";
+      paint(((h + 11) % 12) + 1, d.getMinutes());
+      $("face").classList.toggle("tock", d.getMilliseconds() >= 500);
+      return;
+    }
+    var ms = remaining();
+    /* ceil, so a five minute timer reads 五:〇 for the first second and
+       reaches 〇:〇 exactly when it ends */
+    var s = Math.ceil(ms / 1000);
+    paint(Math.floor(s / 60), s % 60);
+    /* dark for the first half of the second the numbers are showing,
+       pale for the second half. A stopped timer holds them dark. */
+    $("face").classList.toggle("tock", running && (s * 1000 - ms) >= 500);
+    /* nothing above the numbers in timer mode: the face already says
+       what is set, and a second number up there is one to read by
+       mistake from the back of the room */
+    $("over").textContent = "";
+    if (running && ms <= 0) done();
+  }
+  (function loop(){ show(); requestAnimationFrame(loop); })();
+  /* A frame loop is throttled to nothing when this tab is behind the
+     slides, which is exactly when the small window is being watched.
+     The interval is the backstop: a quarter of a second, cheap, and it
+     keeps running where frames do not. */
+  setInterval(show, 250);
+
+  /* ---- the bar gets out of the way while the timer runs ---- */
+  var idleFrom = Date.now(), hidden = false;
+  function bar(wake){
+    if (wake){ idleFrom = Date.now(); if (hidden){ hidden = false; $("bar").classList.remove("away"); } }
+  }
+  setInterval(function(){
+    var should = running && Date.now() - idleFrom > 4000;
+    if (should !== hidden){ hidden = should; $("bar").classList.toggle("away", hidden); }
+  }, 500);
+  ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"].forEach(function(ev){
+    window.addEventListener(ev, function(){ bar(true); }, { passive: true });
+  });
+
+  /* ---- the buttons ---- */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-min]"), function(b){
+    b.onclick = function(){ setMins(+b.dataset.min); paintSet(); };
+  });
+  function paintSet(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-min]"), function(b){
+      b.setAttribute("aria-pressed", (+b.dataset.min === S.mins && S.mode === "timer")
+        ? "true" : "false");
+    });
+  }
+  $("more").onclick = function(){
+    if (running){ endAt += 60000; } else { left += 60000; S.mins = Math.ceil(left / 60000); save(); }
+    finished = false; $("word").textContent = ""; paintSet();
+  };
+  $("less").onclick = function(){
+    if (running) endAt = Math.max(Date.now(), endAt - 60000);
+    else { left = Math.max(0, left - 60000); S.mins = Math.max(1, Math.ceil(left / 60000)); save(); }
+    paintSet();
+  };
+  $("go").onclick = function(){ running ? stop() : start(); };
+  $("reset").onclick = function(){ setMins(S.mins); paintSet(); };
+  $("chime").onclick = function(){
+    S.chime = ORDER[(ORDER.indexOf(S.chime) + 1) % ORDER.length]; save();
+    $("chime").textContent = "Chime: " + CHIMES[S.chime].ja;
+    ring();                     /* so the choice is made by ear */
+  };
+  $("mode").onclick = function(){
+    stop();
+    S.mode = S.mode === "timer" ? "clock" : "timer"; save();
+    $("mode").textContent = S.mode === "timer" ? "Clock" : "Timer";
+    $("go").disabled = S.mode === "clock";
+    $("word").textContent = ""; finished = false;
+    if (S.mode === "timer") left = S.mins * 60000;
+    paintSet(); show();
+  };
+  $("full").onclick = function(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen)
+      document.documentElement.requestFullscreen();
+  };
+  function onKey(e){
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (e.code === "Space"){ e.preventDefault(); running ? stop() : start(); }
+    else if (e.key === "r" || e.key === "R"){ setMins(S.mins); paintSet(); }
+    else if (e.key === "f" || e.key === "F"){ $("full").click(); }
+  }
+  document.addEventListener("keydown", onKey);
+
+  /* ---- the small window ----
+     Andrew: "make the new timer app collapsable to a small window if
+     you can." A page cannot float over PowerPoint by itself, but
+     Chrome and Edge will give one a picture-in-picture window that
+     does, and that is what a classroom wants: the slides full screen
+     and the count in the corner.
+
+     The numbers are MOVED rather than copied. Two copies of a clock is
+     two clocks to keep in step, and the first time they disagree
+     nobody believes either. What travels is the same DOM this page was
+     painting all along, so the count carries on mid-second.
+
+     Where picture-in-picture is not offered, a plain small window is
+     opened instead and told where the count is up to. That one cannot
+     sit on top of other windows, but it can be dragged beside them. */
+  function pipSupported(){
+    return !!(window.documentPictureInPicture
+      && window.documentPictureInPicture.requestWindow);
+  }
+  function popOut(){
+    if (pipDoc) return bringBack();
+    if (!pipSupported()) return smallWindow();
+    window.documentPictureInPicture.requestWindow({ width: 440, height: 280 })
+      .then(function(w){
+        pipWin = w; pipDoc = w.document;
+        var st = pipDoc.createElement("style");
+        var src = document.querySelector("style");
+        st.textContent = (src ? src.textContent : "") +
+          "\n.bar,.build{display:none}\nbody{cursor:pointer}";
+        pipDoc.head.appendChild(st);
+        pipDoc.body.appendChild($("screen"));
+        /* the small window is too small for a row of buttons, so the
+           whole of it is the start and stop button */
+        pipDoc.body.addEventListener("click", function(){
+          running ? stop() : start();
+        });
+        pipDoc.addEventListener("keydown", onKey);
+        w.addEventListener("pagehide", bringBack);
+        $("gone").hidden = false;
+        $("pop").textContent = "Bring it back";
+      })
+      .catch(function(){ smallWindow(); });
+  }
+  function bringBack(){
+    if (!pipDoc) return;
+    var screen = $("screen");
+    if (screen) document.body.insertBefore(screen, document.getElementById("gone"));
+    try { if (pipWin) pipWin.close(); } catch(e){}
+    pipWin = null; pipDoc = null;
+    $("gone").hidden = true;
+    $("pop").textContent = "Small window";
+    show();
+  }
+  function smallWindow(){
+    /* a separate window, told where the count is up to, and this one
+       stands down so there are never two timers running */
+    var q = "?small=1&m=" + S.mins + "&left=" + Math.round(remaining() / 1000)
+      + (running ? "&run=1" : "") + "&chime=" + S.chime;
+    stop();
+    var w = window.open(location.pathname + q, "jghtimer",
+      "width=460,height=300,menubar=no,toolbar=no,location=no,status=no");
+    if (!w){ alert("The browser blocked the small window. Allow pop-ups for this page."); return; }
+    $("gone").hidden = false;
+    $("pop").textContent = "Bring it back";
+    $("back").onclick = function(){
+      try { w.close(); } catch(e){}
+      $("gone").hidden = true;
+      $("pop").textContent = "Small window";
+    };
+  }
+  $("pop").onclick = popOut;
+  $("back").onclick = bringBack;
+  if (!pipSupported()) $("pop").title = "Opens a separate small window";
+
+  /* ---- opened as the small window ---- */
+  var asSmall = false;
+  (function(){
+    var q = {};
+    location.search.replace(/^\?/, "").split("&").forEach(function(kv){
+      var b = kv.split("=");
+      if (b[0]) q[b[0]] = decodeURIComponent(b[1] || "");
+    });
+    if (!q.small) return;
+    asSmall = true;
+    document.body.classList.add("small");
+    if (q.m) S.mins = Math.max(1, Math.min(99, +q.m || 5));
+    if (q.chime && CHIMES[q.chime]) S.chime = q.chime;
+    left = Math.max(0, (+q.left || S.mins * 60) * 1000);
+    if (q.run) start();
+    show();
+  })();
+
+  /* ---- open where it was left ---- */
+  $("chime").textContent = "Chime: " + CHIMES[S.chime].ja;
+  $("mode").textContent = S.mode === "timer" ? "Clock" : "Timer";
+  $("go").disabled = S.mode === "clock";
+  /* a window opened small was handed the count it is to carry on from,
+     and must not be reset to the stored minutes underneath it */
+  if (!asSmall) left = S.mins * 60000;
+  paintSet(); show();
+
+  /* a seam for the browser check, which cannot read a canvas or hear a
+     bell: it reads this instead. Reading it changes nothing. */
+  window.TAIMAA = {
+    cells: cells,
+    /* the check cannot wait twenty minutes for the bell, so it can put
+       the clock where it likes. Nothing on screen calls this. */
+    set: function(sec){ stop(); left = sec * 1000; finished = false;
+                        $("word").textContent = ""; show(); },
+    get state(){
+      return { mins: S.mins, chime: S.chime, mode: S.mode, running: running,
+               finished: finished, left: Math.round(remaining() / 1000) };
+    }
+  };
+})();
+</script>
+</body>
+</html>

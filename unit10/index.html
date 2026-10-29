@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>ユニット10 · できること・すきなこと</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  /* ============================================================
+     UNIT HUB — one unit, end to end: frontloaded vocabulary, the
+     grammar the unit runs on, a tiered reading that ends in an
+     evidence-backed judgement, and a report.
+
+     Ported from the Bone Sparrow pre-reading trainer in Liam's
+     Bone-Sparrow repo, with two deliberate changes for this hub:
+     nothing is ever LOCKED (DESIGN_PHILOSOPHY: never lock content
+     — the steps are numbered advice, not gates), and the report
+     takes an optional first name only, never a student ID.
+     ============================================================ */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --band:#f5f0e6; --amber:#8a6d1e;
+    /* the four steps, each with its own quiet identity */
+    --s1:#1f6f78; --s2:#7a5cad; --s3:#b0561f; --s4:#3f5aa6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.5;min-height:100vh;padding:16px}
+  .wrap{max-width:820px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+
+  .btn{padding:10px 17px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink);transition:all .15s ease}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover:not(:disabled){background:#8c2828}
+  .btn-primary:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--ink)}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+  .linkbtn:hover{text-decoration:underline}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+  .progress{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+
+  /* ---- home: the step cards ---- */
+  .steps{display:grid;gap:10px;margin-top:6px}
+  .step{display:flex;align-items:flex-start;gap:13px;width:100%;text-align:left;background:var(--paper);
+       border:1px solid var(--line);border-radius:11px;padding:14px 16px;cursor:pointer;
+       transition:transform .12s ease,border-color .12s ease}
+  .step:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .step .num{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+       font-weight:800;font-size:13px;color:#fff;background:var(--muted)}
+  .step-1 .num{background:var(--s1)} .step-2 .num{background:var(--s2)}
+  .step-3 .num{background:var(--s3)} .step-4 .num{background:var(--s4)}
+  .step-5 .num{background:var(--s2)} .step-6 .num{background:var(--muted)}
+  .step.done .num{background:var(--correct)}
+  .step .body{flex:1}
+  .step .t{font-weight:700;font-size:14.5px;font-family:var(--font)}
+  .step .d{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+  .step .tag{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--muted);
+       border:1px solid var(--line-soft);border-radius:9px;padding:2px 8px;white-space:nowrap;text-transform:uppercase}
+  .step.done .tag{color:var(--correct);border-color:var(--correct)}
+  .nolock{background:var(--bg);border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;
+       font-size:12px;color:var(--muted);margin-top:14px}
+
+  /* ---- study: the vocabulary frontload ---- */
+  .vset{margin-top:16px}
+  .vset h3{font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+       color:var(--muted);border-bottom:1px solid var(--line-soft);padding-bottom:5px;margin-bottom:9px}
+  .vgrid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(238px,1fr))}
+  .vcard{border:1px solid var(--line-soft);border-radius:9px;background:var(--bg);padding:10px 12px;cursor:pointer}
+  .vcard:hover{border-color:var(--accent)}
+  .vcard .jp{font-family:var(--font);font-size:16px;font-weight:600}
+  .vcard .rd{font-size:11px;color:var(--muted)}
+  .vcard .gl{font-size:12.5px;margin-top:3px}
+  .vcard .ex{font-size:12px;color:var(--muted);margin-top:6px;padding-top:6px;
+       border-top:1px dashed var(--line-soft);display:none;line-height:1.6}
+  .vcard.open .ex{display:block}
+  .vcard .grp{font-size:9px;font-weight:800;color:var(--s3);letter-spacing:.05em}
+  .bank-note{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--s2);
+       border-radius:9px;padding:11px 14px;font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+  .bank-note a{color:var(--accent);font-weight:700}
+  .bank-note b{color:var(--ink)}
+
+  /* ---- tasks ---- */
+  .task-prompt{font-size:15px;line-height:1.6;margin-bottom:12px}
+  .task-prompt b{font-family:var(--font)}
+  .cue{font-family:var(--font);font-size:19px;line-height:1.9;background:var(--bg);
+       border:1px solid var(--line-soft);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .options{display:grid;gap:7px}
+  .option{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:9px;
+       padding:11px 14px;font-size:14.5px;cursor:pointer}
+  .option:hover:not(:disabled){border-color:var(--accent)}
+  .option[data-sel="1"]{border-color:var(--accent);background:#faf5f0}
+  .option.correct{background:var(--okbg);border-color:var(--correct);color:var(--correct);font-weight:600}
+  .option.incorrect{background:var(--badbg);border-color:var(--wrong);color:var(--wrong)}
+  input[type=text]{font-family:var(--font);font-size:17px;padding:9px 12px;border:1px solid var(--line);
+       border-radius:8px;background:var(--paper);color:var(--ink);width:100%;max-width:340px}
+  input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px}
+  input.correct{border-color:var(--correct);background:var(--okbg)}
+  input.incorrect{border-color:var(--wrong);background:var(--badbg)}
+  .tiles{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+  .slots{display:flex;flex-wrap:wrap;gap:7px;min-height:48px;border:1px dashed var(--line);
+       border-radius:9px;padding:8px;background:var(--bg);margin-bottom:9px}
+  .slots.correct{border-color:var(--correct);background:var(--okbg);border-style:solid}
+  .slots.incorrect{border-color:var(--wrong);background:var(--badbg);border-style:solid}
+  .tile{font-family:var(--font);font-size:16px;padding:7px 13px;border:1px solid var(--line);
+       border-radius:8px;background:var(--paper);cursor:pointer}
+  .tile:hover:not(:disabled){border-color:var(--accent)}
+  .feedback{margin-top:12px;padding:11px 14px;border-radius:9px;font-size:13.5px;line-height:1.6;display:none}
+  .feedback.good{display:block;background:var(--okbg);border:1px solid var(--correct)}
+  .feedback.bad{display:block;background:var(--badbg);border:1px solid var(--wrong)}
+  .feedback b{font-family:var(--font)}
+  .actions{display:flex;gap:9px;justify-content:flex-end;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .ptrack{height:7px;background:var(--line-soft);border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .pfill{height:100%;width:0;background:var(--accent);transition:width .3s ease}
+
+  /* ---- character builder ---- */
+  .kbig{font-family:var(--font);font-size:76px;line-height:1.1;text-align:center;margin:2px 0 4px}
+  .kgloss{text-align:center;font-size:14px;margin-bottom:2px}
+  .kread{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .parts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:74px;
+       border:1px dashed var(--line);border-radius:10px;padding:10px;background:var(--bg);margin-bottom:10px}
+  .parts.correct{border-color:var(--correct);background:var(--okbg);border-style:solid}
+  .parts.incorrect{border-color:var(--wrong);background:var(--badbg);border-style:solid}
+  .parts:empty::after{content:"えらんでください · pick the parts";color:var(--muted);font-size:12px;align-self:center}
+  .ptile{display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--font);
+       border:1px solid var(--line);border-radius:9px;background:var(--paper);padding:6px 13px;cursor:pointer;min-width:56px}
+  .ptile:hover:not(:disabled){border-color:var(--accent)}
+  .ptile .pc{font-size:27px;line-height:1.15}
+  .ptile .pg{font-size:9px;color:var(--muted);font-family:var(--font);letter-spacing:.02em}
+  .ptile.wrongpart{border-color:var(--wrong);background:var(--badbg)}
+  .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .equation{font-family:var(--font);font-size:30px;text-align:center;margin:10px 0 4px;line-height:1.5}
+  .equation .op{color:var(--muted);font-size:20px;margin:0 7px}
+  .role{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.05em;border-radius:8px;
+       padding:1px 7px;text-transform:uppercase;vertical-align:middle;margin-left:5px}
+  .role-sense{color:var(--s1);border:1px solid var(--s1)}
+  .role-sound{color:var(--s3);border:1px solid var(--s3)}
+
+  /* ---- the character card: the purple-lab word card, ported ----
+     The same shape the English word builders use for their word list,
+     and the same shape kanji/ (Kanji Factory) uses: the character large
+     and serif, the meaning under it, a dashed rule, then the parts as
+     coloured serif with their glosses, then the note.
+     The colours are this file's own step colours, the ones .role-sense
+     and .role-sound already use, so the card and the tag agree.
+     Colour only ever appears here, on a character that has been put
+     together — a part has no job until there is a character for it to
+     do the job in, so the bank of tiles above stays neutral. */
+  .klegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;margin:0 0 10px;
+       border:1px solid var(--line-soft);border-radius:8px;padding:9px 13px;background:var(--bg)}
+  .klegend .c-sense{color:var(--s1)} .klegend .c-sound{color:var(--s3)}
+  .klegend .note{font-weight:400;color:var(--muted)}
+  .kcard{border:1px solid var(--line-soft);border-radius:10px;padding:14px 16px;background:var(--paper);text-align:left}
+  .kcard .w{font-family:var(--font);font-size:38px;font-weight:700;line-height:1.15;vertical-align:middle}
+  .kcard .w .kglyph{vertical-align:middle;margin:-4px 0}
+  .kcard .rd{font-size:12px;color:var(--muted);font-style:italic;margin-left:8px}
+  .kcard .meaning{font-size:14px;margin:6px 0;line-height:1.5}
+  .kcard .comp{font-size:13.5px;color:var(--muted);line-height:1.8;border-top:1px dashed var(--line-soft);
+       padding-top:6px;margin-top:6px}
+  .kcard .comp b,.kcard .comp i{color:var(--ink)}
+  .kcard .comp code{font-family:var(--font);font-weight:700;font-size:21px;vertical-align:-1px}
+  .kcard .comp code.c-sense{color:var(--s1)} .kcard .comp code.c-sound{color:var(--s3)}
+  .kcard .comp .eq{font-family:var(--font);font-size:19px;color:var(--ink);margin-left:4px}
+  .kcard .hook{margin-top:9px}
+  .hook{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--s2);
+       border-radius:9px;padding:11px 14px;font-size:13px;line-height:1.6;margin-top:10px}
+  .hook .lab{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--s2);text-transform:uppercase;display:block;margin-bottom:3px}
+  .inwords{font-size:12.5px;color:var(--muted);margin-top:9px;font-family:var(--font)}
+
+  /* ---- grammar gym stages ---- */
+  .stage-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .stage-btn{border:1px solid var(--line-soft);background:var(--bg);color:var(--muted);font-size:12px;
+       font-weight:700;padding:7px 13px;border-radius:8px;cursor:pointer}
+  .stage-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .stage-btn.done{border-color:var(--correct);color:var(--correct)}
+  .mini{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--s3);
+       border-radius:9px;padding:12px 15px;font-size:13px;line-height:1.65;margin-bottom:14px}
+  .mini b{font-family:var(--font);color:var(--ink)}
+  .hublink{display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);font-weight:700;text-decoration:none}
+  .hublink:hover{text-decoration:underline}
+
+  /* ---- reading ---- */
+  .tier-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+  .tier-btn{border:1px solid var(--line-soft);background:var(--bg);color:var(--muted);font-size:12px;
+       font-weight:700;padding:7px 13px;border-radius:8px;cursor:pointer}
+  .tier-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .tier-note{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+  .passage{font-family:var(--font);font-size:17px;line-height:2.2;background:var(--bg);
+       border:1px solid var(--line-soft);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+  .passage ruby rt{font-size:.48em;font-weight:400;color:var(--muted)}
+  .sent{border-radius:4px;padding:1px 2px;transition:background .12s}
+  .sent.pick{cursor:pointer}
+  .sent.pick:hover{background:#efe6d8}
+  .sent.chosen{background:#f6e7c2;box-shadow:inset 0 -2px 0 var(--amber)}
+  .sent.evidence{background:var(--okbg);box-shadow:inset 0 -2px 0 var(--correct)}
+  .vbox{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--band);border:1px solid var(--line-soft);
+       border-radius:9px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .vbox span b{color:var(--ink);font-family:var(--font);font-size:13px}
+  .jobs{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(215px,1fr))}
+
+  /* ---- report ---- */
+  .bigstat{text-align:center;font-family:var(--font);font-size:44px;font-weight:700;color:var(--accent);margin:6px 0}
+  .bigstat small{display:block;font-size:12px;font-family:var(--font);color:var(--muted);font-weight:400;letter-spacing:.05em}
+  .rrow{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line-soft);
+       border-radius:9px;padding:11px 14px;margin-bottom:7px;font-size:13.5px}
+  .rrow .sc{font-weight:800;font-family:var(--font)}
+  .rrow.full{border-color:var(--correct)} .rrow.full .sc{color:var(--correct)}
+  .rrow.part{border-color:var(--amber)}   .rrow.part .sc{color:var(--amber)}
+  .rrow.none{border-color:var(--line)}    .rrow.none .sc{color:var(--muted)}
+  .rrow .undone{font-size:11px;color:var(--muted);font-style:italic}
+  .namerow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:14px 0}
+  .copynote{font-size:12px;color:var(--correct);margin-top:8px;min-height:16px}
+  .privacy{background:var(--bg);border:1px solid var(--line-soft);border-radius:9px;padding:10px 14px;
+       font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);
+       opacity:.45;pointer-events:none}
+  @media print{
+    body{background:#fff;padding:0}
+    .topbar,.actions,.build-tag,.lever,.poc,.privacy{display:none!important}
+    .container{border:0;box-shadow:none;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="container">
+
+  <!-- ============ HOME ============ -->
+  <section class="screen active" id="scr-home">
+    <h1 class="jt-tap" data-jt="title">ユニット10</h1>
+    <p class="subtitle jt-tap" data-jt="subtitle">Abilities and preferences</p>
+    <span class="poc"><b>Proof of concept</b> for Andrew's review — a whole unit end to end, built from the Unit 10 folder. Items are authored fresh and need his accuracy check.</span>
+    <div class="steps" id="home-steps"></div>
+    <p class="nolock jt-tap" data-jt="nolock">Nothing here is locked.</p>
+  </section>
+
+  <!-- ============ STUDY ============ -->
+  <section class="screen" id="scr-study">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" data-jt="pStudy">ステップ1・ことば</span>
+      <span id="studyLever" data-scope="#scr-study"></span>
+    </div>
+    <div id="study-body"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="studyDone" data-jt="studyDone">よんだ</button>
+    </div>
+  </section>
+
+  <!-- ============ VOCAB TASKS ============ -->
+  <section class="screen" id="scr-vocab">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" id="vocab-prog"></span>
+      <span id="vocabLever" data-scope="#scr-vocab"></span>
+    </div>
+    <div class="ptrack"><div class="pfill" id="vocab-fill"></div></div>
+    <div id="vocab-area"></div>
+    <div class="feedback" id="vocab-fb"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="vocab-check" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="vocab-next" data-jt="next" style="display:none">つぎへ</button>
+    </div>
+    <p style="text-align:center;margin-top:12px;font-size:12.5px">
+      <a href="../vocab/#unit:unit10" target="_blank" rel="noopener"
+         style="color:var(--accent);font-weight:700;text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:5px 12px;background:var(--bg)">この単元のことばを、ことばのホームでも → see these words in the Vocab Hub</a>
+    </p>
+  </section>
+
+  <!-- ============ CHARACTER BUILDER ============ -->
+  <section class="screen" id="scr-kanji">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" id="kanji-prog"></span>
+      <span id="kanjiLever" data-scope="#scr-kanji"></span>
+    </div>
+    <div class="ptrack"><div class="pfill" id="kanji-fill"></div></div>
+    <div id="kanji-area"></div>
+    <div class="feedback" id="kanji-fb"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="kanji-check" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="kanji-next" data-jt="next" style="display:none">つぎへ</button>
+    </div>
+    <p class="privacy" style="margin-top:16px">Characters are drawn from
+      <a href="https://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a> stroke data by Ulrich Apel,
+      used under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>,
+      so each part can be coloured separately. Which job a part does in a character is this app's own claim, not KanjiVG's.</p>
+  </section>
+
+  <!-- ============ GRAMMAR GYM ============ -->
+  <section class="screen" id="scr-gram">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" id="gram-prog"></span>
+      <span id="gramLever" data-scope="#scr-gram"></span>
+    </div>
+    <div class="stage-row" id="stage-row"></div>
+    <div class="mini" id="gram-mini"></div>
+    <div class="ptrack"><div class="pfill" id="gram-fill"></div></div>
+    <div id="gram-area"></div>
+    <div class="feedback" id="gram-fb"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="gram-check" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="gram-next" data-jt="next" style="display:none">つぎへ</button>
+    </div>
+  </section>
+
+  <!-- ============ READING ============ -->
+  <section class="screen" id="scr-read">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" id="read-prog"></span>
+      <span id="readLever" data-scope="#scr-read"></span>
+    </div>
+    <div class="tier-row" id="tier-row"></div>
+    <p class="tier-note" id="tier-note"></p>
+    <div class="vbox" id="read-vocab"></div>
+    <div class="passage" id="read-passage"></div>
+    <div id="read-area"></div>
+    <div class="feedback" id="read-fb"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="read-check" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="read-next" data-jt="next" style="display:none">つぎへ</button>
+    </div>
+  </section>
+
+  <!-- ============ REPORT ============ -->
+  <section class="screen" id="scr-report">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" data-jt="pReport">レポート</span>
+      <span id="reportLever" data-scope="#scr-report"></span>
+    </div>
+    <div class="bigstat" id="rep-stat"></div>
+    <div id="rep-rows"></div>
+    <div class="namerow">
+      <label for="rep-name" style="font-size:13px;color:var(--muted)">なまえ / name (optional)</label>
+      <input type="text" id="rep-name" style="max-width:220px" autocomplete="off">
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn btn-ghost" id="rep-copy" data-jt="copy">コピー</button>
+      <button class="btn btn-ghost" id="rep-print" data-jt="print">印刷</button>
+      <button class="btn btn-primary" data-go="home" data-jt="back2">ホームへ</button>
+    </div>
+    <div class="copynote" id="rep-note"></div>
+    <p class="privacy">This report is shown on this screen only. Nothing is sent anywhere, nothing is saved when you close the tab, and the app never asks for a student ID. Your first try at each question is what it records.</p>
+  </section>
+
+</div>
+</div>
+<div class="build-tag">Unit10 PoC 2026-09-06</div>
+<script src="../kanji-strokes.js"></script>
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT — Unit 10: Abilities and Preferences (Year 9)
+   ------------------------------------------------------------
+   Built from Andrew's own Unit 10 folder: his p203 plain-form
+   verb table, his ことができる / ことが好き / ことがとくい
+   worksheets, and the shape of his reading CATs (profile ->
+   extract the facts -> choose the best job -> justify it from
+   the text). The Obento page scans in that folder are textbook
+   images: nothing here reproduces them. Every sentence below is
+   authored fresh in the same style, and all of it needs
+   Andrew's accuracy check before a class sees it.
+
+   Furigana convention, same as the Level Up Wall: [漢字|かんじ].
+   ============================================================ */
+
+/* ---- STEP 1 · the frontloaded vocabulary ------------------
+   This is also the proto-schema for the site-wide vocabulary
+   hub we will build over time. Every word carries what a
+   vocab hub needs: script forms, reading, gloss, part of
+   speech, a real example sentence, the set it belongs to, and
+   (for verbs) the group and ます-form that the grammar step
+   depends on. `families` marks kanji that belong to a
+   component family the Word Lab could build. */
+const U10_VOCAB = [
+  // --- スポーツ ---
+  { jp:"バスケットボール", read:"ばすけっとぼーる", gloss:"basketball", pos:"noun", set:"sport",
+    ex:"バスケットボールのしあいに でます。", exGloss:"I play in basketball games." },
+  { jp:"ネットボール", read:"ねっとぼーる", gloss:"netball", pos:"noun", set:"sport",
+    ex:"ネットボールも 大すきです。", exGloss:"I love netball too." },
+  { jp:"じゅうどう", read:"じゅうどう", gloss:"judo", pos:"noun", set:"sport",
+    ex:"じゅうどうの クラブが ありません。", exGloss:"There is no judo club." },
+  { jp:"すいえい", read:"すいえい", gloss:"swimming", pos:"noun", set:"sport",
+    ex:"すいえいの トレーニングを します。", exGloss:"I do swimming training." },
+  { jp:"しあい", read:"しあい", gloss:"a match, a game", pos:"noun", set:"sport",
+    ex:"よく しあいに でます。", exGloss:"I often play in matches." },
+  // --- どうし (the verbs the grammar step runs on) ---
+  { jp:"およぐ", read:"およぐ", gloss:"to swim", pos:"verb", group:1, masu:"およぎます", set:"verb",
+    ex:"うみで およぐことが 好きです。", exGloss:"I like swimming in the sea." },
+  { jp:"はなす", read:"はなす", gloss:"to speak, to talk", pos:"verb", group:1, masu:"はなします", set:"verb",
+    ex:"人と はなすことが 好きです。", exGloss:"I like talking with people." },
+  { jp:"つくる", read:"つくる", gloss:"to make", pos:"verb", group:1, masu:"つくります", set:"verb",
+    ex:"ケーキを つくることが とくいです。", exGloss:"I am good at making cakes." },
+  { jp:"のる", read:"のる", gloss:"to ride", pos:"verb", group:1, masu:"のります", set:"verb",
+    ex:"バイクに のることが とくいです。", exGloss:"I am good at riding a motorbike." },
+  { jp:"[聞|き]く", read:"きく", gloss:"to listen", pos:"verb", group:1, masu:"ききます", set:"verb",
+    ex:"おんがくを 聞くことが 好きです。", exGloss:"I like listening to music." },
+  { jp:"おしえる", read:"おしえる", gloss:"to teach", pos:"verb", group:2, masu:"おしえます", set:"verb",
+    ex:"子どもに おしえることが 好きです。", exGloss:"I like teaching children." },
+  { jp:"[見|み]る", read:"みる", gloss:"to watch, to look", pos:"verb", group:2, masu:"見ます", set:"verb",
+    ex:"テレビで しあいを 見ます。", exGloss:"I watch matches on TV." },
+  { jp:"する", read:"する", gloss:"to do, to play", pos:"verb", group:3, masu:"します", set:"verb",
+    ex:"まいにち スポーツを します。", exGloss:"I play sport every day." },
+  // --- できる・すき (the unit's real business) ---
+  { jp:"とくい", read:"とくい", gloss:"good at (something you can do well)", pos:"na-adj", set:"ability",
+    ex:"およぐことが とくいです。", exGloss:"I am good at swimming." },
+  { jp:"[下手|へた]", read:"へた", gloss:"not good at", pos:"na-adj", set:"ability",
+    ex:"りょうりを することが 下手です。", exGloss:"I am not good at cooking." },
+  { jp:"[上手|じょうず]", read:"じょうず", gloss:"skilful (used about other people)", pos:"na-adj", set:"ability",
+    ex:"友だちは かんじを かくことが 上手です。", exGloss:"My friend is skilful at writing kanji." },
+  { jp:"[大好|だいす]き", read:"だいすき", gloss:"love, really like", pos:"na-adj", set:"ability",
+    ex:"バイクが 大好きです。", exGloss:"I love motorbikes." },
+  { jp:"できる", read:"できる", gloss:"can do, to be able", pos:"verb", group:2, masu:"できます", set:"ability",
+    ex:"スペインごを はなすことが できます。", exGloss:"I can speak Spanish." },
+  // --- しごと・つなぎことば ---
+  { jp:"コーチ", read:"こーち", gloss:"coach", pos:"noun", set:"work",
+    ex:"コーチを することが 下手です。", exGloss:"I am not good at coaching." },
+  { jp:"[選手|せんしゅ]", read:"せんしゅ", gloss:"a player, an athlete", pos:"noun", set:"work",
+    ex:"バスケットボールの 選手に なりたいです。", exGloss:"I want to become a basketball player.",
+    families:["手"] },
+  { jp:"とくに", read:"とくに", gloss:"especially", pos:"adverb", set:"work",
+    ex:"とくに、ホンダの バイクが 好きです。", exGloss:"I especially like Honda motorbikes." },
+  { jp:"だから", read:"だから", gloss:"so, therefore", pos:"conj", set:"work",
+    ex:"だから、しゅうまつに レースを します。", exGloss:"So, on the weekend I race." },
+  { jp:"しゅうまつ", read:"しゅうまつ", gloss:"weekend", pos:"noun", set:"work",
+    ex:"しゅうまつに 友だちと あそびます。", exGloss:"I hang out with friends on the weekend." },
+];
+const VSETS = [
+  { key:"sport",   t:["スポーツ","スポーツ","supōtsu","Sports"] },
+  { key:"verb",    t:["どうし","どうし","dōshi","Verbs (plain form)"] },
+  { key:"ability", t:["できること・すきなこと","できること・すきなこと","dekiru koto, suki na koto","Ability and preference"] },
+  { key:"work",    t:["しごとのことば","しごとのことば","shigoto no kotoba","Work and joining words"] },
+];
+
+/* ---- STEP 3 · the grammar the unit runs on ----------------
+   Three stages, in the order the unit teaches them. Every
+   stage names the Grammar Hub steps that own the skill, so the
+   unit links into the hub instead of forking it. */
+const GRAM = [
+  {
+    key:"plain",
+    t:["ふつう形をつくる","ふつうけいをつくる","futsūkei o tsukuru","Making the plain form"],
+    mini:"Everything else in this unit sits on the <b>plain form</b>. ことができる, ことが好き and ことがとくい all need the plain form in front of こと, never the ます form. Group 1 verbs swap the い-row sound for the う-row (ききます → きく). Group 2 verbs drop ます and add る (おしえます → おしえる). Group 3 are the two you memorise: します → する, きます → くる.",
+    hub:{ id:"plain-finite-l", label:"文をつくる · ふつう体 (Years 9–10, 14 questions)" },
+    items:[
+      { type:"transform", prompt:"Write the plain form.", cue:"ききます", accept:["きく"], why:"Group 1: the き of ききます moves to the う row, き → く." },
+      { type:"transform", prompt:"Write the plain form.", cue:"およぎます", accept:["およぐ"], why:"Group 1: ぎ → ぐ." },
+      { type:"transform", prompt:"Write the plain form.", cue:"はなします", accept:["はなす"], why:"Group 1: し → す." },
+      { type:"transform", prompt:"Write the plain form.", cue:"つくります", accept:["つくる"], why:"Group 1: り → る." },
+      { type:"transform", prompt:"Write the plain form.", cue:"おしえます", accept:["おしえる"], why:"Group 2: drop ます, add る." },
+      { type:"transform", prompt:"Write the plain form.", cue:"します", accept:["する"], why:"Group 3: します → する. One of only two irregulars." },
+    ],
+  },
+  {
+    key:"dekiru",
+    t:["ことができる","ことができる","koto ga dekiru","Saying what you can do"],
+    mini:"<b>plain form + ことができます</b> = 'I can do it'. こと turns the whole action into a thing, and できます says you are able to do that thing. The action keeps its own を: 日本語を はなすことが できます.",
+    hub:{ id:"nominalisers-b4", label:"「できる」と「しなければ」 · の・こと・ことができる" },
+    items:[
+      { type:"order", prompt:"Build the sentence: I can speak Japanese.",
+        tiles:["日本語を","はなす","ことが","できます"], answer:"日本語をはなすことができます",
+        why:"The action (日本語をはなす) comes first, then ことが, then できます." },
+      { type:"gapfill", prompt:"Fill the gap: I can make sushi.", cue:"すしを つくる ___ が できます。",
+        accept:["こと"], why:"こと turns つくる into 'the making of sushi', which is the thing you can do." },
+      { type:"transform", prompt:"Rewrite using ことができます: およぎます", cue:"およぎます",
+        accept:["およぐことができます"], why:"Plain form first (およぐ), then ことができます." },
+      { type:"identify", prompt:"Which one says 'I cannot ride a motorbike'?",
+        options:["バイクに のることが できません。","バイクに のることが できます。","バイクに のることが 好きです。","バイクに のります。"],
+        answer:"バイクに のることが できません。", why:"できません is the negative of できます. 好きです would be about liking, not ability." },
+      { type:"gapfill", prompt:"Fill the gap with the plain form: 'I can teach.'", cue:"___ ことが できます。（おしえます）",
+        accept:["おしえる"], why:"Group 2: おしえます → おしえる before こと." },
+    ],
+  },
+  {
+    key:"suki",
+    t:["好き・とくい・下手","すき・とくい・へた","suki, tokui, heta","Liking, and being good at"],
+    mini:"Same frame, different endings. <b>ことが好きです</b> = you like doing it. <b>ことがとくいです</b> = you are good at it. <b>ことが下手です</b> = you are not good at it. About other people you use 上手, not とくい, because とくい about someone else can sound like you are judging them.",
+    hub:{ id:"nominalisers-b4", label:"「できる」と「しなければ」 · の・こと・ことができる" },
+    items:[
+      { type:"identify", prompt:"Which sentence says 'I am good at riding a motorbike'?",
+        options:["バイクに のることが とくいです。","バイクに のることが 好きです。","バイクに のることが 下手です。","バイクに のることが できません。"],
+        answer:"バイクに のることが とくいです。", why:"とくい is the word for something you can do well." },
+      { type:"gapfill", prompt:"Fill the gap: 'I like talking with people.'", cue:"人と はなすことが ___ です。",
+        accept:["好き","すき"], why:"好き for liking. The kana spelling すき is fine too." },
+      { type:"gapfill", prompt:"Fill the gap: 'I am not good at coaching.'", cue:"コーチを することが ___ です。",
+        accept:["下手","へた"], why:"下手 is how you say you are not good at something yourself." },
+      { type:"identify", prompt:"Your friend writes beautiful kanji. Which is right?",
+        options:["友だちは かんじを かくことが 上手です。","友だちは かんじを かくことが とくいです。","友だちは かんじを かくことが 下手です。","友だちは かんじを かきます ことが 上手です。"],
+        answer:"友だちは かんじを かくことが 上手です。",
+        why:"上手 is used about other people. とくい about yourself. And こと always follows the plain form, never ます." },
+      { type:"order", prompt:"Build the sentence: I like watching anime.",
+        tiles:["アニメを","見る","ことが","好きです"], answer:"アニメを見ることが好きです",
+        why:"Plain form 見る before こと, then が, then 好きです." },
+    ],
+  },
+];
+
+/* ---- STEP 3 · the character builder ------------------------
+   The Word Lab builds WORDS out of kanji (給食 = 給 + 食). This
+   is the layer underneath: the characters themselves, out of
+   their components. Every character here comes from a word in
+   this unit's own vocabulary, so building it is not a detour.
+
+   Honesty rule, and it matters: `parts` are the components a
+   character is actually written with, and `role` is marked
+   "sense" or "sound" ONLY where that analysis is standard.
+   `hook` is a MEMORY STORY, labelled as one in the UI. Kanji
+   etymology is contested and a good mnemonic is not a fact;
+   conflating them teaches students something false. Andrew
+   rules on all of it (Q18).
+   Components are picked as a SET, not an order: 聞 puts 耳
+   inside 門, so left-to-right sequencing would be a lie. */
+const U10_KANJI = [
+  { ch:"好", kun:"す(き)", on:"コウ", gloss:"to like",
+    parts:[{p:"女",g:"woman",role:"sense"},{p:"子",g:"child",role:"sense"}],
+    decoys:["男","力","土"],
+    hook:"A woman and a child together. This one IS the old meaning, not just a memory trick: the character was built from the two of them.",
+    words:["好きです","大好きです"] },
+  { ch:"見", kun:"み(る)", on:"ケン", gloss:"to see, to watch",
+    parts:[{p:"目",g:"eye",role:"sense"},{p:"儿",g:"legs",role:"sense"}],
+    decoys:["日","口","手"],
+    hook:"An eye up on a pair of legs: something walking around looking. 目 sits right on top and you can still see it.",
+    words:["見ます","見ることが好きです"] },
+  { ch:"聞", kun:"き(く)", on:"ブン・モン",
+    gloss:"to listen, to hear",
+    parts:[{p:"耳",g:"ear",role:"sense"},{p:"門",g:"gate",role:"sound",sound:"モン"}],
+    decoys:["目","口","日"],
+    hook:"An ear inside a gate. The useful half is the split: 耳 tells you what it MEANS, and 門 tells you how it SOUNDS (モン). Spotting a sound part is how you guess a reading you were never taught.",
+    words:["聞きます","おんがくを聞くことが好きです"] },
+  { ch:"話", kun:"はな(す)", on:"ワ", gloss:"to speak, to talk",
+    parts:[{p:"言",g:"words, speech",role:"sense"},{p:"舌",g:"tongue",role:"sense"}],
+    decoys:["耳","手",'目'],
+    hook:"Words plus a tongue. 言 is the speech component: it turns up in 語, 読, 話 and most things to do with language.",
+    words:["話します","人と話すことが好きです"] },
+  { ch:"泳", kun:"およ(ぐ)", on:"エイ", gloss:"to swim",
+    parts:[{p:"氵",g:"water",role:"sense"},{p:"永",g:"long, eternal",role:"sound",sound:"エイ"}],
+    decoys:["火","木","土"],
+    hook:"Three drops of water down the left is the water component: 海, 池, 泳. And 永 gives the sound エイ, which is the reading in 水泳 (すいえい).",
+    words:["およぎます","およぐことがとくいです"] },
+  { ch:"手", kun:"て", on:"シュ", gloss:"hand",
+    parts:[],
+    decoys:[],
+    hook:"This one does not come apart. It is a picture of a hand, and it is the piece the whole 手 family is built from: 上手, 下手, 選手, and beyond this unit 歌手 and 運転手.",
+    words:["上手です","下手です","選手"] },
+];
+
+/* ---- STEP 5 · the reading, at three tiers -----------------
+   The shape is Andrew's: read a profile, pull out the facts,
+   decide which job suits the person, and then prove it from
+   the text. The evidence step is the part that matters: a
+   judgement you cannot point at is a guess. */
+const READ = [
+  {
+    key:"mod",
+    t:["やさしい","やさしい","yasashii","Modified"],
+    note:"Short profile, everyday words, one job to choose.",
+    vocab:[["すいえい","swimming"],["とくい","good at"],["下手 へた","not good at"],["まいにち","every day"]],
+    sents:[
+      { id:"m1", jp:"わたしの [名前|なまえ]は たなか ゆいです。" },
+      { id:"m2", jp:"[十四|じゅうよん]さいです。" },
+      { id:"m3", jp:"わたしは すいえいが [大好|だいす]きです。", ev:true },
+      { id:"m4", jp:"まいにち あさ プールで [練習|れんしゅう]します。", ev:true },
+      { id:"m5", jp:"およぐことが とくいです。", ev:true },
+      { id:"m6", jp:"でも、りょうりを することが [下手|へた]です。" },
+    ],
+    items:[
+      { type:"identify", prompt:"How old is Yui?", options:["14","15","17","12"], answer:"14",
+        why:"十四さい means fourteen years old." },
+      { type:"identify", prompt:"What is Yui good at?", options:["Swimming","Cooking","Basketball","Teaching"],
+        answer:"Swimming", why:"およぐことが とくいです — good at swimming." },
+      { type:"identify", prompt:"What is Yui NOT good at?", options:["Cooking","Swimming","Running","Reading"],
+        answer:"Cooking", why:"りょうりを することが 下手です — not good at cooking." },
+    ],
+    job:{ prompt:"Which job suits Yui best?",
+      options:["Assistant swimming coach","Assistant okonomiyaki chef","Sushi bar waiter","Judo personal trainer"],
+      answer:"Assistant swimming coach",
+      why:"She loves swimming, trains every morning and is good at it. Nothing in the text says she can cook or do judo." },
+    evidence:{ need:2, ids:["m3","m4","m5"],
+      why:"Any two of: she loves swimming, she trains every morning, she is good at swimming." },
+  },
+  {
+    key:"int",
+    t:["ふつう","ふつう","futsū","Intermediate"],
+    note:"Longer profile with strengths AND weaknesses, and a job list to weigh up.",
+    vocab:[["しあいに でます","play in matches"],["おしえる","to teach"],["ドリブル","dribbling"],["ダンク","dunking"],["でも","but"]],
+    sents:[
+      { id:"i1", jp:"ぼくの [名前|なまえ]は やまだ けんたです。[十五|じゅうご]さいです。" },
+      { id:"i2", jp:"[高校|こうこう][一年生|いちねんせい]です。" },
+      { id:"i3", jp:"まいにち あさ はやく [学校|がっこう]に [行|い]きます。" },
+      { id:"i4", jp:"バスケットボールの トレーニングを します。" },
+      { id:"i5", jp:"よく バスケットボールの しあいに でます。", ev:true },
+      { id:"i6", jp:"バスケットボールを おしえることが [大好|だいす]きです。", ev:true },
+      { id:"i7", jp:"[小|ちい]さい 子どもに おしえることが とくいです。", ev:true },
+      { id:"i8", jp:"でも、ダンクを することが [下手|へた]です。" },
+      { id:"i9", jp:"りょうりを することが できません。" },
+    ],
+    items:[
+      { type:"identify", prompt:"What is Kenta's school level?",
+        options:["Year 10 (high school, first year)","Year 9","University, first year","Primary school"],
+        answer:"Year 10 (high school, first year)", why:"高校一年生 is the first year of high school." },
+      { type:"identify", prompt:"Which of these is a STRENGTH of Kenta's?",
+        options:["Teaching small children","Dunking","Cooking","Swimming"],
+        answer:"Teaching small children", why:"小さい子どもに おしえることが とくいです." },
+      { type:"identify", prompt:"Which of these is a WEAKNESS?",
+        options:["Dunking","Dribbling","Playing in matches","Getting to school early"],
+        answer:"Dunking", why:"ダンクを することが 下手です." },
+      { type:"gapfill", prompt:"Complete from the text: he CANNOT cook.", cue:"りょうりを することが ___ 。",
+        accept:["できません"], why:"できません is the negative of できます." },
+    ],
+    job:{ prompt:"Which job suits Kenta best?",
+      options:["Assistant basketball coach","Assistant okonomiyaki chef","Sushi bar waiter","Judo personal trainer"],
+      answer:"Assistant basketball coach",
+      why:"He plays basketball matches often, loves teaching it, and is good at teaching young children. His weaknesses (dunking, cooking) do not stop him coaching." },
+    evidence:{ need:2, ids:["i5","i6","i7"],
+      why:"Any two of: he plays in matches often, he loves teaching basketball, he is good at teaching small children." },
+  },
+  {
+    key:"adv",
+    t:["むずかしい","むずかしい","muzukashii","Advanced"],
+    note:"Weekend routine with たり〜たり, a comparison, and two jobs to separate.",
+    vocab:[["〜たり〜たりします","do things like A and B"],["より","more than"],["おきゃくさん","customer"],["せつめいする","to explain"],["ゆめ","dream"]],
+    sents:[
+      { id:"a1", jp:"わたしの [名前|なまえ]は もり あやかです。[十七|じゅうなな]さいです。" },
+      { id:"a2", jp:"しゅうまつには、[家|いえ]で ケーキを つくったり、[妹|いもうと]に [作|つく]りかたを おしえたり します。", ev:true },
+      { id:"a3", jp:"ケーキを つくることが とくいです。", ev:true },
+      { id:"a4", jp:"[人|ひと]と はなすことが [大好|だいす]きです。" },
+      { id:"a5", jp:"[学校|がっこう]で [英語|えいご]を べんきょうして いますから、[英語|えいご]で はなすことが できます。", ev:true },
+      { id:"a6", jp:"スポーツを することより、[見|み]ることの ほうが 好きです。" },
+      { id:"a7", jp:"[将来|しょうらい]の ゆめは、[自分|じぶん]の カフェを もつことです。" },
+    ],
+    items:[
+      { type:"identify", prompt:"What does Ayaka do on weekends?",
+        options:["Makes cakes and teaches her sister how","Plays sport with friends","Works in a cafe","Studies English at school"],
+        answer:"Makes cakes and teaches her sister how",
+        why:"つくったり、おしえたり します lists two weekend activities as examples." },
+      { type:"identify", prompt:"What does 「スポーツを することより、見ることの ほうが 好きです」 tell you?",
+        options:["She prefers watching sport to playing it","She prefers playing sport to watching it","She dislikes sport completely","She plays sport every weekend"],
+        answer:"She prefers watching sport to playing it",
+        why:"AよりBのほうが好き = B more than A. Here B is 見ること, watching." },
+      { type:"identify", prompt:"Why can she speak English?",
+        options:["She studies it at school","She lived overseas","Her sister teaches her","She works with customers"],
+        answer:"She studies it at school", why:"学校で英語をべんきょうしていますから — から gives the reason." },
+      { type:"gapfill", prompt:"Complete: her future dream is to have her own cafe.", cue:"将来の ゆめは、自分の カフェを もつ ___ です。",
+        accept:["こと"], why:"こと turns もつ into 'the having of', so it can be the dream itself." },
+    ],
+    job:{ prompt:"Which job suits Ayaka best?",
+      options:["Cafe assistant","Assistant basketball coach","Judo personal trainer","Sports store sales assistant"],
+      answer:"Cafe assistant",
+      why:"She is good at baking, loves talking with people, can serve English-speaking customers, and her own dream is a cafe. A sports job would use the one area she prefers to watch rather than do." },
+    evidence:{ need:2, ids:["a2","a3","a5"],
+      why:"Any two of: she bakes and teaches baking at weekends, she is good at making cakes, she can speak English." },
+  },
+];
+
+/* ============================================================
+   ENGINE
+   ------------------------------------------------------------
+   State is one object. First attempt at every question is what
+   the report records; wrong answers come back until mastered.
+   Nothing persists: closing the tab clears it, by design.
+   ============================================================ */
+const UI = {
+  title:    ["ユニット10","ユニット10","yunitto 10","Unit 10"],
+  subtitle: ["できること・すきなこと","できること・すきなこと","dekiru koto, suki na koto","Abilities and preferences"],
+  nolock:   ["どのステップも いつでも できます","どのステップも いつでも できます","dono suteppu mo itsudemo dekimasu",
+             "Nothing here is locked. The numbers are the order we suggest, not a gate. Jump to any step, in any order, as often as you like."],
+  back:     ["← ホーム","← ホーム","← hōmu","← home"],
+  back2:    ["ホームへ","ホームへ","hōmu e","Back to home"],
+  check:    ["チェック","チェック","chekku","Check"],
+  next:     ["つぎへ","つぎへ","tsugi e","Next"],
+  studyDone:["よんだ","よんだ","yonda","I have read these"],
+  copy:     ["コピー","コピー","kopī","Copy my report"],
+  print:    ["印刷","いんさつ","insatsu","Print"],
+  pStudy:   ["ステップ1・ことば","ステップ1・ことば","suteppu 1: kotoba","Step 1 · vocabulary"],
+  pReport:  ["レポート","レポート","repōto","My report"],
+};
+const UI_RUBY = {
+  print: "<ruby>印刷<rt>いんさつ</rt></ruby>",
+};
+
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const ruby = (s) => String(s).replace(/\[([^\]|]+)\|([^\]]+)\]/g, "<ruby>$1<rt>$2</rt></ruby>");
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  // Japanese answers: forgive spaces (incl. full width) and trailing punctuation.
+  const normJa = (s) => String(s).normalize("NFKC").replace(/[\s　]/g, "").replace(/[。．\.]+$/, "").toLowerCase();
+
+  const S = {
+    studied: false,
+    first: {},              // taskId -> true/false, FIRST attempt only
+    done: { vocab: false, kanji: false, gram: {}, read: {} },
+    deal: null,             // word -> task kind, dealt once
+  };
+  const firstScore = (pre) => {
+    const ks = Object.keys(S.first).filter((k) => k.indexOf(pre) === 0);
+    return { got: ks.filter((k) => S.first[k] === true).length, of: ks.length };
+  };
+
+  function go(name) {
+    document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+    $("scr-" + name).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (window.HubLever) window.HubLever.apply();
+  }
+  document.querySelectorAll("[data-go]").forEach((b) =>
+    b.addEventListener("click", () => { const n = b.dataset.go; if (n === "home") drawHome(); go(n); }));
+
+  /* ---------------- HOME ---------------- */
+  function drawHome() {
+    const vN = U10_VOCAB.length;
+    const vs = firstScore("v:");
+    const gs = firstScore("g:");
+    const rs = firstScore("r:");
+    const gramDone = GRAM.filter((g) => S.done.gram[g.key]).length;
+    const readDone = READ.filter((r) => S.done.read[r.key]).length;
+    const steps = [
+      { n: 1, t: "ことばを おぼえる", d: "Meet all " + vN + " unit words first: sports, the verbs this unit runs on, and the words for what you can and cannot do.",
+        done: S.studied, tag: S.studied ? "read" : "start here", fn: () => { drawStudy(); go("study"); } },
+      { n: 2, t: "ことばの れんしゅう", d: "Every word comes back as a task, and the mix is different for every student. Wrong ones come around again until you have them.",
+        done: S.done.vocab, tag: S.done.vocab ? vs.got + "/" + vs.of + " first try" : (vs.of ? vs.got + "/" + vs.of : ""),
+        fn: () => startVocab() },
+      { n: 3, t: "かんじビルダー", d: "Characters come apart. Pick the pieces each one is built from, meet the part that carries the meaning and the part that carries the sound.",
+        done: S.done.kanji, tag: (function(){ const s=firstScore("k:"); return s.of ? s.got+"/"+s.of+" first try" : ""; })(),
+        fn: () => startKanji() },
+      { n: 4, t: "ぶんぽうジム", d: "Three stages: making the plain form, ことができる, then 好き・とくい・下手. Each one links to the Grammar Hub step that owns it.",
+        done: gramDone === GRAM.length, tag: gramDone ? gramDone + "/" + GRAM.length + " stages · " + gs.got + "/" + gs.of : "",
+        fn: () => { gram.stage = GRAM.findIndex((g) => !S.done.gram[g.key]); if (gram.stage < 0) gram.stage = 0; startGram(); } },
+      { n: 5, t: "どっかい・しごとえらび", d: "Read a profile at your level, work out which job suits the person, then prove it from the text. Three levels, all open.",
+        done: readDone > 0, tag: readDone ? readDone + " level" + (readDone === 1 ? "" : "s") + " · " + rs.got + "/" + rs.of : "",
+        fn: () => { startRead(); } },
+      { n: 6, t: "レポート", d: "Your first try at every question, step by step. Available any time; steps you have not done yet say so.",
+        done: false, tag: "any time", fn: () => { drawReport(); go("report"); } },
+    ];
+    const wrap = $("home-steps"); wrap.innerHTML = "";
+    steps.forEach((st) => {
+      const b = document.createElement("button");
+      b.className = "step step-" + st.n + (st.done ? " done" : "");
+      b.innerHTML = '<span class="num">' + (st.done ? "✓" : st.n) + '</span>' +
+        '<span class="body"><span class="t">' + esc(st.t) + '</span><br><span class="d">' + esc(st.d) + '</span></span>' +
+        '<span class="tag">' + esc(st.tag) + '</span>';
+      b.addEventListener("click", st.fn);
+      wrap.appendChild(b);
+    });
+  }
+
+  /* ---------------- STEP 1 · STUDY ---------------- */
+  function drawStudy() {
+    const body = $("study-body"); body.innerHTML = "";
+    VSETS.forEach((set) => {
+      const words = U10_VOCAB.filter((w) => w.set === set.key);
+      if (!words.length) return;
+      const sec = document.createElement("div");
+      sec.className = "vset";
+      sec.innerHTML = '<h3 data-jt="set_' + set.key + '">' + esc(set.t[0]) + "</h3>" +
+        '<div class="vgrid">' + words.map((w) =>
+          '<div class="vcard" tabindex="0">' +
+            '<div class="jp">' + ruby(w.jp) + (w.group ? ' <span class="grp">G' + w.group + "</span>" : "") + "</div>" +
+            '<div class="rd">' + esc(w.read) + (w.masu ? " · " + esc(w.masu) : "") + "</div>" +
+            '<div class="gl">' + esc(w.gloss) + "</div>" +
+            '<div class="ex">' + ruby(w.ex) + "<br><span style=\"font-size:.9em\">" + esc(w.exGloss) + "</span></div>" +
+          "</div>").join("") + "</div>";
+      body.appendChild(sec);
+    });
+    body.querySelectorAll(".vcard").forEach((c) => {
+      const t = () => c.classList.toggle("open");
+      c.addEventListener("click", t);
+      c.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { t(); e.preventDefault(); } });
+    });
+    const fam = U10_VOCAB.filter((w) => w.families && w.families.length);
+    if (fam.length) {
+      const note = document.createElement("div");
+      note.className = "bank-note";
+      note.innerHTML = "<b>This list is also the seed of the vocabulary hub.</b> Every word here is stored with its reading, " +
+        "its part of speech, its group and ます-form, and a real example, which is exactly what a whole-site vocabulary bank needs. " +
+        "Words also carry their kanji families: " + fam.map((w) => ruby(w.jp)).join("、") +
+        " shares 手 with 歌手 (singer) and 運転手 (driver). Families like that get built in the " +
+        '<a href="../words/">ことばラボ Word Lab</a>, so a unit can hand its words straight to it.';
+      $("study-body").appendChild(note);
+    }
+    if (window.HubLever) window.HubLever.apply(body);
+  }
+  $("studyDone").addEventListener("click", () => { S.studied = true; drawHome(); go("home"); });
+
+  /* ---------------- STEP 2 · VOCAB TASKS ----------------
+     Each word is dealt ONE task kind, once, so a reload cannot
+     reroll it, and two students get different mixes. */
+  const vocab = { queue: [], i: 0, graded: false };
+  function dealVocab() {
+    if (S.deal) return;
+    S.deal = {};
+    U10_VOCAB.forEach((w, i) => {
+      const kinds = w.pos === "verb" && w.masu ? ["meaning", "reverse", "cloze", "plain"] : ["meaning", "reverse", "cloze"];
+      S.deal[w.jp] = kinds[(i + Math.floor(Math.random() * kinds.length)) % kinds.length];
+    });
+  }
+  function vocabTask(w) {
+    const kind = S.deal[w.jp];
+    const id = "v:" + w.jp;
+    const others = shuffle(U10_VOCAB.filter((x) => x !== w)).slice(0, 3);
+    if (kind === "meaning") {
+      return { id, kind, prompt: "What does this word mean?", cue: ruby(w.jp),
+        options: shuffle([w.gloss].concat(others.map((o) => o.gloss))), answer: w.gloss,
+        why: ruby(w.ex) + " — " + esc(w.exGloss) };
+    }
+    if (kind === "reverse") {
+      return { id, kind, prompt: "Which word means this?", cue: esc(w.gloss),
+        options: shuffle([w.jp].concat(others.map((o) => o.jp))).map(ruby), answer: ruby(w.jp),
+        why: ruby(w.ex) + " — " + esc(w.exGloss) };
+    }
+    if (kind === "plain") {
+      return { id, kind: "type", prompt: "Write the plain form of this verb.", cue: esc(w.masu),
+        accept: [w.jp.replace(/\[([^\]|]+)\|[^\]]+\]/g, "$1"), w.read], why: "Group " + w.group + ". " + esc(w.masu) + " → " + ruby(w.jp) + "." };
+    }
+    // cloze: the word is cut out of its own example sentence
+    const bare = w.jp.replace(/\[([^\]|]+)\|[^\]]+\]/g, "$1");
+    const gapped = w.ex.replace(bare, "＿＿＿");
+    return { id, kind: "type", prompt: "Put the missing word into the sentence.", cue: ruby(gapped),
+      accept: [bare, w.read], why: ruby(w.ex) + " — " + esc(w.exGloss) };
+  }
+  function startVocab() {
+    dealVocab();
+    vocab.queue = shuffle(U10_VOCAB.slice()).map(vocabTask);
+    vocab.i = 0;
+    go("vocab"); renderVocab();
+  }
+  function renderVocab() {
+    const t = vocab.queue[vocab.i];
+    if (!t) { S.done.vocab = true; drawHome(); go("home"); return; }
+    vocab.graded = false;
+    const s = firstScore("v:");
+    $("vocab-prog").textContent = "ステップ2 · " + (vocab.i + 1) + "/" + vocab.queue.length + " · " + s.got + "/" + U10_VOCAB.length;
+    $("vocab-fill").style.width = (100 * vocab.i / vocab.queue.length) + "%";
+    $("vocab-fb").className = "feedback"; $("vocab-fb").innerHTML = "";
+    $("vocab-check").style.display = ""; $("vocab-check").disabled = true;
+    $("vocab-next").style.display = "none";
+    $("vocab-area").innerHTML = '<div class="task-prompt">' + esc(t.prompt) + "</div>" +
+      '<div class="cue">' + t.cue + "</div>" +
+      (t.kind === "type"
+        ? '<input type="text" id="vocab-in" autocomplete="off" autocapitalize="off" spellcheck="false">'
+        : '<div class="options">' + t.options.map((o) => '<button type="button" class="option" data-v="' + esc(o) + '">' + o + "</button>").join("") + "</div>");
+    wireTask("vocab", t);
+  }
+  /* Both quiz screens share their wiring: MCQ selection, typed
+     input, Enter to check, and the mastery requeue. */
+  function wireTask(pre, t) {
+    const area = $(pre + "-area"), chk = $(pre + "-check");
+    if (t.kind === "type" || t.type === "gapfill" || t.type === "transform") {
+      const inp = area.querySelector("input");
+      inp.addEventListener("input", () => { chk.disabled = !inp.value.trim(); });
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter" && !chk.disabled) chk.click(); });
+      setTimeout(() => inp.focus(), 40);
+    } else if (t.type === "order") {
+      area.querySelectorAll(".tile").forEach((tile) => tile.addEventListener("click", () => {
+        const slots = area.querySelector(".slots"), bank = area.querySelector(".tiles");
+        (tile.parentElement === bank ? slots : bank).appendChild(tile);
+        chk.disabled = slots.children.length !== t.tiles.length;
+      }));
+    } else {
+      area.querySelectorAll(".option").forEach((b) => b.addEventListener("click", () => {
+        area.querySelectorAll(".option").forEach((x) => x.dataset.sel = "");
+        b.dataset.sel = "1"; chk.disabled = false;
+      }));
+    }
+  }
+  function gradeTask(pre, t, area) {
+    let ok, expected;
+    if (t.kind === "type" || t.type === "gapfill" || t.type === "transform") {
+      const inp = area.querySelector("input");
+      const got = normJa(inp.value);
+      ok = (t.accept || []).some((a) => normJa(a) === got);
+      expected = (t.accept || [])[0];
+      inp.classList.add(ok ? "correct" : "incorrect");
+      inp.disabled = true;
+    } else if (t.type === "order") {
+      const slots = area.querySelector(".slots");
+      const got = normJa([...slots.children].map((x) => x.textContent).join(""));
+      ok = got === normJa(t.answer);
+      expected = t.answer;
+      slots.classList.add(ok ? "correct" : "incorrect");
+      area.querySelectorAll(".tile").forEach((x) => x.disabled = true);
+    } else {
+      const sel = area.querySelector('.option[data-sel="1"]');
+      const ansTxt = String(t.answer);
+      ok = !!sel && sel.dataset.v === ansTxt;
+      expected = ansTxt;
+      area.querySelectorAll(".option").forEach((b) => {
+        b.disabled = true;
+        if (b.dataset.v === ansTxt) b.classList.add("correct");
+        else if (b.dataset.sel === "1") b.classList.add("incorrect");
+      });
+    }
+    return { ok, expected };
+  }
+  function afterGrade(pre, t, ok, expected, requeue) {
+    if (!(t.id in S.first)) S.first[t.id] = ok;   // first attempt is the score
+    if (!ok && requeue) requeue();
+    const fb = $(pre + "-fb");
+    fb.className = "feedback " + (ok ? "good" : "bad");
+    fb.innerHTML = (ok ? "✓ " : "✗ ") + (t.why || "") +
+      (ok ? "" : ' <br><b>Answer:</b> ' + expected + " — this one will come back around.");
+    $(pre + "-check").style.display = "none";
+    $(pre + "-next").style.display = "";
+    $(pre + "-next").focus();
+  }
+  $("vocab-check").addEventListener("click", () => {
+    if (vocab.graded) return; vocab.graded = true;
+    const t = vocab.queue[vocab.i];
+    const r = gradeTask("vocab", t, $("vocab-area"));
+    afterGrade("vocab", t, r.ok, r.expected, () => vocab.queue.push(t));
+  });
+  $("vocab-next").addEventListener("click", () => { vocab.i++; renderVocab(); });
+
+  /* ---------------- STEP 3 · CHARACTER BUILDER ----------------
+     Pick the components that build the character, avoiding the
+     decoys. Order is deliberately NOT graded: 聞 nests 耳 inside
+     門, so demanding a left-to-right sequence would teach a lie.
+     A character with no parts (手) is shown as a piece to know
+     rather than a puzzle to solve, the same way the word builder
+     handles a single-morpheme word. */
+  const kanji = { queue: [], i: 0, graded: false, picked: [] };
+  function startKanji() {
+    kanji.queue = shuffle(U10_KANJI.slice());
+    kanji.i = 0; go("kanji"); renderKanji();
+  }
+  function renderKanji() {
+    const k = kanji.queue[kanji.i];
+    if (!k) {
+      S.done.kanji = true;
+      const s = firstScore("k:");
+      $("kanji-area").innerHTML = '<div class="hook" style="border-left-color:var(--correct)"><b>かんじビルダー かんりょう.</b><br>' +
+        "First try: " + s.got + "/" + s.of + ". These are the pieces the unit's words are built from, so they turn up again in the reading." +
+        '<div class="inwords">Whole words get built from characters in the <a href="../words/" style="color:var(--accent);font-weight:700">ことばラボ Word Lab</a>.</div></div>';
+      $("kanji-fb").className = "feedback";
+      $("kanji-check").style.display = "none"; $("kanji-next").style.display = "none";
+      $("kanji-prog").textContent = "ステップ3 · かんじビルダー ✓";
+      $("kanji-fill").style.width = "100%";
+      drawHome();
+      return;
+    }
+    kanji.graded = false; kanji.picked = [];
+    $("kanji-prog").textContent = "ステップ3 · かんじビルダー · " + (kanji.i + 1) + "/" + kanji.queue.length;
+    $("kanji-fill").style.width = (100 * kanji.i / kanji.queue.length) + "%";
+    $("kanji-fb").className = "feedback"; $("kanji-fb").innerHTML = "";
+    $("kanji-next").style.display = "none";
+    const head = '<div class="kbig">' + k.ch + "</div>" +
+      '<div class="kgloss">' + esc(k.gloss) + "</div>" +
+      '<div class="kread">' + esc(k.kun) + " · " + esc(k.on) + "</div>";
+    if (!k.parts.length) {
+      // a piece to know, not a puzzle: no score attached, nothing to get wrong.
+      // No parts in the data means no component line on the card — an empty
+      // breakdown would be a claim, and this character does not come apart.
+      $("kanji-area").innerHTML = kcard(k, "");
+      $("kanji-check").style.display = "none";
+      $("kanji-next").style.display = "";
+      return;
+    }
+    $("kanji-check").style.display = ""; $("kanji-check").disabled = true;
+    const bank = shuffle(k.parts.map((p) => p.p).concat(k.decoys));
+    $("kanji-area").innerHTML = head +
+      '<div class="task-prompt" style="text-align:center">Pick the <b>' + k.parts.length +
+      " parts</b> this character is written with. Some of the tiles do not belong to it.</div>" +
+      '<div class="parts" id="k-picked"></div>' +
+      '<div class="bank" id="k-bank">' + bank.map((c) =>
+        '<button type="button" class="ptile" data-c="' + c + '"><span class="pc">' + c + "</span></button>").join("") + "</div>";
+    $("k-bank").querySelectorAll(".ptile").forEach((t) => t.addEventListener("click", () => {
+      if (kanji.graded) return;
+      const c = t.dataset.c, at = kanji.picked.indexOf(c);
+      if (at > -1) { kanji.picked.splice(at, 1); $("k-bank").appendChild(t); }
+      else if (kanji.picked.length < k.parts.length) { kanji.picked.push(c); $("k-picked").appendChild(t); }
+      $("kanji-check").disabled = kanji.picked.length !== k.parts.length;
+    }));
+  }
+  /* ---------------- THE CHARACTER CARD ----------------
+     Purple Lab's word card, ported to kanji, the same way kanji/
+     (Kanji Factory) ports it. An English word can be coloured letter
+     by letter because its morphemes are letters; a kanji cannot,
+     because its parts are strokes inside one glyph and CSS colours
+     whole characters only. So the parts take their colours on their
+     own line underneath: each one a coloured serif <code>, its gloss
+     in italics, joined by " + ", then the note.
+     Everything on the card comes from U10_KANJI. Nothing is inferred:
+     a character with no `parts` gets no component line at all, and the
+     hook keeps its "memory hook, not history" label, because a good
+     mnemonic is not an etymology and this file says so. */
+  /* The character drawn stroke by stroke, so each component takes its own
+     colour inside the glyph — the same move the English word builders make
+     when they colour "pan" and "sexual" inside Pansexual. The colours are
+     this file's own step colours, the ones the component line already uses.
+     A character with no parts has no jobs to show, so it is drawn in one
+     ink colour. Falls back to the plain character where no stroke data is
+     bundled, so a headword can never come out blank. */
+  function glyph(k) {
+    if (window.KanjiGlyph && KanjiGlyph.has(k.ch)) {
+      return KanjiGlyph.svg(k.ch, k.parts, {
+        size: 52,
+        colors: { sense: "var(--s1)", sound: "var(--s3)" },
+        mono: k.parts.length ? null : "var(--ink)"
+      });
+    }
+    return k.ch;
+  }
+  function kcard(k, tail) {
+    const line = k.parts.length
+      ? k.parts.map((p) =>
+          '<code class="c-' + p.role + '">' + esc(p.p) + "</code> <i>" + esc(p.g) + "</i>" +
+          (p.role === "sound" && p.sound ? ' <b>' + esc(p.sound) + "</b>" : "")
+        ).join(" + ") + tail
+      : "";
+    const comp = '<div class="comp">' + line +
+      '<div class="hook"><span class="lab">おぼえかた · memory hook, not history</span>' + esc(k.hook) + "</div>" +
+      '<div class="inwords">This unit: ' + k.words.map(esc).join("、") + "</div>" + "</div>";
+    return '<div class="kcard"><span class="w">' + glyph(k) + '</span>' +
+      '<span class="rd">' + esc(k.kun) + " · " + esc(k.on) + "</span>" +
+      '<div class="meaning">' + esc(k.gloss) + "</div>" + comp + "</div>";
+  }
+  $("kanji-check").addEventListener("click", () => {
+    if (kanji.graded) return; kanji.graded = true;
+    const k = kanji.queue[kanji.i];
+    const want = k.parts.map((p) => p.p);
+    const ok = kanji.picked.length === want.length && want.every((c) => kanji.picked.indexOf(c) > -1);
+    const id = "k:" + k.ch;
+    if (!(id in S.first)) S.first[id] = ok;
+    if (!ok) kanji.queue.push(k);
+    $("k-picked").classList.add(ok ? "correct" : "incorrect");
+    document.querySelectorAll("#kanji-area .ptile").forEach((t) => {
+      t.disabled = true;
+      if (kanji.picked.indexOf(t.dataset.c) > -1 && want.indexOf(t.dataset.c) < 0) t.classList.add("wrongpart");
+    });
+    const fb = $("kanji-fb");
+    fb.className = "feedback " + (ok ? "good" : "bad");
+    fb.innerHTML = (ok ? "✓ " : "✗ Not quite. ") +
+      '<div class="klegend"><span class="c-sense">いみ meaning</span>' +
+      '<span class="c-sound">おと sound</span>' +
+      '<span class="note">— the job a part does in <i>that</i> character, not everywhere</span></div>' +
+      kcard(k, ' <span class="eq">= ' + k.ch + "</span>") +
+      (ok ? "" : "<br>This one will come back around.");
+    $("kanji-check").style.display = "none";
+    $("kanji-next").style.display = ""; $("kanji-next").focus();
+  });
+  $("kanji-next").addEventListener("click", () => { kanji.i++; renderKanji(); });
+
+  /* ---------------- STEP 4 · GRAMMAR GYM ---------------- */
+  const gram = { stage: 0, queue: [], i: 0, graded: false };
+  function startGram() {
+    const st = GRAM[gram.stage];
+    gram.queue = st.items.map((it, i) => Object.assign({ id: "g:" + st.key + ":" + i }, it));
+    gram.i = 0;
+    go("gram"); renderGram();
+  }
+  function renderGram() {
+    const st = GRAM[gram.stage];
+    $("stage-row").innerHTML = GRAM.map((g, i) =>
+      '<button class="stage-btn' + (i === gram.stage ? " on" : "") + (S.done.gram[g.key] ? " done" : "") +
+      '" data-i="' + i + '">' + (S.done.gram[g.key] ? "✓ " : "") + esc(g.t[0]) + "</button>").join("");
+    $("stage-row").querySelectorAll(".stage-btn").forEach((b) =>
+      b.addEventListener("click", () => { gram.stage = +b.dataset.i; startGram(); }));
+    $("gram-mini").innerHTML = st.mini +
+      '<br><a class="hublink" href="../grammar/#' + st.hub.id + '" target="_blank" rel="noopener">' +
+      "この文法は 文法ハブへ → " + esc(st.hub.label) + "</a>";
+    const t = gram.queue[gram.i];
+    if (!t) {
+      S.done.gram[st.key] = true;
+      const s = firstScore("g:" + st.key);
+      $("gram-area").innerHTML = '<div class="mini" style="border-left-color:var(--correct)"><b>ステージ かんりょう · stage complete.</b><br>' +
+        "First try: " + s.got + "/" + s.of + ". " +
+        (gram.stage < GRAM.length - 1 ? "Use the buttons above for the next stage, or go back home." : "That is the last stage. The reading step uses all three.") +
+        "</div>";
+      $("gram-fb").className = "feedback"; $("gram-check").style.display = "none"; $("gram-next").style.display = "none";
+      $("gram-prog").textContent = "ステップ3 · " + esc(st.t[0]) + " ✓";
+      $("gram-fill").style.width = "100%";
+      drawHome();
+      return;
+    }
+    gram.graded = false;
+    $("gram-prog").textContent = "ステップ3 · " + esc(st.t[0]) + " · " + (gram.i + 1) + "/" + gram.queue.length;
+    $("gram-fill").style.width = (100 * gram.i / gram.queue.length) + "%";
+    $("gram-fb").className = "feedback"; $("gram-fb").innerHTML = "";
+    $("gram-check").style.display = ""; $("gram-check").disabled = true;
+    $("gram-next").style.display = "none";
+    let html = '<div class="task-prompt">' + esc(t.prompt) + "</div>";
+    if (t.type === "identify") {
+      html += '<div class="options">' + shuffle(t.options.slice()).map((o) =>
+        '<button type="button" class="option" data-v="' + esc(o) + '">' + ruby(o) + "</button>").join("") + "</div>";
+    } else if (t.type === "order") {
+      html += '<div class="slots"></div><div class="tiles">' +
+        shuffle(t.tiles.slice()).map((x) => '<button type="button" class="tile">' + ruby(x) + "</button>").join("") + "</div>";
+    } else {
+      if (t.cue) html += '<div class="cue">' + ruby(t.cue) + "</div>";
+      html += '<input type="text" id="gram-in" autocomplete="off" autocapitalize="off" spellcheck="false">';
+    }
+    $("gram-area").innerHTML = html;
+    wireTask("gram", t);
+  }
+  $("gram-check").addEventListener("click", () => {
+    if (gram.graded) return; gram.graded = true;
+    const t = gram.queue[gram.i];
+    const r = gradeTask("gram", t, $("gram-area"));
+    afterGrade("gram", t, r.ok, r.expected, () => gram.queue.push(t));
+  });
+  $("gram-next").addEventListener("click", () => { gram.i++; renderGram(); });
+
+  /* ---------------- STEP 4 · READING + EVIDENCE ----------------
+     Comprehension, then a judgement, then the part that matters:
+     point at the sentences that prove the judgement. A choice you
+     cannot evidence is a guess. */
+  const read = { tier: 0, phase: "q", i: 0, graded: false, picked: [] };
+  function startRead() { read.tier = 0; enterTier(); go("read"); }
+  function enterTier() {
+    const r = READ[read.tier];
+    read.phase = "q"; read.i = 0; read.picked = [];
+    $("tier-row").innerHTML = READ.map((x, i) =>
+      '<button class="tier-btn' + (i === read.tier ? " on" : "") + '" data-i="' + i + '">' + esc(x.t[0]) + "</button>").join("");
+    $("tier-row").querySelectorAll(".tier-btn").forEach((b) =>
+      b.addEventListener("click", () => { read.tier = +b.dataset.i; enterTier(); }));
+    $("tier-note").textContent = r.note;
+    $("read-vocab").innerHTML = r.vocab.map((v) => "<span><b>" + esc(v[0]) + "</b> " + esc(v[1]) + "</span>").join("");
+    $("read-passage").innerHTML = r.sents.map((s) =>
+      '<span class="sent" id="s-' + s.id + '">' + ruby(s.jp) + "</span>").join("");
+    renderRead();
+  }
+  function renderRead() {
+    const r = READ[read.tier];
+    $("read-fb").className = "feedback"; $("read-fb").innerHTML = "";
+    $("read-check").style.display = ""; $("read-check").disabled = true;
+    $("read-next").style.display = "none";
+    read.graded = false;
+    r.sents.forEach((s) => { const el = $("s-" + s.id); el.className = "sent"; });
+
+    if (read.phase === "q") {
+      const t = r.items[read.i];
+      $("read-prog").textContent = "ステップ4 · " + esc(r.t[0]) + " · " + (read.i + 1) + "/" + r.items.length;
+      let html = '<div class="task-prompt">' + esc(t.prompt) + "</div>";
+      if (t.type === "identify") {
+        html += '<div class="options">' + shuffle(t.options.slice()).map((o) =>
+          '<button type="button" class="option" data-v="' + esc(o) + '">' + ruby(o) + "</button>").join("") + "</div>";
+      } else {
+        if (t.cue) html += '<div class="cue">' + ruby(t.cue) + "</div>";
+        html += '<input type="text" autocomplete="off" spellcheck="false">';
+      }
+      $("read-area").innerHTML = html;
+      wireTask("read", t);
+    } else if (read.phase === "job") {
+      $("read-prog").textContent = "ステップ4 · " + esc(r.t[0]) + " · しごとえらび";
+      $("read-area").innerHTML = '<div class="task-prompt">' + esc(r.job.prompt) + "</div>" +
+        '<div class="jobs options">' + shuffle(r.job.options.slice()).map((o) =>
+          '<button type="button" class="option" data-v="' + esc(o) + '">' + esc(o) + "</button>").join("") + "</div>";
+      wireTask("read", { type: "identify" });
+    } else {
+      $("read-prog").textContent = "ステップ4 · " + esc(r.t[0]) + " · しょうこ evidence";
+      $("read-area").innerHTML = '<div class="task-prompt">Now prove it. Click <b>' + r.evidence.need +
+        " sentences</b> in the passage above that show this job suits them. A judgement you cannot point at is a guess.</div>";
+      r.sents.forEach((s) => {
+        const el = $("s-" + s.id);
+        el.classList.add("pick");
+        el.addEventListener("click", () => {
+          if (read.graded) return;
+          const at = read.picked.indexOf(s.id);
+          if (at > -1) { read.picked.splice(at, 1); el.classList.remove("chosen"); }
+          else if (read.picked.length < r.evidence.need) { read.picked.push(s.id); el.classList.add("chosen"); }
+          $("read-check").disabled = read.picked.length !== r.evidence.need;
+        });
+      });
+    }
+  }
+  $("read-check").addEventListener("click", () => {
+    if (read.graded) return; read.graded = true;
+    const r = READ[read.tier];
+    if (read.phase === "q") {
+      const t = Object.assign({ id: "r:" + r.key + ":" + read.i }, r.items[read.i]);
+      const res = gradeTask("read", t, $("read-area"));
+      afterGrade("read", t, res.ok, res.expected, null);
+    } else if (read.phase === "job") {
+      const t = { id: "r:" + r.key + ":job", type: "identify", answer: r.job.answer, why: r.job.why };
+      const res = gradeTask("read", t, $("read-area"));
+      afterGrade("read", t, res.ok, res.expected, null);
+    } else {
+      const good = read.picked.filter((id) => r.evidence.ids.indexOf(id) > -1).length;
+      const ok = good === r.evidence.need;
+      const id = "r:" + r.key + ":evidence";
+      if (!(id in S.first)) S.first[id] = ok;
+      r.sents.forEach((s) => {
+        const el = $("s-" + s.id);
+        el.classList.remove("chosen", "pick");
+        if (r.evidence.ids.indexOf(s.id) > -1) el.classList.add("evidence");
+      });
+      const fb = $("read-fb");
+      fb.className = "feedback " + (ok ? "good" : "bad");
+      fb.innerHTML = (ok ? "✓ Both of those prove it. " : "✗ You found " + good + " of " + r.evidence.need + ". ") +
+        "The sentences that carry the evidence are now marked in green. " + r.evidence.why;
+      $("read-check").style.display = "none";
+      $("read-next").style.display = "";
+    }
+  });
+  $("read-next").addEventListener("click", () => {
+    const r = READ[read.tier];
+    if (read.phase === "q") {
+      read.i++;
+      if (read.i >= r.items.length) read.phase = "job";
+    } else if (read.phase === "job") {
+      read.phase = "ev";
+    } else {
+      S.done.read[r.key] = true;
+      drawHome();
+      const s = firstScore("r:" + r.key);
+      $("read-area").innerHTML = '<div class="mini" style="border-left-color:var(--correct)"><b>おつかれさま · level complete.</b><br>' +
+        "First try: " + s.got + "/" + s.of + ". Try another level with the buttons above, or go back home for your report.</div>";
+      $("read-check").style.display = "none"; $("read-next").style.display = "none";
+      $("read-prog").textContent = "ステップ4 · " + esc(r.t[0]) + " ✓";
+      return;
+    }
+    renderRead();
+  });
+
+  /* ---------------- STEP 5 · REPORT ---------------- */
+  function drawReport() {
+    const rows = [
+      { t: "ステップ1 · ことば study", pre: null, done: S.studied,
+        undone: "Not opened yet.", doneTxt: "Read." },
+      { t: "ステップ2 · ことばの れんしゅう", pre: "v:", undone: "Not started yet." },
+      { t: "ステップ3 · かんじビルダー", pre: "k:", undone: "Not started yet." },
+      { t: "ステップ4 · ぶんぽうジム", pre: "g:", undone: "Not started yet." },
+      { t: "ステップ5 · どっかい", pre: "r:", undone: "Not started yet." },
+    ];
+    let got = 0, of = 0;
+    $("rep-rows").innerHTML = rows.map((r) => {
+      if (!r.pre) {
+        return '<div class="rrow ' + (r.done ? "full" : "none") + '"><span>' + esc(r.t) +
+          '</span><span class="' + (r.done ? "sc" : "undone") + '">' + (r.done ? r.doneTxt : r.undone) + "</span></div>";
+      }
+      const s = firstScore(r.pre);
+      got += s.got; of += s.of;
+      const cls = !s.of ? "none" : (s.got === s.of ? "full" : (s.got >= s.of / 2 ? "part" : "part"));
+      return '<div class="rrow ' + cls + '"><span>' + esc(r.t) + "</span>" +
+        (s.of ? '<span class="sc">' + s.got + "/" + s.of + "</span>"
+              : '<span class="undone">' + r.undone + "</span>") + "</div>";
+    }).join("");
+    $("rep-stat").innerHTML = (of ? got + "/" + of : "—") +
+      "<small>first try, across every question you have answered</small>";
+    // per stage/level detail
+    const detail = [];
+    GRAM.forEach((g) => { const s = firstScore("g:" + g.key); if (s.of) detail.push("  " + g.t[3] + ": " + s.got + "/" + s.of); });
+    READ.forEach((r) => { const s = firstScore("r:" + r.key); if (s.of) detail.push("  Reading (" + r.t[3] + "): " + s.got + "/" + s.of); });
+    $("rep-rows").dataset.detail = detail.join("\n");
+  }
+  function reportText() {
+    const name = $("rep-name").value.trim();
+    const d = new Date().toLocaleDateString("en-AU");
+    const vs = firstScore("v:"), gs = firstScore("g:"), rs = firstScore("r:");
+    let t = "Unit 10 — Abilities and Preferences\n" + (name ? "Name: " + name + "\n" : "") + "Date: " + d + "\n\n";
+    t += "Step 1 vocabulary study: " + (S.studied ? "read" : "not opened yet") + "\n";
+    t += "Step 2 vocabulary tasks: " + (vs.of ? vs.got + "/" + vs.of + " first try" : "not started yet") + "\n";
+    t += "Step 3 character builder: " + (function(){const s=firstScore("k:");return s.of? s.got+"/"+s.of+" first try":"not started yet";})() + "\n";
+    t += "Step 4 grammar gym: " + (gs.of ? gs.got + "/" + gs.of + " first try" : "not started yet") + "\n";
+    t += "Step 5 reading: " + (rs.of ? rs.got + "/" + rs.of + " first try" : "not started yet") + "\n";
+    const det = $("rep-rows").dataset.detail;
+    if (det) t += "\nDetail:\n" + det + "\n";
+    t += "\nScores are the FIRST attempt at each question. Wrong answers came back until they were right.\n";
+    return t;
+  }
+  $("rep-copy").addEventListener("click", () => {
+    const t = reportText();
+    navigator.clipboard.writeText(t).then(
+      () => { $("rep-note").textContent = "Copied. Paste it wherever your teacher asks."; },
+      () => { $("rep-note").textContent = "Could not copy automatically — use Print instead."; });
+  });
+  $("rep-print").addEventListener("click", () => window.print());
+
+  /* ---------------- boot ---------------- */
+  drawHome();
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "日本研修旅行 Japan Study Tour",
+  "short_name": "Japan Tour",
+  "description": "Where we are up to, what to say, and why the thing in front of you is worth looking at. Works with no signal.",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e3c273",
+  "theme_color": "#e3c273",
+  "lang": "en-AU",
+  "dir": "ltr",
+  "categories": ["education", "travel"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

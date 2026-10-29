@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>レベルアップの壁 · Level Up Wall</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  /* One task. Nine rungs. The same self-introduction, answered the way a
+     Prep student answers it and the way a Year 12 answers it, with every
+     rung in between. Ported from the bump-it-up / level-anchor-sheet
+     pattern in Liam's Year 7 Humanities pages. */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --band:#f5f0e6;
+    /* curriculum axis: same rule as the Grammar Hub. Lightness + fill +
+       a literal word, never hue. */
+    --vic:#2f6fa8; --vce:#16375e; --vce-ink:#fbf7ee;
+    /* the five criteria. Each one gets THREE channels: a colour, an
+       underline style, and a glyph, so colour is never carrying the
+       meaning on its own. */
+    --frame:#1f6f78;  --frame-soft:#dceef0;
+    --info:#7a5cad;   --info-soft:#ece4f6;
+    --join:#b0561f;   --join-soft:#f8e6d8;
+    --reach:#3f5aa6;  --reach-soft:#e2e7f7;
+    --aite:#7a6a12;   --aite-soft:#f3eed6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.5;min-height:100vh;padding:16px}
+  .wrap{max-width:1080px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:26px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:23px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .task{background:var(--bg);border:1px solid var(--line-soft);border-left:4px solid var(--accent);
+       border-radius:10px;padding:12px 16px;font-size:13.5px;margin-bottom:18px}
+  .task b{font-family:var(--font)}
+
+  /* ---- the ladder rail ---- */
+  .rail{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .rung{border:1px solid var(--line-soft);background:var(--bg);color:var(--muted);font-size:12px;
+       font-weight:700;padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;
+       display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;line-height:1.2}
+  .rung small{font-weight:600;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+  .rung:hover{border-color:var(--accent);color:var(--accent)}
+  .rung.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .rung.on small{opacity:.75}
+  .rail-note{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px}
+
+  /* ---- controls ---- */
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .tog{border:1px solid var(--line-soft);background:var(--bg);color:var(--muted);font-size:11.5px;
+       font-weight:700;padding:6px 13px;border-radius:14px;cursor:pointer;font-family:inherit}
+  .tog:hover{border-color:var(--accent);color:var(--accent)}
+  .tog.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* ---- the sheet ---- */
+  .sheets{display:grid;gap:16px}
+  .sheets.compare{grid-template-columns:1fr 1fr}
+  @media (max-width:820px){ .sheets.compare{grid-template-columns:1fr} }
+  .sheet{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:20px 22px}
+  .sheet.next{background:var(--band)}
+  .sheet-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+       border-bottom:2px solid var(--ink);padding-bottom:9px;margin-bottom:14px}
+  .sheet-head h2{font-family:var(--font);font-size:22px;letter-spacing:-.01em}
+  .sheet.next .sheet-head h2{color:var(--muted)}
+  .whichlv{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+       width:100%;margin-bottom:-4px}
+  .cur-chip{font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:2px 9px;border-radius:10px;
+       text-transform:uppercase}
+  .cur-vic{color:var(--vic);border:1px solid var(--vic);background:transparent}
+  .cur-vce{color:var(--vce-ink);background:var(--vce);border:1px solid var(--vce)}
+
+  h3{font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+       color:var(--muted);border-bottom:1px solid var(--line-soft);padding-bottom:5px;margin:16px 0 9px}
+  h3:first-of-type{margin-top:0}
+
+  .jp{font-family:var(--font);font-size:17.5px;line-height:2.15}
+  .sheet.next .jp{font-size:16px}
+  ruby rt{font-size:.48em;font-weight:400;color:var(--muted);line-height:1}
+  .nofuri rt{display:none}
+  .en{font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:12px;padding-top:10px;
+       border-top:1px dashed var(--line-soft);display:none}
+  .showen .en{display:block}
+
+  /* two channels beyond colour: underline style and glyph */
+  .m{cursor:pointer;font-weight:600;text-decoration-line:underline;text-underline-offset:5px;
+       text-decoration-thickness:1.7px;border-radius:3px;padding:0 1px}
+  .m-frame{color:var(--frame);text-decoration-color:var(--frame);text-decoration-style:solid}
+  .m-info{color:var(--info);text-decoration-color:var(--info);text-decoration-style:dashed}
+  .m-join{color:var(--join);text-decoration-color:var(--join);text-decoration-style:dotted}
+  .m-reach{color:var(--reach);text-decoration-color:var(--reach);text-decoration-style:double}
+  .m-aite{color:var(--aite);text-decoration-color:var(--aite);text-decoration-style:wavy;text-decoration-thickness:1.2px}
+  .m.lit-frame{background:var(--frame-soft)} .m.lit-info{background:var(--info-soft)}
+  .m.lit-join{background:var(--join-soft)}   .m.lit-reach{background:var(--reach-soft)}
+  .m.lit-aite{background:var(--aite-soft)}
+
+  .key{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .k{flex:1 1 150px;border:1px solid var(--line-soft);border-left:5px solid;border-radius:7px;
+       padding:6px 9px;background:var(--band);cursor:pointer}
+  .k:hover{border-color:var(--line)}
+  .k .kh{font-weight:800;font-size:11.5px;display:flex;gap:5px;align-items:baseline;line-height:1.25}
+  .k .kj{font-size:10px;color:var(--muted);font-weight:600;margin-top:1px}
+  .k-frame{border-left-color:var(--frame)} .k-frame .kh{color:var(--frame)}
+  .k-info{border-left-color:var(--info)}   .k-info .kh{color:var(--info)}
+  .k-join{border-left-color:var(--join)}   .k-join .kh{color:var(--join)}
+  .k-reach{border-left-color:var(--reach)} .k-reach .kh{color:var(--reach)}
+  .k-aite{border-left-color:var(--aite)}   .k-aite .kh{color:var(--aite)}
+  .k.dim{opacity:.32}
+
+  .proves{display:grid;gap:8px}
+  .pv{display:flex;gap:9px;font-size:13px;line-height:1.5;border-radius:7px;padding:5px 7px;margin:-5px -7px}
+  .pv .g{flex:none;font-size:.9em;line-height:1.7;font-weight:800}
+  .pv-frame .g{color:var(--frame)} .pv-info .g{color:var(--info)} .pv-join .g{color:var(--join)}
+  .pv-reach .g{color:var(--reach)} .pv-aite .g{color:var(--aite)}
+  .pv.lit-frame{background:var(--frame-soft)} .pv.lit-info{background:var(--info-soft)}
+  .pv.lit-join{background:var(--join-soft)}   .pv.lit-reach{background:var(--reach-soft)}
+  .pv.lit-aite{background:var(--aite-soft)}
+
+  .newlist{display:grid;gap:6px}
+  .new-item{display:flex;gap:9px;font-size:13px;line-height:1.5;background:var(--band);
+       border:1px solid var(--line-soft);border-radius:7px;padding:8px 11px}
+  .new-item .up{flex:none;color:var(--accent);font-weight:800}
+  .firstrung{font-size:12.5px;color:var(--muted);font-style:italic;background:var(--band);
+       border:1px solid var(--line-soft);border-radius:7px;padding:9px 12px}
+
+  .foot{margin-top:20px;padding-top:12px;border-top:1px solid var(--line-soft);
+       font-size:11px;color:var(--muted);line-height:1.55}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);
+       opacity:.45;pointer-events:none}
+
+  /* ---- print: one rung per page, the anchor-sheet view ---- */
+  #printAll{display:none}
+  @media print{
+    @page{size:A4 portrait;margin:12mm}
+    body{background:#fff;padding:0}
+    .container,.controls,.rail,.rail-note,.sheets,.build-tag,.poc{display:none!important}
+    #printAll{display:block}
+    #printAll .sheet{border:0;padding:0;break-after:page;background:#fff}
+    #printAll .sheet:last-child{break-after:auto}
+    #printAll .en{display:block}
+    .pv,.new-item,.k{break-inside:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body class="showfuri">
+<div class="wrap">
+<div class="container">
+  <h1 class="jt-tap" data-jt="title">レベルアップの壁</h1>
+  <p class="subtitle jt-tap" data-jt="subtitle">One task, answered at every level</p>
+  <span class="poc"><b>Proof of concept</b> for Andrew's review — the model answers and the five criteria are proposed, not ratified (see Q17).</span>
+
+  <p class="task"><b data-jt="taskLabel">課題</b> 自己しょうかい。はじめて会う日本語のクラスに、自分をしょうかいしてください。
+    <br><span class="jt-tap" data-jt="taskLine">Introduce yourself to a class you are meeting for the first time.</span></p>
+
+  <div class="rail" id="rail"></div>
+  <p class="rail-note" id="railNote"></p>
+
+  <div class="controls" id="controls">
+    <button class="tog on" id="furiBtn" data-jt="furi">ふりがな</button>
+    <button class="tog" id="enBtn" data-jt="english">English</button>
+    <button class="tog" id="cmpBtn" data-jt="compare">くらべる</button>
+    <button class="tog" id="printBtn" data-jt="print">印刷</button>
+    <span id="ctrlLever" data-scope="#controls" title="Pull down for more help with these buttons. It lets go slowly."></span>
+  </div>
+
+  <div class="sheets" id="sheets"></div>
+
+  <p class="foot"><b>About these models:</b> the writer is a fictional composite. No student work is used anywhere in this app.
+    The five criteria are a proposal for Andrew to accept, rename or replace (Q17 in the questions file); the model answers are
+    written to show the ladder, and every one of them needs his accuracy check before a class sees it. Year placements follow
+    the Grammar Hub's Prep to Year 12 timeline, which is itself awaiting his ratification (Q2).</p>
+</div>
+</div>
+<div id="printAll"></div>
+<div class="build-tag">LevelUp PoC 2026-09-06</div>
+
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT
+   ------------------------------------------------------------
+   Markup inside a model answer:
+     {key|text}        a marked phrase, key is a criterion
+     [漢字|かんじ]      furigana (rendered as <ruby>)
+   Nothing else in this file knows about the content, so Andrew's
+   own models can replace RUNGS wholesale.
+   ============================================================ */
+
+const CRITERIA = [
+  { key:"frame", glyph:"■", name:"The frame",        jp:"型 · kata",
+    blurb:"the set phrases that make it a real self-introduction" },
+  { key:"info",  glyph:"▲", name:"What you say",     jp:"情報 · jōhō",
+    blurb:"the information given, and how far it is developed" },
+  { key:"join",  glyph:"●", name:"Joining ideas",    jp:"つなぐ · tsunagu",
+    blurb:"how sentences are linked into one line of thought" },
+  { key:"reach", glyph:"◆", name:"Grammar reached for", jp:"ぶんぽう · bunpō",
+    blurb:"the structures the writer can actually control" },
+  { key:"aite",  glyph:"✦", name:"Who you are talking to", jp:"相手 · aite",
+    blurb:"register: the politeness the situation asks for" },
+];
+
+const RUNGS = [
+  {
+    label:"F–2", sub:"Prep to Yr 2", cur:"VIC",
+    text:"{frame|こんにちは。}{info|ミアです。}{info|ななさいです。}{frame|どうぞよろしく。}",
+    en:"Hello. I am Mia. I am seven. Nice to meet you.",
+    proves:{
+      frame:"こんにちは and どうぞよろしく are learned whole, as single sounds. At this rung that is not a shortcut, it is the skill.",
+      info:"Two facts, name and age, one to a sentence.",
+    },
+    newHere:null,
+  },
+  {
+    label:"3–4", sub:"Years 3 to 4", cur:"VIC",
+    text:"{frame|こんにちは。}{reach|わたしは}ミアです。{info|きゅうさいです。}{info|{reach|いぬがすきです。}}{info|ピンクがすきです。}{frame|どうぞよろしくおねがいします。}",
+    en:"Hello. I am Mia. I am nine. I like dogs. I like pink. Pleased to meet you.",
+    proves:{
+      frame:"The closing grows into the full どうぞよろしくおねがいします.",
+      info:"What she likes is added to who she is, so the introduction is no longer only labels.",
+      reach:"わたしは names the topic, and 〜がすきです is a pattern she can drop any noun into.",
+    },
+    newHere:["わたしは, so the sentence states its topic instead of leaving it to guesswork.",
+             "〜がすきです: a pattern, not a memorised phrase. Used twice, which is how you can tell.",],
+  },
+  {
+    label:"5–6", sub:"Years 5 to 6", cur:"VIC",
+    text:"{frame|はじめまして。}わたしはミアです。じゅういっさいです。{info|かぞくは{reach|[四|よ]にん}です。}{info|いぬが{reach|[二|に]ひき}います。}テニスがすきです。{reach|テニスはたのしいです。}{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. I am Mia. I am eleven. There are four people in my family. I have two dogs. I like tennis. Tennis is fun.",
+    proves:{
+      frame:"はじめまして tells the listener this is a first meeting. こんにちは does not do that job.",
+      info:"Family and pets are counted, not just mentioned.",
+      reach:"Counters (四にん for people, 二ひき for animals) and an adjective sentence, たのしいです.",
+    },
+    newHere:["はじめまして, the opener that marks a first meeting.",
+             "Counters, which Japanese requires and English does not.",
+             "An opinion sentence: テニスはたのしいです.",],
+  },
+  {
+    label:"7", sub:"Year 7", cur:"VIC",
+    text:"{frame|はじめまして。}わたしはミアです。じゅうにさいです。{info|オーストラリアからきました。}{info|かぞくは[四|よ]にんです。[父|ちち]と[母|はは]と[弟|おとうと]がいます。}{info|{reach|まいにち[学校|がっこう]で[日本語|にほんご]をべんきょうしています。}}{reach|すきなたべもの}はすしです。{join|とてもおいしいからです。}{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. I am Mia, twelve years old. I come from Australia. There are four in my family: my dad, my mum and my younger brother. I study Japanese at school every day. My favourite food is sushi, because it is very tasty.",
+    proves:{
+      frame:"The frame does not change again from here. What grows is everything between the two ends.",
+      info:"Where she is from, who is in her family, and what she does at school.",
+      join:"からです gives the reason for the sentence before it, so two sentences become one idea.",
+      reach:"〜ています for something she does daily, and すきな describing a noun rather than standing alone.",
+    },
+    newHere:["A reason (からです), so the introduction explains and not only lists.",
+             "Verbs beyond です: きました, べんきょうしています.",
+             "すきな + noun, describing instead of stating.",],
+  },
+  {
+    label:"8", sub:"Year 8", cur:"VIC",
+    text:"{frame|はじめまして。}ミアです。{join|じゅうさんさいで、}メルボルンに{reach|すんでいます}。{join|かぞくは[四|よ]にんで、}[父|ちち]と[母|はは]と[弟|おとうと]がいます。{info|しゅみはテニスです。[土|ど]よう[日|び]にはいつも[友|とも]だちと{reach|テニスをしに[行|い]きます}。}{info|{reach|[日本|にほん]へ[行|い]ったことはありません}{join|が、}いつか[京都|きょうと]に{reach|[行|い]きたいです}。}{aite|{frame|どうぞよろしくおねがいします。}}",
+    en:"Nice to meet you. I am Mia. I am thirteen, and I live in Melbourne. There are four in my family: my dad, my mum and my younger brother. My hobby is tennis. On Saturdays I always go to play tennis with my friends. I have never been to Japan, but one day I would like to go to Kyoto.",
+    proves:{
+      info:"Where she lives, what she does on Saturdays, and something she has not done yet.",
+      join:"〜で、 folds two sentences into one. 〜が、 holds a fact and a wish together inside a single sentence.",
+      reach:"〜しに行きます (going in order to do), 〜たことはありません (experience), 〜たいです (wanting).",
+      aite:"です／ます is held all the way to the end, which is what a first meeting asks for.",
+    },
+    newHere:["Sentences combine with 〜で and 〜が instead of stacking one after another.",
+             "Experience: 行ったことはありません.",
+             "A wish about the future: 行きたいです.",],
+  },
+  {
+    label:"9", sub:"Year 9", cur:"VIC",
+    text:"{frame|はじめまして。}ミアです。{info|メルボルンの[高校|こうこう]で[日本語|にほんご]をべんきょうしています。}{info|しゅみはテニスとりょうりで、しゅうまつには[友|とも]だちと{join|テニスをしたり、[家|いえ]でおかしを[作|つく]ったりしています}。}{reach|[日本語|にほんご]をべんきょうしているのは}、[日本|にほん]の[文化|ぶんか]にきょうみがある{join|からです}。{aite|かんじはむずかしいですが}、[日本語|にほんご]で[話|はな]すのは{reach|たのしいと[思|おも]います}。{info|しょうらいは[日本|にほん]で{reach|はたらいてみたい}{join|ので}、これからもがんばります。}{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. I am Mia. I study Japanese at a high school in Melbourne. My hobbies are tennis and cooking, and on weekends I do things like playing tennis with friends and making sweets at home. The reason I study Japanese is that I am interested in Japanese culture. Kanji is hard, but I think speaking in Japanese is fun. In the future I would like to try working in Japan, so I will keep at it.",
+    proves:{
+      info:"Her weekend is given as examples, and her reason for studying Japanese is a real reason rather than a polite one.",
+      join:"たり〜たり lists two examples without claiming they are the whole list. ので links a reason to what she intends to do about it.",
+      reach:"〜のは〜からです turns a whole clause into the subject of a sentence, and と思います marks an opinion as an opinion.",
+      aite:"ですが rather than だけど: the polite register is held even at the point where the sentence turns.",
+    },
+    newHere:["Opinion marked as opinion, with と思います.",
+             "Nominalising with の, so a whole clause can be talked about.",
+             "Open-ended examples with たり〜たり instead of a closed list.",],
+  },
+  {
+    label:"10", sub:"Year 10", cur:"VIC",
+    text:"{frame|はじめまして。}ミアです。{info|メルボルンの[高校|こうこう]で[日本語|にほんご]を[三年間|さんねんかん]べんきょうしています。}しゅみはテニスとりょうりで、しゅうまつには[友|とも]だちとテニスをしたり、[家|いえ]で[日本|にほん]のおかしを[作|つく]ったりしています。{info|[日本語|にほんご]をえらんだのは、[小学生|しょうがくせい]のときに[見|み]たアニメがきっかけでした{join|が}、[今|いま]はことば{reach|よりも[文化|ぶんか]のほうに}きょうみがあります。}{info|かんじはまだにがてで、テストのときによく{reach|まちがえてしまいます}{join|が}、まい[日|にち][十分|じゅっぷん]ずつ{reach|れんしゅうするようにしています}。}{info|しょうらいは[日本|にほん]ではたらく{reach|かもしれません}。}{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. I am Mia. I have been studying Japanese for three years at a high school in Melbourne. My hobbies are tennis and cooking, and on weekends I play tennis with friends and make Japanese sweets at home. What made me choose Japanese was an anime I watched in primary school, but now I am more interested in the culture than in the language. Kanji is still my weak point and I often slip up in tests, but I make a point of practising ten minutes a day. In the future I might work in Japan.",
+    proves:{
+      info:"She gives a history of her own learning, not only its current state: what started it, and what has changed since.",
+      join:"Two 〜が turns hold ideas in tension. The reason changed, and kanji is hard but practised anyway.",
+      reach:"よりも〜のほうに for comparison, てしまいます for something that happens despite her, ようにしています for an ongoing effort, かもしれません for a possibility rather than a plan.",
+    },
+    newHere:["Change over time: 今は…, きっかけでしたが…",
+             "Modality: かもしれません, ようにしています. She can now say how sure she is.",
+             "てしまいます, where the grammar itself carries the feeling.",],
+  },
+  {
+    label:"11", sub:"Year 11 · VCE", cur:"VCE",
+    text:"{frame|はじめまして。}{aite|ミアと[申|もう]します。}{info|メルボルンの[高校|こうこう]の[十一年生|じゅういちねんせい]で、[日本語|にほんご]を[四年間|よねんかん]つづけています。}{info|[日本語|にほんご]を[始|はじ]めたきっかけはアニメでした{join|が}、つづけている[理由|りゆう]は[今|いま]は[少|すこ]しちがいます。}{join|ことばを[一|ひと]つおぼえる{reach|たびに}}、そのことばを[使|つか]う[人|ひと]の[考|かんが]え[方|かた]が[少|すこ]しずつ[見|み]えてくる{join|からです}。{info|[今年|ことし]は[日本語|にほんご]のスピーチコンテストに[出|で]る{reach|ことにしました}。}{join|[人|ひと]の[前|まえ]で[話|はな]すのはきんちょうしますし}、まちがえることもあります{join|が}、{reach|まちがえなければ}[上手|じょうず]にならないと[思|おも]っています。{info|[将来|しょうらい]は[日本語|にほんご]を[使|つか]ってはたらく{reach|つもりです}。}{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. My name is Mia. I am a Year 11 student at a high school in Melbourne, and I have kept up Japanese for four years. What started me on Japanese was anime, but my reason for continuing is a little different now. It is that every time I learn one more word, the way the people who use that word think comes into view a little more. This year I decided to enter the Japanese speech contest. Speaking in front of people makes me nervous, and I do make mistakes, but I believe you cannot improve without making them. In the future I intend to work using Japanese.",
+    proves:{
+      info:"The facts are now in service of a point: why she keeps going, and what she has decided to do about it.",
+      join:"〜し stacks two reasons instead of choosing one. 〜が concedes before it argues. たびに ties a repeated action to a gradual change.",
+      reach:"ことにしました (a decision she made), なければ (conditional), つもりです (a settled intention, not a maybe).",
+      aite:"と申します is humble form. She has chosen a register to suit a formal first meeting, rather than using the only one she has.",
+    },
+    newHere:["Humble register: と申します. Register becomes a choice.",
+             "A chain of reasons (〜し, 〜からです) rather than a single reason.",
+             "Decisions and intentions: ことにしました, つもりです.",],
+  },
+  {
+    label:"12", sub:"Year 12 · VCE", cur:"VCE",
+    text:"{frame|はじめまして。}{aite|ミアと[申|もう]します。}{info|メルボルンの[高校|こうこう]で[日本語|にほんご]を[学|まな]んでいる[十二年生|じゅうにねんせい]です。}[学|まな]び[始|はじ]めたのは[十|じゅっ]さいのときで、{aite|[正直|しょうじき]に[言|い]えば}、[最初|さいしょ]はアニメが[見|み]たいという[単純|たんじゅん]な[理由|りゆう]でした。{join|しかし}[何年|なんねん]もつづけるうちに、{reach|[言語|げんご]を[学|まな]ぶというのは[単語|たんご]をおぼえることではなく}、[自分|じぶん]の[考|かんが]え[方|かた]をもう[一度|いちど][組|く]み[立|た]てることだと{reach|[感|かん]じるようになりました}。{join|たとえば}[日本語|にほんご]には、はっきり[言|い]わないことがれいぎになる[場面|ばめん]があります。{info|オーストラリアで[育|そだ]った[私|わたし]には、それが[最初|さいしょ]は[分|わ]かりにくかったです。}{join|[一方|いっぽう]で}、その[分|わ]かりにくさこそ、いちばん[学|まな]ぶ[価値|かち]のある[部分|ぶぶん]{reach|ではないかと[思|おも]います}。{info|[将来|しょうらい]は[通訳|つうやく]になりたいと[考|かんが]えています{join|が}、そのためには[言葉|ことば]の[正確|せいかく]さ{reach|だけでなく}、その[後|うし]ろにある[文化|ぶんか]まで[理解|りかい]できるように{reach|ならなければなりません}。}まだ[道|みち]のとちゅうですが、これからも[一歩|いっぽ]ずつ[進|すす]んでいきたいと[思|おも]います。{frame|どうぞよろしくおねがいします。}",
+    en:"Nice to meet you. My name is Mia. I am a Year 12 student learning Japanese at a high school in Melbourne. I began learning at ten, and to be honest my first reason was the simple one of wanting to watch anime. However, as the years went on, I came to feel that learning a language is not memorising vocabulary but rebuilding the way you think. In Japanese, for instance, there are situations where not saying something plainly is the polite thing to do. Having grown up in Australia, I found that hard to follow at first. On the other hand, I think that very difficulty may be the part most worth learning. In the future I am thinking of becoming an interpreter, but for that I will have to understand not only the accuracy of the words but the culture behind them. I am still on the way, but I intend to keep going one step at a time.",
+    proves:{
+      info:"The introduction makes a claim about what learning a language is. The facts about her are the evidence for it.",
+      join:"しかし pivots the whole piece, たとえば supplies the example that earns the claim, 一方で puts the other side before she decides.",
+      reach:"〜というのは〜ではなく〜ことだ defines by rejecting a wrong definition first. ではないかと思います hedges a judgement to exactly the right strength. だけでなく extends it, ならなければなりません states an obligation she has set herself.",
+      aite:"Humble register throughout, and 正直に言えば, which invites the listener in without dropping formality.",
+    },
+    newHere:["It argues rather than reports. The same facts now serve a position.",
+             "Concession and balance: しかし, 一方で. She puts the other side herself.",
+             "A hedged judgement: 〜ではないかと思います, which is stronger writing than a flat claim.",
+             "Definition by contrast: 〜ではなく、〜ことだ.",],
+  },
+];
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+/* Four-form chrome: [kanji, kana, romaji, English]. The wall is
+   Japanese-led like the rest of the hub; the analytical explanations stay
+   in English, which is the teaching medium (SPEC §6). */
+const UI = {
+  title:     ["レベルアップの壁","レベルアップのかべ","reberu appu no kabe","Level Up Wall"],
+  subtitle:  ["一つの課題を、学年ごとに","ひとつのかだいを、がくねんごとに","hitotsu no kadai o, gakunen goto ni",
+              "one task, answered at every level from Prep to Year 12"],
+  taskLabel: ["課題","かだい","kadai","The task:"],
+  taskLine:  ["はじめて会うクラスに自分をしょうかいします","はじめてあうクラスにじぶんをしょうかいします",
+              "hajimete au kurasu ni jibun o shōkai shimasu",
+              "Introduce yourself to a class you are meeting for the first time."],
+  furi:      ["ふりがな","ふりがな","furigana","furigana"],
+  english:   ["英語","えいご","eigo","English"],
+  compare:   ["くらべる","くらべる","kuraberu","compare with the rung above"],
+  print:     ["印刷","いんさつ","insatsu","print all rungs"],
+  adds:      ["この段でふえること","このだんでふえること","kono dan de fueru koto","What this rung adds"],
+  answered:  ["同じ課題、この段の答え","おなじかだい、このだんのこたえ","onaji kadai, kono dan no kotae",
+              "The same task, answered here"],
+  proves:    ["しるしのついた表現が示すこと","しるしのついたひょうげんがしめすこと",
+              "shirushi no tsuita hyōgen ga shimesu koto","What each marked phrase proves"],
+};
+const UI_RUBY = {
+  title: "レベルアップの<ruby>壁<rt>かべ</rt></ruby>",
+  taskLabel: "<ruby>課題<rt>かだい</rt></ruby>",
+  english: "<ruby>英語<rt>えいご</rt></ruby>",
+  print: "<ruby>印刷<rt>いんさつ</rt></ruby>",
+  adds: "この<ruby>段<rt>だん</rt></ruby>でふえること",
+  answered: "<ruby>同<rt>おな</rt></ruby>じ<ruby>課題<rt>かだい</rt></ruby>、この<ruby>段<rt>だん</rt></ruby>の<ruby>答<rt>こた</rt></ruby>え",
+  proves: "しるしのついた<ruby>表現<rt>ひょうげん</rt></ruby>が<ruby>示<rt>しめ</rt></ruby>すこと",
+  subtitle: "<ruby>一<rt>ひと</rt></ruby>つの<ruby>課題<rt>かだい</rt></ruby>を、<ruby>学年<rt>がくねん</rt></ruby>ごとに",
+};
+
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const CRIT = {}; CRITERIA.forEach((c) => { CRIT[c.key] = c; });
+  let at = 3, compare = false;
+
+  const ruby = (s) => s.replace(/\[([^\]|]+)\|([^\]]+)\]/g, "<ruby>$1<rt>$2</rt></ruby>");
+  // marked spans may nest (an {info|...} sentence containing a {reach|...} phrase)
+  function mark(s){
+    let out = s, prev;
+    do { prev = out;
+      out = out.replace(/\{(\w+)\|([^{}]*)\}/g, (_, k, t) => `<span class="m m-${k}" data-k="${k}">${t}</span>`);
+    } while (out !== prev);
+    return out;
+  }
+  const render = (s) => mark(ruby(s));
+
+  function keyRow(r){
+    return `<div class="key">` + CRITERIA.map((c) => {
+      const has = c.key === "frame" ? true : !!(r.proves && r.proves[c.key]);
+      return `<div class="k k-${c.key}${has ? "" : " dim"}" data-k="${c.key}"
+        title="${c.blurb}${has ? "" : ". Not yet marked at this rung, which is the ladder working, not a hole."}">
+        <div class="kh"><span>${c.glyph}</span><span>${c.name}</span></div>
+        <div class="kj">${c.jp}</div></div>`;
+    }).join("") + `</div>`;
+  }
+
+  function sheet(i, isNext, forPrint){
+    const r = RUNGS[i];
+    const curClass = r.cur === "VCE" ? "cur-vce" : "cur-vic";
+    const curWord = r.cur === "VCE" ? "VCE" : "Victorian Curriculum";
+    const proves = CRITERIA.filter((c) => r.proves && r.proves[c.key]).map((c) =>
+      `<div class="pv pv-${c.key}" data-k="${c.key}"><span class="g">${c.glyph}</span><span>${r.proves[c.key]}</span></div>`).join("");
+    const nw = r.newHere
+      ? `<div class="newlist">` + r.newHere.map((t) => `<div class="new-item"><span class="up">&#9650;</span><span>${t}</span></div>`).join("") + `</div>`
+      : `<p class="firstrung">This is the bottom rung. Everything above it is built on these four set phrases.</p>`;
+    return `<section class="sheet${isNext ? " next" : ""}">
+      <div class="sheet-head">
+        ${isNext ? `<div class="whichlv">The rung above</div>` : (compare && !forPrint ? `<div class="whichlv">This rung</div>` : "")}
+        <h2>${forPrint ? "自己しょうかい · " : ""}${r.sub}</h2>
+        <span class="cur-chip ${curClass}">${curWord}</span>
+      </div>
+      <h3 data-jt="adds">この段でふえること</h3>
+      ${nw}
+      <h3 data-jt="answered">同じ課題、この段の答え</h3>
+      ${keyRow(r)}
+      <p class="jp">${render(r.text)}</p>
+      <p class="en">${r.en}</p>
+      <h3 data-jt="proves">しるしのついた表現が示すこと</h3>
+      <div class="proves">${proves}</div>
+    </section>`;
+  }
+
+  /* Hovering a criterion lights it everywhere for as long as you hover;
+     clicking pins it so it stays lit while you read. Pinning has to be
+     tracked explicitly, or the hover that always precedes a click makes
+     the click look like an unpin. */
+  let pinned = null;
+  function wire(root){
+    const clear = () => CRITERIA.forEach((c) =>
+      root.querySelectorAll(".lit-" + c.key).forEach((x) => x.classList.remove("lit-" + c.key)));
+    const light = (k) => root.querySelectorAll(`[data-k="${k}"]`).forEach((x) => x.classList.add("lit-" + k));
+    if (pinned) light(pinned);
+    root.querySelectorAll("[data-k]").forEach((el) => {
+      const k = el.dataset.k;
+      el.addEventListener("mouseenter", () => { if (!pinned) light(k); });
+      el.addEventListener("mouseleave", () => { if (!pinned) clear(); });
+      el.addEventListener("click", () => {
+        pinned = pinned === k ? null : k;
+        clear();
+        if (pinned) light(pinned);
+      });
+    });
+  }
+
+  function draw(){
+    $("rail").innerHTML = RUNGS.map((r, i) =>
+      `<button class="rung${i === at ? " on" : ""}" data-i="${i}">${r.label}<small>${r.cur}</small></button>`).join("");
+    $("rail").querySelectorAll(".rung").forEach((b) =>
+      b.addEventListener("click", () => { at = +b.dataset.i; draw(); }));
+    $("railNote").textContent = RUNGS[at].sub + (at < RUNGS.length - 1
+      ? "  →  compare it with " + RUNGS[at + 1].sub + " to see the next step"
+      : "  ·  the top rung");
+    const wrap = $("sheets");
+    wrap.className = "sheets" + (compare && at < RUNGS.length - 1 ? " compare" : "");
+    wrap.innerHTML = sheet(at, false) + (compare && at < RUNGS.length - 1 ? sheet(at + 1, true) : "");
+    wire(wrap);
+    if (window.HubLever) window.HubLever.apply(wrap);
+  }
+
+  $("furiBtn").addEventListener("click", () => {
+    const on = document.body.classList.toggle("nofuri");
+    $("furiBtn").classList.toggle("on", !on);
+  });
+  $("enBtn").addEventListener("click", () => {
+    const on = document.body.classList.toggle("showen");
+    $("enBtn").classList.toggle("on", on);
+  });
+  $("cmpBtn").addEventListener("click", () => {
+    compare = !compare;
+    $("cmpBtn").classList.toggle("on", compare);
+    draw();
+  });
+  $("printBtn").addEventListener("click", () => window.print());
+
+  // the print view is the anchor-sheet view: every rung, one per page
+  $("printAll").innerHTML = RUNGS.map((r, i) => sheet(i, false, true)).join("");
+
+  draw();
+
+  // the shared lever: big one for the page, a forgiving little one on the
+  // controls row
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+})();
+</script>
+</body>
+</html>
