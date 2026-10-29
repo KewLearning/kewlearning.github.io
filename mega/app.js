@@ -1740,6 +1740,7 @@
     { id:"match", ja:"ことば",         en:"Words" },
     { id:"pairs", ja:"ペア",           en:"Memory" },
     { id:"karuta",ja:"かるた",         en:"Hear it, grab it" },
+    { id:"shiri", ja:"しりとり",       en:"Chain the words" },
     { id:"kata",  ja:"カタカナ",       en:"Katakana" },
     { id:"kanji", ja:"かんじ",         en:"The kanji" },
     { id:"verb",  ja:"どうし",         en:"Change the verb" },
@@ -3197,6 +3198,208 @@
     $("sc").innerHTML = n ? (quizBank().length + " questions ready")
                           : "Pick at least one thing to ask about";
   }
+
+  /* ================= しりとり =================
+     The chain game, on this unit's own words. Read the word, work
+     out the kana it ends on, pick the word that starts with it.
+
+     Three rules a Year 7 has to learn, and all three are in the
+     game rather than in the instructions:
+       ー  does not count. スーパー ends on パ, not on a dash.
+       ゃ ゅ ょ っ  count as や ゆ よ つ.
+       ん  ends the game. A word ending ん is a legal word and a
+           losing move, which is the whole joke of しりとり, so one
+           turns up in the tray and ends the chain if it is taken.
+
+     The pool is 74 words and 16 of them are dead ends, so a chain
+     cannot be walked greedily: it would strand the student on a word
+     with nothing to follow. The whole chain is searched for before
+     the first question is asked, and the game walks a path it
+     already knows exists. */
+  var SMALLK = { "\u3083":"\u3084", "\u3085":"\u3086", "\u3087":"\u3088", "\u3063":"\u3064",
+                 "\u3041":"\u3042", "\u3043":"\u3044", "\u3045":"\u3046",
+                 "\u3047":"\u3048", "\u3049":"\u304a" };
+  function toHira(t){
+    return String(t || "").replace(/[\u30a1-\u30f6]/g, function(c){
+      return String.fromCharCode(c.charCodeAt(0) - 96);
+    });
+  }
+  function headOf(y){ var c = toHira(y)[0]; return SMALLK[c] || c; }
+  function tailOf(y){
+    var t = toHira(y).replace(/\u30fc+$/, "");
+    var c = t.slice(-1);
+    return SMALLK[c] || c;
+  }
+  /* しりとり is played with words. Two entries on this unit's list
+     are phrases, ともだちのうち and フットボールのしあい, and a
+     chain through those reads as nonsense however legal the kana
+     are. Five more are the same word written twice. Both are left
+     out here and nowhere else: the list itself is not changed. */
+  function shiriPool(){
+    var out = [], seen = {};
+    function add(ja, yomi, en){
+      if (!yomi || /\u306e|[\s\u3000]/.test(yomi)) return;   /* a phrase, not a word */
+      if (seen[yomi]) return;
+      seen[yomi] = 1;
+      out.push({ ja: ja, yomi: yomi, en: en, say: ja });
+    }
+    W.filter(function(w){ return w.en; }).forEach(function(w){
+      add(w.ja, kana(w.ja) || plain(w.ja), w.en);
+    });
+    ((M.katakana || {}).words || []).forEach(function(w){
+      add(w.ka, w.ka, w.en);
+    });
+    return out;
+  }
+  /* A path of the length asked for, found before anything is drawn.
+     Depth-first with backtracking, shuffled at each step so the same
+     chain does not come up twice, and no word ending \u3093 inside the
+     chain because that would end it early. */
+  function shiriChain(pool, want){
+    var byHead = {};
+    pool.forEach(function(w){
+      (byHead[headOf(w.yomi)] = byHead[headOf(w.yomi)] || []).push(w);
+    });
+    var best = [];
+    function walk(path, used){
+      if (path.length > best.length) best = path.slice();
+      if (path.length >= want) return true;
+      var last = path[path.length - 1], t = tailOf(last.yomi);
+      if (t === "\u3093") return false;
+      var next = shuffle(byHead[t] || []);
+      for (var i = 0; i < next.length; i++){
+        var n = next[i];
+        if (used[n.ja] || tailOf(n.yomi) === "\u3093") continue;
+        used[n.ja] = 1; path.push(n);
+        if (walk(path, used)) return true;
+        path.pop(); delete used[n.ja];
+      }
+      return false;
+    }
+    var starts = shuffle(pool);
+    for (var i = 0; i < starts.length; i++){
+      best = [];
+      var u = {}; u[starts[i].ja] = 1;
+      if (walk([starts[i]], u)) return best.length >= want ? best : best;
+    }
+    return best;
+  }
+  var SHIRI = { want: 6 };
+  DRAW.shiri = function(){
+    var pool = shiriPool();
+    var chain = shiriChain(pool, SHIRI.want);
+    if (chain.length < 2){
+      $("main").innerHTML = ruleFor("shiri", "tight")
+        + '<div class="work"><div class="col"><p>No chain can be made from this unit.</p></div></div>';
+      return;
+    }
+    var at = 0, over = false;
+
+    $("main").innerHTML = ruleFor("shiri", "tight")
+      + '<div class="work fit"><div class="col">'
+      + '<div class="chain" id="ch"></div>'
+      + '<div class="ask" id="sask"></div>'
+      + '<div class="tray wide" id="sopt"></div>'
+      + '<div id="sfb" class="fbslot"></div>'
+      + '</div></div>'
+      + foot('<span class="sp"></span>'
+        + '<button class="btn ghost sm" id="slen">' + SHIRI.want + 'つ</button>'
+        + '<button class="btn ghost sm" id="sagain">もう一回[いっかい]</button>');
+    $("slen").onclick = function(){
+      SHIRI.want = SHIRI.want === 6 ? 8 : (SHIRI.want === 8 ? 10 : 6);
+      DRAW.shiri();
+    };
+    $("sagain").onclick = function(){ DRAW.shiri(); };
+    $("sagain").innerHTML = ruby("もう一回[いっかい]");
+
+    window.MEGA_SHIRI = {
+      chain: function(){ return chain.map(function(w){ return w.yomi; }); },
+      at:    function(){ return at; },
+      opts:  function(){
+        return [].map.call(document.querySelectorAll("#sopt [data-o]"),
+          function(b){ return b.dataset.o; });
+      },
+      need:  function(){ return tailOf(chain[at].yomi); }
+    };
+    step();
+
+    function paintChain(){
+      $("ch").innerHTML = chain.slice(0, at + 1).map(function(w, i){
+        return '<span class="link' + (i === at ? " on" : "") + '">'
+          + ruby(w.ja) + '</span>';
+      }).join('<span class="arrow" aria-hidden="true">\u2192</span>');
+    }
+    function step(){
+      paintChain();
+      if (at >= chain.length - 1) return win();
+      var cur = chain[at], need = tailOf(cur.yomi), right = chain[at + 1];
+      /* three that do not start with the kana needed, and sometimes a
+         word that does start with it but ends in \u3093: legal by sound,
+         fatal by rule, which is the thing worth learning */
+      var wrong = shuffle(pool.filter(function(w){
+        return w.ja !== right.ja && w.ja !== cur.ja && headOf(w.yomi) !== need;
+      })).slice(0, 3);
+      var trap = shuffle(pool.filter(function(w){
+        return headOf(w.yomi) === need && tailOf(w.yomi) === "\u3093" && w.ja !== right.ja;
+      }))[0];
+      if (trap && Math.random() < 0.5) wrong[2] = trap;
+      var opts = shuffle([right].concat(wrong.filter(Boolean)));
+      $("sask").innerHTML =
+          '<p class="hint">It ends on</p>'
+        + '<div class="need jp">' + esc(need) + '</div>'
+        + '<p class="hint">Pick the word that starts with ' + esc(need) + '.</p>';
+      /* the meaning uses the "en" class the EN button looks for, not
+         the collapsed .pen the katakana grid uses, so a teacher can
+         turn the glosses off here as on every other rung */
+      $("sopt").innerHTML = opts.map(function(w){
+        return '<button class="piece word wide" data-o="' + esc(w.ja) + '">'
+          + '<span class="pja">' + ruby(w.ja) + '</span>'
+          + '<span class="en">' + esc(w.en) + '</span></button>';
+      }).join("");
+      each($("sopt"), "[data-o]", function(b){
+        b.onclick = function(){ chose(b.dataset.o, b); };
+      });
+    }
+    function chose(ja, btn){
+      if (over) return;
+      var cur = chain[at], need = tailOf(cur.yomi), right = chain[at + 1];
+      var w = null;
+      pool.forEach(function(x){ if (x.ja === ja) w = x; });
+      if (!w) return;
+      say(w.say, null, true);
+      if (ja === right.ja){
+        btn.classList.add("ok");
+        at++;
+        first("shiri:" + plain(ja), 1, "linked");
+        setTimeout(step, 420);
+        return;
+      }
+      btn.classList.add("no");
+      CLICK.clunk();
+      if (headOf(w.yomi) === need && tailOf(w.yomi) === "\u3093"){
+        over = true;
+        $("sfb").innerHTML = '<div class="mark no"><b>\u3093 ends it</b>'
+          + '<span class="jp">' + ruby(w.ja) + '</span>'
+          + '<p>That does start with ' + esc(need) + '. But it ends on \u3093, '
+          + 'and nothing follows \u3093. That is how \u3057\u308a\u3068\u308a is lost.</p></div>';
+        return;
+      }
+      $("sfb").innerHTML = '<div class="mark no"><b>Not that one</b>'
+        + '<span class="jp">' + ruby(w.ja) + '</span>'
+        + '<p>That starts with ' + esc(headOf(w.yomi)) + '. You need '
+        + esc(need) + '.</p></div>';
+    }
+    function win(){
+      over = true;
+      ninja($("sfb"));
+      $("sfb").innerHTML = '<div class="mark yes"><b>' + chain.length
+        + ' in a chain</b><p>' + chain.map(function(w){ return w.yomi; }).join(" \u2192 ")
+        + '</p></div>';
+      $("sask").innerHTML = "";
+      $("sopt").innerHTML = "";
+      done("shiri");
+    }
+  };
 
   /* ================= かるた =================
      The game they already know, and the only one here that is pure

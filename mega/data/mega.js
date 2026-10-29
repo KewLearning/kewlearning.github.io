@@ -270,6 +270,8 @@ window.MEGA = {
       "rule": "Turn two cards over. A match stays up and you go again; a miss turns back and the other player has a turn. Pick what the pairs are made of, and one player or two." },
     { "step": "quiz", "title_en": "Team quiz",
       "rule": "Put this on the projector and split the class into teams. Read the question out, let them answer in the room, then tap who got it. Space shows the answer and moves on, 1 to 4 give the point, 0 is nobody, r plays the Japanese again." },
+    { "step": "shiri", "title_en": "Chain the words",
+      "rule": "Read the word and find the kana it ends on. Pick the word that starts with that kana. The long dash does not count, so スーパー ends on パ. Small ゃゅょっ count as やゆよつ. A word ending in ん ends the game." },
     { "step": "karuta", "title_en": "Hear it, grab it",
       "rule": "Listen to the word. Tap the card it names. Tap the wrong card and the call plays again, and the card stays on the table. Pick one player or two: with two, press A or L to claim the call first, then grab." },
     { "step": "kata",  "title_en": "Katakana",

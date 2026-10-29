@@ -576,6 +576,21 @@
 
   #promptw.jp{font-family:var(--jp)}
   #promptw.big{font-size:clamp(28px,5vw,44px);line-height:1.1}
+  /* ---- \u3057\u308a\u3068\u308a: the chain ---- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+       gap:7px;margin:0 0 16px;min-height:40px}
+  .link{font-family:var(--jp);font-size:19px;border:1.5px solid var(--line);
+       border-radius:999px;padding:5px 14px;background:var(--paper)}
+  .link.on{border-color:var(--deep);background:#eaf2fb;font-weight:700}
+  .chain .arrow{color:var(--muted);font-size:15px}
+  .ask{text-align:center;margin:0 0 14px}
+  .need{font-size:clamp(40px,8vw,66px);line-height:1.1;color:var(--deep)}
+  .tray.wide{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+  /* no display here: the global .en is already block, and setting it
+     again would out-specify body.noen .en and defeat the EN button */
+  .piece.word.wide .en{font-size:12px;color:var(--muted);margin-top:2px}
+  .piece.word.wide.ok{border-color:var(--ok);background:#eefaf0}
+  .piece.word.wide.no{border-color:var(--accent);background:#fdf0f0}
   /* ---- the memory game ----
      A card is a square that turns over. The back carries one character
      so a board of them still looks like Japanese, and the front holds
@@ -802,9 +817,9 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="data/mega.js?v=20261028d"></script>
-<script src="data/audio.js?v=20261028d"></script>
-<script src="app.js?v=20261028d"></script>
-<div class="build" aria-hidden="true">build 2026-10-28d</div>
+<script src="data/mega.js?v=20261029a"></script>
+<script src="data/audio.js?v=20261029a"></script>
+<script src="app.js?v=20261029a"></script>
+<div class="build" aria-hidden="true">build 2026-10-29a</div>
 </body>
 </html>

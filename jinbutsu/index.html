@@ -41,6 +41,7 @@
   body[data-rung="hayaku"]   { --bg:#e9eef6 }
   body[data-rung="bunpou"]   { --bg:#f3eef7 }
   body[data-rung="roulette"] { --bg:#f3eef7 }
+  body[data-rung="dare"]     { --bg:#fbf1e6 }
   body[data-rung="nyuu"]     { --bg:#eef1f5 }
   body[data-rung="tsukuru"]  { --bg:#eaf5ec }
   body[data-rung="jibun"]    { --bg:#e8f4ea }
@@ -385,6 +386,27 @@
      scrolled to. Pressing Start scrolls the screen up for you, because
      the first thing a student does is press Start and the next thing
      they need is all of the screen. */
+  /* ---- だれ: six faces, and a line you only hear ---- */
+  .dplay{display:flex;align-items:center;justify-content:center;gap:14px;
+       margin:6px 0 20px;flex-wrap:wrap}
+  .dstreak{font-size:14px;color:var(--ok);font-weight:700}
+  .dsix{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;
+       max-width:760px;margin:0 auto}
+  .dface{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       cursor:pointer;padding:7px 5px 8px;font-family:var(--font);color:var(--ink);
+       display:flex;flex-direction:column;align-items:center;gap:6px}
+  .dface img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+  .dnoimg{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+       border-radius:8px;background:var(--line-soft);font-family:var(--jp);font-size:26px;
+       color:var(--muted)}
+  .dface b{font-family:var(--jp);font-size:13px;font-weight:400;line-height:1.25}
+  .dface.got{border-color:var(--ok);background:#eefaf0;border-width:2.5px}
+  .dface.miss{border-color:var(--accent);background:#fdf0f0;border-width:2.5px}
+  .dwho{display:block;font-size:19px;font-weight:700;margin:2px 0 6px}
+  @media (max-width:700px){
+    .dsix{grid-template-columns:repeat(3,1fr);max-width:420px}
+    .dface b{font-size:12px}
+  }
   /* ---- つくる: the gaps and the phrase bank ---- */
   .bq{font-size:17px;line-height:1.45;margin:0 0 4px}
   .slots{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;
@@ -474,9 +496,9 @@
 <nav class="steps" id="steps"></nav>
 <div class="whobar" id="whobar"></div>
 <main id="main"></main>
-<script src="data/kiji.js?v=20261029a"></script>
-<script src="data/audio.js?v=20261029a"></script>
-<script src="app.js?v=20261029a"></script>
-<div class="build" aria-hidden="true">build 2026-10-29a</div>
+<script src="data/kiji.js?v=20261029c"></script>
+<script src="data/audio.js?v=20261029c"></script>
+<script src="app.js?v=20261029c"></script>
+<div class="build" aria-hidden="true">build 2026-10-29c</div>
 </body>
 </html>
