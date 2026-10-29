@@ -1,0 +1,16 @@
+{
+  "name": "ミッション：日本 · Mission: Japan",
+  "short_name": "Mission",
+  "description": "An Australian agent, a Tokyo ramen shop, and a recipe to bring home. A Japanese-language text adventure.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#242724",
+  "theme_color": "#242724",
+  "lang": "en-AU",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

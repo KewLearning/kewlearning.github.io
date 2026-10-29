@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>単語ビルダー · Word Builder</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  /* ============================================================
+     単語ビルダー — the direct Japanese port of Liam's EAL word
+     builder. ONE unit's whole vocabulary on one page: a big bank
+     of kanji at the top, every word underneath defined by its
+     MEANING with the word itself hidden, and you build any word
+     in any order. Finished words drop to the bottom.
+
+     The payoff is the same as the English one: a kanji you learn
+     for one word unlocks the next. 行 turns up in 旅行, 飛行機
+     and 銀行, so the third one is nearly free.
+     ============================================================ */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --band:#f5f0e6; --amber:#8a6d1e;
+    /* CAPACITY colours — the same taxonomy as the Kanji Factory, so one
+       system runs across the suite. Red/blue/purple are Liam's:
+         red    いみ   always meaning (in the kanji a student meets)
+         blue   おと   usually sound (heads a common phonetic series)
+         purple どちらも both jobs are common (門: 問聞 vs 開間)
+       Scope rule, stated because it is a judgement: classification is over
+       COMMON school-level kanji, weighted by frequency. A rare phonetic
+       use (家 in 嫁) does not flip a kanji out of red, or the taxonomy
+       dissolves and teaches nothing. Andrew can veto any call (Q5).
+       Reuse across words is a COUNT BADGE, never a colour: colour is
+       capacity only. */
+    --sense:#b5342a; --sense-bg:#fae7e4;
+    --sound:#2f5d8f; --sound-bg:#e3ecf5;
+    --both:#6b4a9e;  --both-bg:#ece4f6;
+    --kanji:#4a6741; --kanji-bg:#e7efe4;      /* a filled slot */
+    --held:#a83232;                            /* the part in your hand */
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.5;min-height:100vh;padding:16px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  h2{font-family:var(--font);font-size:17px;margin:0 0 4px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+  .btn{padding:10px 17px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+  .progress{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  .intro{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+
+  /* ---- unit picker ---- */
+  .theme-head{font-family:var(--font);font-size:14px;font-weight:700;margin:18px 0 2px;
+       border-bottom:2px solid var(--line-soft);padding-bottom:6px}
+  .theme-head small{font-weight:400;color:var(--muted);font-size:.85em;margin-left:7px}
+  .units{display:grid;gap:11px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-top:10px}
+  .unit{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:11px;
+       padding:15px 17px;cursor:pointer}
+  .unit:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .unit .ut{font-family:var(--font);font-size:16px;font-weight:700}
+  .unit .ud{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .unit .un{font-size:10px;font-weight:800;color:var(--muted);margin-top:7px;letter-spacing:.05em}
+
+  /* ---- the bank ---- */
+  .bank-panel{background:var(--band);border:1px solid var(--line-soft);border-radius:12px;
+       padding:13px 15px;margin-bottom:16px;position:sticky;top:8px;z-index:5}
+  .bank-label{font-size:11.5px;color:var(--muted);margin-bottom:9px;font-weight:600}
+  .bank-label b{color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{display:inline-flex;align-items:baseline;gap:6px;background:var(--paper);
+       border:1px solid var(--line);border-radius:9px;padding:6px 11px;cursor:pointer;
+       transition:border-color .12s,background .12s,transform .1s}
+  .chip:hover{border-color:var(--accent)}
+  .chip:active{transform:translateY(1px)}
+  .chip .k{font-family:var(--font);font-size:21px;font-weight:700}
+  .chip .g{font-size:10.5px;color:var(--muted)}
+  .chip .r{font-size:9.5px;color:var(--muted);opacity:.75}
+  .chip.cap-sense{border-color:#e5b8b2;background:var(--sense-bg)} .chip.cap-sense .k{color:var(--sense)}
+  .chip.cap-sound{border-color:#b9cbdf;background:var(--sound-bg)} .chip.cap-sound .k{color:var(--sound)}
+  .chip.cap-both{border-color:#cbbde4;background:var(--both-bg)}   .chip.cap-both .k{color:var(--both)}
+  .chip.held{box-shadow:0 0 0 2px var(--held);border-color:var(--held)}
+  .chip .times{font-size:9px;font-weight:800;color:var(--muted);background:var(--paper);
+       border:1px solid var(--line);border-radius:8px;padding:0 5px;margin-left:2px}
+  .chip.dragging{opacity:.45}
+  .capkey{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px}
+  .capkey span{font-size:10px;font-weight:800;letter-spacing:.03em;border-radius:9px;padding:2px 9px;border:1px solid}
+  .ck-sense{color:var(--sense);border-color:var(--sense);background:var(--sense-bg)}
+  .ck-sound{color:var(--sound);border-color:var(--sound);background:var(--sound-bg)}
+  .ck-both{color:var(--both);border-color:var(--both);background:var(--both-bg)}
+  .capnote{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  /* ---- the word list ---- */
+  .list{display:flex;flex-direction:column;gap:9px}
+  .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--paper);
+       border:1px solid var(--line);border-radius:11px;padding:13px 15px;
+       transition:border-color .15s,background .3s}
+  .row.wrong{border-color:var(--wrong);animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .row.done{background:var(--okbg);border-color:var(--correct)}
+  .def{flex:1 1 260px;font-size:14px;line-height:1.55}
+  .def .en{color:var(--ink)}
+  .slots{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:auto}
+  .slot{min-width:52px;height:52px;border:2px dashed var(--line);border-radius:10px;
+       background:var(--bg);font-family:var(--font);font-size:26px;font-weight:700;
+       color:var(--kanji);cursor:pointer;display:grid;place-items:center;padding:0 8px}
+  .slot.filled{border-style:solid;background:var(--kanji-bg);border-color:var(--kanji)}
+  .slot.filled.cap-sense{background:var(--sense-bg);border-color:var(--sense);color:var(--sense)}
+  .slot.filled.cap-sound{background:var(--sound-bg);border-color:var(--sound);color:var(--sound)}
+  .slot.filled.cap-both{background:var(--both-bg);border-color:var(--both);color:var(--both)}
+  .slot.aim{border-color:var(--accent);background:#faf5f0}
+  .built{display:flex;align-items:baseline;gap:9px;margin-left:auto}
+  .built .w{font-family:var(--font);font-size:27px;font-weight:700;color:var(--correct)}
+  /* purple-lab move: once a word is built, colour its own spelling by each
+     kanji's capacity (sense/sound/both) rather than leaving it plain green */
+  .built .w span.cap-sense{color:var(--sense)}
+  .built .w span.cap-sound{color:var(--sound)}
+  .built .w span.cap-both{color:var(--both)}
+  .done-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;font-weight:800;letter-spacing:.05em;
+       margin:8px 0 6px;color:var(--muted)}
+  .done-legend span.cap-sense{color:var(--sense)} .done-legend span.cap-sound{color:var(--sound)} .done-legend span.cap-both{color:var(--both)}
+  .built .rd{font-size:12px;color:var(--muted)}
+  .tick{color:var(--correct);font-size:17px;font-weight:800}
+
+  .done-head{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--muted);
+       text-transform:uppercase;margin:20px 0 8px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .finish{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--correct);
+       border-radius:11px;padding:14px 17px;margin-top:16px;font-size:13.5px;line-height:1.65;display:none}
+  .finish.show{display:block}
+  .finish b{font-family:var(--font)}
+  .reuse{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .reuse .rk{background:var(--shared-bg);border:1px solid var(--shared);border-radius:9px;
+       padding:5px 11px;font-size:12px}
+  .reuse .rk b{font-family:var(--font);font-size:18px;color:var(--shared)}
+  .privacy{background:var(--bg);border:1px solid var(--line-soft);border-radius:9px;padding:10px 14px;
+       font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);
+       opacity:.45;pointer-events:none}
+  @media (max-width:620px){ .slots{margin-left:0} .built{margin-left:0} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="container">
+
+  <section class="screen active" id="scr-home">
+    <h1 class="jt-tap" data-jt="title">単語ビルダー</h1>
+    <p class="subtitle jt-tap" data-jt="subtitle">One unit, one bank of kanji, every word on the page</p>
+    <span class="poc"><b>Proof of concept</b> for Andrew's review — the unit below is a demo pending his topic map (Q6). The mechanic is Liam's EAL word builder, ported to kanji.</span>
+    <p class="intro jt-tap" data-jt="how">Pick a unit.</p>
+    <div id="units"></div>
+  </section>
+
+  <section class="screen" id="scr-build">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← ホーム</button>
+      <span class="progress" id="prog"></span>
+      <span id="buildLever" data-scope="#scr-build"></span>
+    </div>
+    <h2 id="unit-title"></h2>
+    <p class="intro" id="unit-intro"></p>
+
+    <div class="bank-panel">
+      <div class="bank-label" id="bank-label"></div>
+      <div class="chips" id="bank"></div>
+    </div>
+
+    <div class="list" id="todo"></div>
+    <div id="done-wrap"></div>
+    <div class="finish" id="finish"></div>
+  </section>
+
+</div>
+</div>
+<div class="build-tag">Builder PoC 2026-09-06</div>
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT — the nine prescribed VCE topics, drafted as units
+   ------------------------------------------------------------
+   VCE Japanese SL prescribes 3 themes x 3 topics (study design
+   p.12); each unit below is one prescribed topic. Word lists are
+   OUR editorial draft (the SD prescribes no vocabulary list) and
+   every word, reading and definition awaits Andrew's check (Q5,
+   Q6). Words are 2-3 whole-kanji compounds so they can be built.
+
+   Each kanji carries cap: its CAPACITY as a part, the same
+   red/blue/purple taxonomy as the Kanji Factory:
+     sense  red    always meaning in the kanji students meet
+     sound  blue   usually sound (series heads: none arise here)
+     both   purple both jobs are common. The purples are each
+            attested inside these very banks or in core vocab:
+            生(星・性), 化(花), 毎(海), 動(働), 泉(線), 先(洗),
+            音(暗), 者(都 — as in 京都).
+   Blue is structurally RARE at word level, and that is a finding,
+   not a gap: a kanji whose usual job is carrying sound (寺青永白)
+   rarely stands as a piece of a vocabulary word, which is exactly
+   why those live in the Kanji Factory instead. 工 is the one that
+   does both lives: series head of 江紅功, and a word-part in 人工.
+   Scope rule: classification is over common school-level kanji.
+   A rare phonetic use does not flip a kanji out of red.
+   ============================================================ */
+const KANJI = {
+  "名":{g:"name",r:"な・メイ",cap:"sense"},
+  "前":{g:"front, before",r:"まえ・ゼン",cap:"sense"},
+  "年":{g:"year",r:"とし・ネン",cap:"sense"},
+  "齢":{g:"age, years",r:"レイ",cap:"sense"},
+  "住":{g:"to reside, dwell",r:"す(む)・ジュウ",cap:"sense"},
+  "所":{g:"place",r:"ところ・ショ",cap:"sense"},
+  "誕":{g:"birth",r:"タン",cap:"sense"},
+  "生":{g:"life, to live, to be born",r:"い(きる)・セイ",cap:"both"},
+  "日":{g:"day, sun",r:"ひ・ニチ",cap:"sense"},
+  "毎":{g:"every",r:"マイ",cap:"both"},
+  "活":{g:"lively, activity",r:"カツ",cap:"sense"},
+  "近":{g:"near, close",r:"ちか(い)・キン",cap:"sense"},
+  "健":{g:"healthy, robust",r:"すこ(やか)・ケン",cap:"sense"},
+  "康":{g:"peace, ease",r:"コウ",cap:"sense"},
+  "自":{g:"self",r:"みずか(ら)・ジ",cap:"sense"},
+  "由":{g:"reason, cause",r:"よし・ユウ",cap:"sense"},
+  "転":{g:"to roll, turn",r:"ころ(がる)・テン",cap:"sense"},
+  "車":{g:"car, vehicle",r:"くるま・シャ",cap:"sense"},
+  "週":{g:"week",r:"シュウ",cap:"sense"},
+  "末":{g:"end",r:"すえ・マツ",cap:"sense"},
+  "運":{g:"to carry, luck",r:"はこ(ぶ)・ウン",cap:"sense"},
+  "動":{g:"to move",r:"うご(く)・ドウ",cap:"both"},
+  "家":{g:"house, specialist",r:"いえ・カ",cap:"sense"},
+  "族":{g:"group, tribe",r:"ゾク",cap:"sense"},
+  "庭":{g:"garden, courtyard",r:"にわ・テイ",cap:"sense"},
+  "両":{g:"both, pair",r:"リョウ",cap:"sense"},
+  "親":{g:"parent, close",r:"おや・シン",cap:"sense"},
+  "兄":{g:"older brother",r:"あに・キョウ",cap:"sense"},
+  "弟":{g:"younger brother",r:"おとうと・ダイ",cap:"sense"},
+  "姉":{g:"older sister",r:"あね・シ",cap:"sense"},
+  "妹":{g:"younger sister",r:"いもうと・マイ",cap:"sense"},
+  "友":{g:"friend",r:"とも・ユウ",cap:"sense"},
+  "人":{g:"person",r:"ひと・ジン",cap:"sense"},
+  "切":{g:"to cut",r:"き(る)・セツ",cap:"sense"},
+  "先":{g:"ahead, previous",r:"さき・セン",cap:"both"},
+  "徒":{g:"pupil, on foot",r:"ト",cap:"sense"},
+  "地":{g:"earth, ground",r:"チ",cap:"sense"},
+  "域":{g:"region, zone",r:"イキ",cap:"sense"},
+  "物":{g:"thing",r:"もの・ブツ",cap:"sense"},
+  "学":{g:"to study, learning",r:"まな(ぶ)・ガク",cap:"sense"},
+  "校":{g:"school",r:"コウ",cap:"sense"},
+  "高":{g:"tall, high",r:"たか(い)・コウ",cap:"sense"},
+  "大":{g:"big, large",r:"おお(きい)・ダイ",cap:"sense"},
+  "留":{g:"to stay, detain",r:"と(める)・リュウ",cap:"sense"},
+  "勉":{g:"to strive, exertion",r:"ベン",cap:"sense"},
+  "強":{g:"strong",r:"つよ(い)・キョウ",cap:"sense"},
+  "試":{g:"to try, test",r:"こころ(みる)・シ",cap:"sense"},
+  "験":{g:"test, effect",r:"ケン",cap:"sense"},
+  "卒":{g:"graduate, soldier",r:"ソツ",cap:"sense"},
+  "業":{g:"business, work, industry",r:"ギョウ",cap:"sense"},
+  "将":{g:"leader, about to",r:"ショウ",cap:"sense"},
+  "来":{g:"to come",r:"く(る)・ライ",cap:"sense"},
+  "仕":{g:"to serve",r:"シ",cap:"sense"},
+  "事":{g:"thing, matter, affair",r:"こと・ジ",cap:"sense"},
+  "就":{g:"to take up, engage in",r:"つ(く)・シュウ",cap:"sense"},
+  "職":{g:"occupation, job",r:"ショク",cap:"sense"},
+  "目":{g:"eye, item",r:"め・モク",cap:"sense"},
+  "標":{g:"mark, target",r:"ヒョウ",cap:"sense"},
+  "文":{g:"writing, sentence",r:"ブン・モン",cap:"sense"},
+  "化":{g:"to change, to become",r:"ば(ける)・カ",cap:"both"},
+  "伝":{g:"to transmit, legend",r:"つた(わる)・デン",cap:"sense"},
+  "統":{g:"to unite, govern",r:"トウ",cap:"sense"},
+  "芸":{g:"art, craft",r:"ゲイ",cap:"sense"},
+  "術":{g:"art, technique",r:"ジュツ",cap:"sense"},
+  "音":{g:"sound",r:"おと・オン",cap:"both"},
+  "楽":{g:"music, comfort",r:"たの(しい)・ガク",cap:"sense"},
+  "映":{g:"to reflect, project",r:"うつ(る)・エイ",cap:"sense"},
+  "画":{g:"picture, stroke",r:"ガ",cap:"sense"},
+  "漫":{g:"idle, random",r:"マン",cap:"sense"},
+  "着":{g:"to wear, to arrive",r:"き(る)・チャク",cap:"sense"},
+  "正":{g:"correct, right",r:"ただ(しい)・セイ・ショウ",cap:"sense"},
+  "月":{g:"moon, month",r:"つき・ゲツ・ガツ",cap:"sense"},
+  "花":{g:"flower",r:"はな・カ",cap:"sense"},
+  "火":{g:"fire",r:"ひ・カ",cap:"sense"},
+  "見":{g:"to see",r:"み(る)・ケン",cap:"sense"},
+  "茶":{g:"tea",r:"チャ",cap:"sense"},
+  "道":{g:"road, way",r:"みち・ドウ",cap:"sense"},
+  "書":{g:"to write, book",r:"か(く)・ショ",cap:"sense"},
+  "有":{g:"to have, exist",r:"あ(る)・ユウ",cap:"sense"},
+  "作":{g:"to make",r:"つく(る)・サク",cap:"sense"},
+  "選":{g:"to choose",r:"えら(ぶ)・セン",cap:"sense"},
+  "手":{g:"hand, skilled person",r:"て・シュ",cap:"sense"},
+  "監":{g:"to supervise",r:"カン",cap:"sense"},
+  "督":{g:"to oversee, direct",r:"トク",cap:"sense"},
+  "歴":{g:"to pass through, history",r:"レキ",cap:"sense"},
+  "史":{g:"history, chronicle",r:"シ",cap:"sense"},
+  "科":{g:"subject, department",r:"カ",cap:"sense"},
+  "者":{g:"person (-er, -ist)",r:"もの・シャ",cap:"both"},
+  "実":{g:"truth, fruit",r:"み・ジツ",cap:"sense"},
+  "経":{g:"to pass through, manage",r:"へ(る)・ケイ",cap:"sense"},
+  "営":{g:"to operate, manage",r:"いとな(む)・エイ",cap:"sense"},
+  "旅":{g:"journey",r:"たび・リョ",cap:"sense"},
+  "行":{g:"to go",r:"い(く)・コウ",cap:"sense"},
+  "飛":{g:"to fly",r:"と(ぶ)・ヒ",cap:"sense"},
+  "機":{g:"machine",r:"キ",cap:"sense"},
+  "空":{g:"sky, empty",r:"そら・クウ",cap:"sense"},
+  "港":{g:"harbour, port",r:"みなと・コウ",cap:"sense"},
+  "符":{g:"tally, token",r:"フ",cap:"sense"},
+  "荷":{g:"load, baggage",r:"に・カ",cap:"sense"},
+  "写":{g:"to copy",r:"うつ(す)・シャ",cap:"sense"},
+  "真":{g:"true, real",r:"ま・シン",cap:"sense"},
+  "温":{g:"warm",r:"あたた(かい)・オン",cap:"sense"},
+  "泉":{g:"spring of water",r:"いずみ・セン",cap:"both"},
+  "観":{g:"to view, watch",r:"カン",cap:"sense"},
+  "光":{g:"light",r:"ひかり・コウ",cap:"sense"},
+  "銀":{g:"silver",r:"ぎん・ギン",cap:"sense"},
+  "電":{g:"electricity",r:"デン",cap:"sense"},
+  "下":{g:"below, down",r:"した・カ",cap:"sense"},
+  "鉄":{g:"iron",r:"テツ",cap:"sense"},
+  "神":{g:"god, spirit",r:"かみ・シン",cap:"sense"},
+  "社":{g:"company, association",r:"シャ",cap:"sense"},
+  "環":{g:"ring, surround",r:"カン",cap:"sense"},
+  "境":{g:"border, boundary",r:"さかい・キョウ",cap:"sense"},
+  "会":{g:"to meet, association",r:"あ(う)・カイ",cap:"sense"},
+  "問":{g:"to ask, question",r:"と(う)・モン",cap:"sense"},
+  "題":{g:"topic, title",r:"ダイ",cap:"sense"},
+  "少":{g:"few, little",r:"すこ(し)・ショウ",cap:"sense"},
+  "子":{g:"child",r:"こ・シ",cap:"sense"},
+  "暖":{g:"warm",r:"あたた(かい)・ダン",cap:"sense"},
+  "核":{g:"nucleus, core",r:"カク",cap:"sense"},
+  "口":{g:"mouth, opening",r:"くち・コウ",cap:"sense"},
+  "老":{g:"old, aged",r:"お(いる)・ロウ",cap:"sense"},
+  "資":{g:"resources, funds",r:"シ",cap:"sense"},
+  "源":{g:"source, origin",r:"みなもと・ゲン",cap:"sense"},
+  "情":{g:"feeling, information",r:"なさ(け)・ジョウ",cap:"sense"},
+  "報":{g:"report, news",r:"むく(いる)・ホウ",cap:"sense"},
+  "新":{g:"new",r:"あたら(しい)・シン",cap:"sense"},
+  "聞":{g:"to hear, to listen",r:"き(く)・ブン",cap:"sense"},
+  "広":{g:"wide, broad",r:"ひろ(い)・コウ",cap:"sense"},
+  "告":{g:"to tell, to announce",r:"つ(げる)・コク",cap:"sense"},
+  "話":{g:"to speak, story",r:"はな(す)・ワ",cap:"sense"},
+  "携":{g:"to carry along",r:"たずさ(える)・ケイ",cap:"sense"},
+  "帯":{g:"belt, zone",r:"おび・タイ",cap:"sense"},
+  "番":{g:"number in a series, turn",r:"バン",cap:"sense"},
+  "組":{g:"to put together, group",r:"く(む)・ソ",cap:"sense"},
+  "号":{g:"number, title",r:"ゴウ",cap:"sense"},
+  "記":{g:"to record, to write",r:"しる(す)・キ",cap:"sense"},
+  "放":{g:"to release, to set free",r:"はな(す)・ホウ",cap:"sense"},
+  "送":{g:"to send",r:"おく(る)・ソウ",cap:"sense"},
+  "技":{g:"skill, technique",r:"わざ・ギ",cap:"sense"},
+  "械":{g:"instrument, mechanism",r:"カイ",cap:"sense"},
+  "発":{g:"to depart, to occur",r:"ハツ",cap:"sense"},
+  "明":{g:"bright, clear",r:"あか(るい)・メイ",cap:"sense"},
+  "未":{g:"not yet",r:"ミ",cap:"sense"},
+  "展":{g:"to unfold, exhibit",r:"テン",cap:"sense"},
+  "進":{g:"to advance, progress",r:"すす(む)・シン",cap:"sense"},
+  "歩":{g:"to walk, step",r:"ある(く)・ホ",cap:"sense"},
+  "気":{g:"spirit, energy",r:"キ",cap:"sense"},
+  "工":{g:"craft, construction",r:"コウ",cap:"sound"},
+  "知":{g:"to know",r:"し(る)・チ",cap:"sense"},
+  "能":{g:"ability, function",r:"ノウ",cap:"sense"},
+  "便":{g:"convenience",r:"たよ(り)・ベン",cap:"sense"},
+  "利":{g:"profit, advantage",r:"リ",cap:"sense"},
+};
+
+const UNITS = [
+  {
+    key:"seikatsu", theme:"The individual", themeJa:"個人",
+    topic:"Personal identity and lifestyles",
+    title:"せいかつ · Personal Identity and Lifestyles",
+    blurb:"Who you are day to day: your details, your home patch, your daily routine, and how you spend your health and free time.",
+    words:[
+      { w:"名前", r:"なまえ", parts:["名", "前"], def:"What people call you, the word your family chose for you when you were born." },
+      { w:"年齢", r:"ねんれい", parts:["年", "齢"], def:"The number of years someone has been alive." },
+      { w:"住所", r:"じゅうしょ", parts:["住", "所"], def:"The particular street and number where you live, used for letters and deliveries." },
+      { w:"誕生日", r:"たんじょうび", parts:["誕", "生", "日"], def:"The yearly date that marks when you were born." },
+      { w:"毎日", r:"まいにち", parts:["毎", "日"], def:"Something that happens on every single day, without exception." },
+      { w:"生活", r:"せいかつ", parts:["生", "活"], def:"The overall way someone lives day to day, their routine and way of doing things." },
+      { w:"近所", r:"きんじょ", parts:["近", "所"], def:"The area close to your home and the people who live around you." },
+      { w:"健康", r:"けんこう", parts:["健", "康"], def:"The state of your body and mind being well and free from illness." },
+      { w:"自由", r:"じゆう", parts:["自", "由"], def:"Time or space that is yours to use however you like, with nothing telling you what to do." },
+      { w:"自転車", r:"じてんしゃ", parts:["自", "転", "車"], def:"A two wheeled vehicle you ride by pushing pedals with your feet." },
+      { w:"週末", r:"しゅうまつ", parts:["週", "末"], def:"Saturday and Sunday, the two days at the end of the working week." },
+      { w:"運動", r:"うんどう", parts:["運", "動"], def:"Moving your body on purpose to stay fit, like sport or a workout." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 所 built 2 of them: 住所、近所. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"kankei", theme:"The individual", themeJa:"個人",
+    topic:"Relationships",
+    title:"にんげんかんけい · Relationships",
+    blurb:"The people around you: family, friends, teachers and community, with kanji that recur from one bond to the next.",
+    words:[
+      { w:"家族", r:"かぞく", parts:["家", "族"], def:"The group of people you live with and are related to, like your parents and siblings." },
+      { w:"家庭", r:"かてい", parts:["家", "庭"], def:"A home and the family life that happens inside it." },
+      { w:"両親", r:"りょうしん", parts:["両", "親"], def:"Your mother and father, thought of together." },
+      { w:"兄弟", r:"きょうだい", parts:["兄", "弟"], def:"Brothers, or a brother and sister thought of together." },
+      { w:"姉妹", r:"しまい", parts:["姉", "妹"], def:"Sisters, older and younger, thought of together." },
+      { w:"友人", r:"ゆうじん", parts:["友", "人"], def:"Someone you know well and enjoy spending time with, who is not part of your family." },
+      { w:"親友", r:"しんゆう", parts:["親", "友"], def:"The one friend you trust and feel closest to, more than any other." },
+      { w:"親切", r:"しんせつ", parts:["親", "切"], def:"The quality of being caring and helpful towards other people." },
+      { w:"先生", r:"せんせい", parts:["先", "生"], def:"The person whose job is to teach you at school." },
+      { w:"生徒", r:"せいと", parts:["生", "徒"], def:"A young person who is enrolled at a school to learn." },
+      { w:"地域", r:"ちいき", parts:["地", "域"], def:"A particular area or district, and the people who live in it." },
+      { w:"動物", r:"どうぶつ", parts:["動", "物"], def:"A living creature, such as a dog or a cat, that some people keep and look after at home." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 親 built 3 of them: 両親、親友、親切. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"shinro", theme:"The individual", themeJa:"個人",
+    topic:"Aspirations, education and careers",
+    title:"しんろ · Aspirations, Education and Careers",
+    blurb:"From classroom to career: school, study, graduation and the work and goals that come after it.",
+    words:[
+      { w:"学校", r:"がっこう", parts:["学", "校"], def:"The place you go to on weekdays to be taught by teachers and to learn alongside other students." },
+      { w:"高校", r:"こうこう", parts:["高", "校"], def:"The school you attend in your later teenage years, after junior secondary school." },
+      { w:"大学", r:"だいがく", parts:["大", "学"], def:"The place people study at after finishing secondary school, usually to earn a degree." },
+      { w:"留学", r:"りゅうがく", parts:["留", "学"], def:"Going to live in another country for a while in order to study there." },
+      { w:"勉強", r:"べんきょう", parts:["勉", "強"], def:"The effort of learning something, done through reading, practising and doing homework." },
+      { w:"試験", r:"しけん", parts:["試", "験"], def:"A set of questions or tasks used to check how much someone has learned." },
+      { w:"卒業", r:"そつぎょう", parts:["卒", "業"], def:"Finishing a course of study and officially completing a school or degree." },
+      { w:"将来", r:"しょうらい", parts:["将", "来"], def:"The time that has not happened yet, still ahead of you." },
+      { w:"仕事", r:"しごと", parts:["仕", "事"], def:"The tasks a person does regularly to earn money or to fulfil a role." },
+      { w:"就職", r:"しゅうしょく", parts:["就", "職"], def:"The act of finding and starting a job, usually after finishing your studies." },
+      { w:"職業", r:"しょくぎょう", parts:["職", "業"], def:"The particular kind of work a person does as their main occupation." },
+      { w:"目標", r:"もくひょう", parts:["目", "標"], def:"Something you aim for and work towards achieving." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 学 built 3 of them: 学校、大学、留学. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"bunka", theme:"The Japanese-speaking communities", themeJa:"日本語のコミュニティ",
+    topic:"The Japanese-speaking communities",
+    title:"ぶんか · Culture, Customs and Festivals",
+    blurb:"Traditional and modern culture side by side: tea ceremony and calligraphy next to manga and film.",
+    words:[
+      { w:"文化", r:"ぶんか", parts:["文", "化"], def:"The shared customs, arts and ways of life of a group of people, passed down and lived out together." },
+      { w:"伝統", r:"でんとう", parts:["伝", "統"], def:"A custom or practice handed down from earlier generations that a community keeps doing today." },
+      { w:"芸術", r:"げいじゅつ", parts:["芸", "術"], def:"Creative work such as painting, sculpture or design, valued for its skill and beauty." },
+      { w:"音楽", r:"おんがく", parts:["音", "楽"], def:"Sound arranged into rhythm and melody, played or sung for people to enjoy." },
+      { w:"映画", r:"えいが", parts:["映", "画"], def:"A story told through moving pictures, shown on a big screen at a cinema." },
+      { w:"漫画", r:"まんが", parts:["漫", "画"], def:"A story told through drawings in panels, usually printed in a book or magazine." },
+      { w:"着物", r:"きもの", parts:["着", "物"], def:"The traditional garment worn for special occasions, wrapped and tied rather than buttoned." },
+      { w:"正月", r:"しょうがつ", parts:["正", "月"], def:"The New Year period, the most important holiday of the year, with its own foods and family visits." },
+      { w:"花火", r:"はなび", parts:["花", "火"], def:"Coloured lights shot into the night sky, watched as the highlight of a summer festival." },
+      { w:"花見", r:"はなみ", parts:["花", "見"], def:"The custom of gathering outdoors in spring to look at blossoming trees." },
+      { w:"茶道", r:"さどう", parts:["茶", "道"], def:"The formal, ritual way of preparing and serving powdered green tea." },
+      { w:"書道", r:"しょどう", parts:["書", "道"], def:"The art of writing characters beautifully with a brush and ink." },
+    ],
+    payoff:"Twelve words, and you did not learn twelve separate things. 画 built two of them: 映画 and 漫画. 花 and 道 each did the same, in 花火・花見 and 茶道・書道. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"yuumei", theme:"The Japanese-speaking communities", themeJa:"日本語のコミュニティ",
+    topic:"Significant people",
+    title:"いだいなひと · Significant People",
+    blurb:"The words for talking about notable people: writers, painters, musicians, athletes, scientists and business leaders.",
+    words:[
+      { w:"有名", r:"ゆうめい", parts:["有", "名"], def:"Well known, recognised by many people." },
+      { w:"有名人", r:"ゆうめいじん", parts:["有", "名", "人"], def:"A person who is widely recognised, a celebrity or public figure." },
+      { w:"作家", r:"さっか", parts:["作", "家"], def:"A person who writes books for a living, such as novels or other works." },
+      { w:"画家", r:"がか", parts:["画", "家"], def:"A person who paints pictures as their profession." },
+      { w:"音楽家", r:"おんがくか", parts:["音", "楽", "家"], def:"A person whose profession is making music, whether composing or performing." },
+      { w:"芸術家", r:"げいじゅつか", parts:["芸", "術", "家"], def:"A person who creates works of art as their profession." },
+      { w:"選手", r:"せんしゅ", parts:["選", "手"], def:"A person chosen to compete in a sport, a player or athlete." },
+      { w:"監督", r:"かんとく", parts:["監", "督"], def:"The person in charge of directing a film or coaching a sports team." },
+      { w:"歴史", r:"れきし", parts:["歴", "史"], def:"The record of past events, and the study of them." },
+      { w:"科学者", r:"かがくしゃ", parts:["科", "学", "者"], def:"A person who studies the natural world through careful observation and experiment." },
+      { w:"実業家", r:"じつぎょうか", parts:["実", "業", "家"], def:"A person who runs or owns a business, especially on a large scale." },
+      { w:"経営者", r:"けいえいしゃ", parts:["経", "営", "者"], def:"The person who manages and runs an organisation or company." },
+    ],
+    payoff:"Twelve words, and 家 alone built five of them: 作家、画家、音楽家、芸術家 and 実業家. 者 built two more: 科学者 and 経営者. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"nihon", theme:"The Japanese-speaking communities", themeJa:"日本語のコミュニティ",
+    topic:"Living in a Japanese community / visiting Japan",
+    title:"にほんでのせいかつ · Living in Japan and Getting Around",
+    blurb:"Getting around and getting by in Japan: tickets, trains, luggage, money and the sights along the way.",
+    words:[
+      { w:"旅行", r:"りょこう", parts:["旅", "行"], def:"A trip, going on a journey usually for a holiday." },
+      { w:"飛行機", r:"ひこうき", parts:["飛", "行", "機"], def:"The machine that flies through the air, what you catch at the airport." },
+      { w:"空港", r:"くうこう", parts:["空", "港"], def:"The place where planes take off and land, and where travellers pass through customs." },
+      { w:"切符", r:"きっぷ", parts:["切", "符"], def:"A small paper or card that proves you have paid for a ride or entry." },
+      { w:"荷物", r:"にもつ", parts:["荷", "物"], def:"The bags and belongings a traveller carries or checks in." },
+      { w:"写真", r:"しゃしん", parts:["写", "真"], def:"A picture made with a camera, a copy of a real scene or moment." },
+      { w:"温泉", r:"おんせん", parts:["温", "泉"], def:"Naturally heated water rising from the ground, and the bath built around it." },
+      { w:"観光", r:"かんこう", parts:["観", "光"], def:"Visiting places to look at and enjoy them, sightseeing." },
+      { w:"銀行", r:"ぎんこう", parts:["銀", "行"], def:"The place where you keep, change or withdraw money." },
+      { w:"電車", r:"でんしゃ", parts:["電", "車"], def:"A passenger vehicle that runs on rails and is powered by electricity, common for getting around a city." },
+      { w:"地下鉄", r:"ちかてつ", parts:["地", "下", "鉄"], def:"A train system that runs mostly in tunnels below a city." },
+      { w:"神社", r:"じんじゃ", parts:["神", "社"], def:"A place of worship for the native religion of Japan, marked by a gate at its entrance." },
+    ],
+    payoff:"Twelve words, and you did not learn twelve separate things. 行 built three of them: 旅行、飛行機 and 銀行. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"shakai", theme:"The world around us", themeJa:"私たちの世界",
+    topic:"Global and contemporary society",
+    title:"げんだいしゃかい · Global and Contemporary Society",
+    blurb:"Caring for the environment, an ageing population and a changing family: the words for talking about society today.",
+    words:[
+      { w:"環境", r:"かんきょう", parts:["環", "境"], def:"The natural world around us, including the air, water, land and living things that need to be looked after and protected from damage." },
+      { w:"社会", r:"しゃかい", parts:["社", "会"], def:"A whole community of people living together and sharing systems, customs and institutions." },
+      { w:"問題", r:"もんだい", parts:["問", "題"], def:"A difficulty or matter that needs to be thought about, discussed or solved." },
+      { w:"高齢者", r:"こうれいしゃ", parts:["高", "齢", "者"], def:"A person who is elderly, generally of advanced age and often no longer working." },
+      { w:"高齢化", r:"こうれいか", parts:["高", "齢", "化"], def:"The process by which a population gradually becomes older, with a growing share of elderly people in it." },
+      { w:"少子化", r:"しょうしか", parts:["少", "子", "化"], def:"A trend in which fewer children are being born each year, so the number of young people in a population falls." },
+      { w:"温暖化", r:"おんだんか", parts:["温", "暖", "化"], def:"A long term rise in the world's average temperatures, widely linked to human activity and treated as a major environmental concern." },
+      { w:"家族", r:"かぞく", parts:["家", "族"], def:"The people you live with and are related to, such as parents, brothers and sisters, considered as one group." },
+      { w:"核家族", r:"かくかぞく", parts:["核", "家", "族"], def:"A small family unit made up of just parents and their children, without grandparents or other relatives living together." },
+      { w:"人口", r:"じんこう", parts:["人", "口"], def:"The total number of people living in a particular place, such as a country or city." },
+      { w:"老人", r:"ろうじん", parts:["老", "人"], def:"An elderly person, someone who has lived a long life and reached an advanced age." },
+      { w:"資源", r:"しげん", parts:["資", "源"], def:"Materials, energy or other supplies found in nature that people use and that can be limited in amount." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 化 built 3 of them: 高齢化、少子化、温暖化. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"tsuushin", theme:"The world around us", themeJa:"私たちの世界",
+    topic:"Communication and media",
+    title:"つうしんとメディア · Communication and Media",
+    blurb:"Newspapers, phones, adverts and broadcasts: the words for how information moves.",
+    words:[
+      { w:"情報", r:"じょうほう", parts:["情", "報"], def:"Facts, news or details about something that are collected, shared or passed on to others." },
+      { w:"新聞", r:"しんぶん", parts:["新", "聞"], def:"A daily or weekly printed publication containing news, articles and advertisements." },
+      { w:"新聞社", r:"しんぶんしゃ", parts:["新", "聞", "社"], def:"The company or organisation that writes, produces and publishes a newspaper." },
+      { w:"広告", r:"こうこく", parts:["広", "告"], def:"A public notice or message, often paid for, designed to promote a product, service or event." },
+      { w:"電話", r:"でんわ", parts:["電", "話"], def:"A device or system used to talk to someone else over a distance by voice." },
+      { w:"携帯", r:"けいたい", parts:["携", "帯"], def:"A small device that a person carries around with them, especially the everyday short word for a mobile phone." },
+      { w:"電子", r:"でんし", parts:["電", "子"], def:"Relating to technology that uses small electric circuits and digital signals, as in an electronic dictionary or device." },
+      { w:"番組", r:"ばんぐみ", parts:["番", "組"], def:"A single show or segment broadcast on television or radio." },
+      { w:"番号", r:"ばんごう", parts:["番", "号"], def:"A set of digits used to identify or contact something, such as a phone line or a seat." },
+      { w:"記事", r:"きじ", parts:["記", "事"], def:"A piece of writing in a newspaper or magazine that reports on a particular topic or event." },
+      { w:"放送", r:"ほうそう", parts:["放", "送"], def:"The sending out of a programme or message to the public by television or radio." },
+      { w:"会話", r:"かいわ", parts:["会", "話"], def:"Spoken exchange between two or more people, talking together about something." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 新 built 2 of them: 新聞、新聞社. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+  {
+    key:"gijutsu", theme:"The world around us", themeJa:"私たちの世界",
+    topic:"The influence of technology",
+    title:"ぎじゅつのえいきょう · The Influence of Technology",
+    blurb:"Inventions, machines and the pace of change reshaping daily life.",
+    words:[
+      { w:"技術", r:"ぎじゅつ", parts:["技", "術"], def:"The practical skills, methods and equipment used to do or make things, especially in science and industry." },
+      { w:"機械", r:"きかい", parts:["機", "械"], def:"A device with moving parts built to perform a particular job, usually powered by electricity or fuel." },
+      { w:"発明", r:"はつめい", parts:["発", "明"], def:"Something completely new that a person creates or designs for the first time, often to solve a problem." },
+      { w:"未来", r:"みらい", parts:["未", "来"], def:"The time that has not happened yet, still to come." },
+      { w:"発展", r:"はってん", parts:["発", "展"], def:"Growth or advancement over time, becoming bigger, more advanced or more successful." },
+      { w:"進歩", r:"しんぽ", parts:["進", "歩"], def:"Steady improvement or advancement, moving forward towards a better state." },
+      { w:"自動車", r:"じどうしゃ", parts:["自", "動", "車"], def:"A vehicle with an engine, used to travel on roads, commonly known simply as a car." },
+      { w:"自動", r:"じどう", parts:["自", "動"], def:"Working by itself, without a person needing to operate it directly." },
+      { w:"電気", r:"でんき", parts:["電", "気"], def:"The form of energy used to power lights, devices and machines." },
+      { w:"人工", r:"じんこう", parts:["人", "工"], def:"Made by people rather than occurring naturally." },
+      { w:"知能", r:"ちのう", parts:["知", "能"], def:"The ability to learn, understand, reason and solve problems." },
+      { w:"便利", r:"べんり", parts:["便", "利"], def:"Easy and useful to make use of, saving time or effort." },
+    ],
+    payoff:"12 words, and you did not learn 12 separate things. 発 built 2 of them: 発明、発展. Once a kanji is yours, every word that uses it gets cheaper.",
+  },
+];
+
+/* ============================================================
+   ENGINE — tap-then-tap, or drag. Any word, any order.
+   ============================================================ */
+const UI = {
+  title:    ["単語ビルダー","たんごビルダー","tango birudā","Word Builder"],
+  subtitle: ["ユニットのことばを、漢字から組み立てる","ユニットのことばを、かんじからくみたてる",
+             "yunitto no kotoba o, kanji kara kumitateru",
+             "one unit, one bank of kanji, every word on the page"],
+  how:      ["ユニットをえらんでください","ユニットをえらんでください","yunitto o erande kudasai",
+             "Pick a unit. You get its whole word list at once, with every kanji you need in one bank."],
+  back:     ["← ホーム","← ホーム","← hōmu","← home"],
+};
+const UI_RUBY = { subtitle:"ユニットのことばを、<ruby>漢字<rt>かんじ</rt></ruby>から<ruby>組<rt>く</rt></ruby>み<ruby>立<rt>た</rt></ruby>てる" };
+
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const shuffle = (a) => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+  const S = { unit:null, held:null, fills:{}, done:{}, first:{} };
+
+  function go(name){
+    document.querySelectorAll(".screen").forEach((s)=>s.classList.remove("active"));
+    $("scr-"+name).classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+    if(window.HubLever) window.HubLever.apply();
+  }
+  document.querySelectorAll("[data-go]").forEach((b)=>
+    b.addEventListener("click",()=>{ const n=b.dataset.go; if(n==="home") drawHome(); go(n); }));
+
+  function drawHome(){
+    const wrap=$("units"); wrap.innerHTML="";
+    const themes=[...new Set(UNITS.map((u)=>u.theme))];
+    themes.forEach((th)=>{
+      const head=document.createElement("div");
+      head.className="theme-head";
+      const ja=(UNITS.find((u)=>u.theme===th)||{}).themeJa||"";
+      head.innerHTML=esc(ja)+'<small>'+esc(th)+'</small>';
+      wrap.appendChild(head);
+      const grid=document.createElement("div");
+      grid.className="units";
+      UNITS.filter((u)=>u.theme===th).forEach((u)=>{
+        const doneN=u.words.filter((w)=>S.done[w.w]).length;
+        const b=document.createElement("button");
+        b.className="unit";
+        b.innerHTML='<div class="ut">'+esc(u.title)+'</div><div class="ud">'+esc(u.blurb)+'</div>'+
+          '<div class="un">'+esc(u.topic)+' · '+u.words.length+' words · '+
+          new Set(u.words.flatMap((w)=>w.parts)).size+' kanji'+(doneN?' · '+doneN+' built':'')+'</div>';
+        b.addEventListener("click",()=>openUnit(u));
+        grid.appendChild(b);
+      });
+      wrap.appendChild(grid);
+    });
+  }
+
+  /* how many words each kanji serves in this unit */
+  function useCount(u){
+    const n={};
+    u.words.forEach((w)=>w.parts.forEach((p)=>{ n[p]=(n[p]||0)+1; }));
+    return n;
+  }
+  const capOf=(k)=>(KANJI[k]&&KANJI[k].cap)||"sense";
+
+  function openUnit(u){
+    S.unit=u; S.held=null; S.fills={}; bankOrder=null;
+    u.words.forEach((w)=>{ S.fills[w.w]=[]; });
+    go("build");
+    $("unit-title").textContent=u.title;
+    $("unit-intro").textContent=u.blurb;
+    drawBank(); drawList();
+  }
+
+  let bankOrder=null;   // shuffled once per unit so redraws do not reshuffle
+  function drawBank(){
+    const u=S.unit;
+    const count=useCount(u);
+    if(!bankOrder) bankOrder=shuffle([...new Set(u.words.flatMap((w)=>w.parts))]);
+    $("bank-label").innerHTML = (S.held
+      ? 'Now tap a box to drop <b>'+S.held+'</b> in, or tap it again to put it back.'
+      : 'Tap a kanji (then tap a box), or drag it. Build any word, in any order. A kanji is never used up.')+
+      '<div class="capkey"><span class="ck-sense">いみ meaning</span>'+
+      '<span class="ck-sound">おと sound</span><span class="ck-both">どちらも both</span></div>'+
+      '<div class="capnote">Colour is the job a kanji does when it works as a PART. '+
+      'Red is a promise for the kanji you will meet; purple and blue are strong bets. '+
+      'Blue is rare in whole words on purpose: sound-carriers mostly work INSIDE single kanji, '+
+      'and that is the <a href="../kanji/" style="color:var(--accent);font-weight:700">かんじこうじょう Kanji Factory</a>\'s floor of the building. '+
+      'A ×2 or ×3 badge means a kanji builds more than one word here.</div>';
+    $("bank").innerHTML=bankOrder.map((k)=>
+      '<button type="button" class="chip cap-'+capOf(k)+(S.held===k?" held":"")+
+      '" data-k="'+k+'" draggable="true">'+
+        '<span class="k">'+k+'</span><span class="g">'+esc(KANJI[k]?KANJI[k].g:"")+'</span>'+
+        '<span class="r">'+esc(KANJI[k]?KANJI[k].r:"")+'</span>'+
+        (count[k]>1?'<span class="times">×'+count[k]+'</span>':"")+
+      '</button>').join("");
+    $("bank").querySelectorAll(".chip").forEach((c)=>{
+      c.addEventListener("click",()=>{
+        S.held = S.held===c.dataset.k ? null : c.dataset.k;
+        drawBank();
+      });
+      c.addEventListener("dragstart",(e)=>{ c.classList.add("dragging"); e.dataTransfer.setData("text/plain",c.dataset.k); });
+      c.addEventListener("dragend",()=>c.classList.remove("dragging"));
+    });
+  }
+
+  function drawList(){
+    const u=S.unit;
+    const todo=u.words.filter((w)=>!S.done[w.w]);
+    const done=u.words.filter((w)=>S.done[w.w]);
+    $("prog").textContent=u.title.split(" ")[0]+" · "+done.length+"/"+u.words.length;
+    $("todo").innerHTML=todo.map((w)=>rowHtml(w,false)).join("");
+    $("done-wrap").innerHTML = done.length
+      ? '<div class="done-head">できた · built ('+done.length+')</div>'+
+        '<div class="done-legend"><span class="cap-sense">sense</span><span class="cap-sound">sound</span><span class="cap-both">both</span></div>'+
+        '<div class="list">'+done.map((w)=>rowHtml(w,true)).join("")+'</div>'
+      : "";
+    wireRows();
+    const fin=$("finish");
+    if(done.length===u.words.length){
+      const count=useCount(u);
+      const share=Object.keys(count).filter((k)=>count[k]>1);
+      const firstTry=u.words.filter((w)=>S.first[w.w]===true).length;
+      fin.className="finish show";
+      fin.innerHTML='<b>ユニット かんりょう · unit complete.</b> First try: '+firstTry+'/'+u.words.length+'.<br>'+
+        esc(u.payoff)+
+        '<div class="reuse">'+share.map((k)=>{
+          const inW=u.words.filter((w)=>w.parts.indexOf(k)>-1);
+          return '<span class="rk"><b>'+k+'</b> built '+inW.length+': '+inW.map((w)=>w.w).join("、")+'</span>';
+        }).join("")+'</div>';
+    } else fin.className="finish";
+  }
+
+  function colourBuilt(w){
+    return w.w.split("").map((k)=>'<span class="cap-'+capOf(k)+'">'+esc(k)+'</span>').join("");
+  }
+  function rowHtml(w,isDone){
+    if(isDone){
+      return '<div class="row done" data-w="'+w.w+'"><div class="def"><span class="en">'+esc(w.def)+'</span></div>'+
+        '<div class="built"><span class="w">'+colourBuilt(w)+'</span><span class="rd">'+esc(w.r)+'</span>'+
+        '<span class="tick">'+(S.first[w.w]?"✓":"✓")+'</span></div></div>';
+    }
+    const fill=S.fills[w.w]||[];
+    return '<div class="row" data-w="'+w.w+'"><div class="def"><span class="en">'+esc(w.def)+'</span></div>'+
+      '<div class="slots">'+w.parts.map((_,i)=>
+        '<button type="button" class="slot'+(fill[i]?" filled cap-"+capOf(fill[i]):"")+'" data-w="'+w.w+'" data-i="'+i+'">'+
+          (fill[i]||"")+'</button>').join("")+'</div></div>';
+  }
+
+  function wireRows(){
+    document.querySelectorAll(".slot").forEach((s)=>{
+      s.addEventListener("click",()=>{
+        const w=s.dataset.w, i=+s.dataset.i;
+        if(S.done[w]) return;
+        if(S.fills[w][i]){ S.fills[w][i]=null; drawList(); return; }   // tap a filled box to clear it
+        if(!S.held) return;
+        place(w,i,S.held);
+      });
+      s.addEventListener("dragover",(e)=>{ e.preventDefault(); s.classList.add("aim"); });
+      s.addEventListener("dragleave",()=>s.classList.remove("aim"));
+      s.addEventListener("drop",(e)=>{
+        e.preventDefault(); s.classList.remove("aim");
+        const k=e.dataTransfer.getData("text/plain");
+        if(k) place(s.dataset.w,+s.dataset.i,k);
+      });
+    });
+  }
+
+  function place(wKey,i,k){
+    const u=S.unit, w=u.words.find((x)=>x.w===wKey);
+    if(!w || S.done[wKey]) return;
+    S.fills[wKey][i]=k;
+    S.held=null;
+    // full? then judge it
+    const fill=S.fills[wKey];
+    if(fill.filter(Boolean).length===w.parts.length){
+      const ok=w.parts.every((p,idx)=>fill[idx]===p);
+      if(!(wKey in S.first)) S.first[wKey]=ok;
+      if(ok){ S.done[wKey]=true; }
+      else {
+        drawBank(); drawList();
+        const row=document.querySelector('.row[data-w="'+wKey+'"]');
+        if(row){ row.classList.add("wrong"); setTimeout(()=>{ S.fills[wKey]=[]; drawList(); },420); }
+        return;
+      }
+    }
+    drawBank(); drawList();
+  }
+
+  drawHome();
+  window.HubLever.init({ strings:UI, ruby:UI_RUBY });
+})();
+</script>
+</body>
+</html>

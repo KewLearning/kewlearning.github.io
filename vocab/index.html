@@ -1,0 +1,5492 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>ことばのホーム · Vocab Hub</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+<style>
+  /* ============================================================
+     ことばのホーム — every word in the 7-12 suite, in one place.
+     The units are the front doors; this is the warehouse behind
+     them. A word met in Year 8 and met again at VCE shows BOTH
+     doors on its card: that is multiple exposures made visible.
+
+     Browse by year or unit, open a word to see its parts (with
+     the suite's capacity colours where the classification has
+     been audited), and quiz yourself on any shelf. Deep links:
+     #unit:<key> and #year:<7|8|9|10|VCE|mission>. Units link in from the
+     Unit Walk; every card links back out to its units.
+
+     GENERATED FILE — edit tools/vocab-template.html and the JSON
+     under data/units/, then run tools/gen-units.js.
+     ============================================================ */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --band:#f5f0e6; --amber:#8a6d1e; --pos:#8d8577;
+    --sense:#b5342a; --sense-bg:#fae7e4;
+    --sound:#2f5d8f; --sound-bg:#e3ecf5;
+    --both:#6b4a9e;  --both-bg:#ece4f6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.5;min-height:100vh;padding:16px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px}
+  .poc b{color:var(--accent)}
+  button{font-family:inherit}
+  .btn{padding:10px 17px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .intro{font-size:13.5px;color:var(--muted);margin:2px 0 14px;text-align:center}
+
+  /* ---- filters ---- */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+  .fchip{border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:5px 14px;
+       font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+  .fchip:hover{border-color:var(--accent)}
+  .fchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .uchips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+  .uchip{border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:4px 11px;
+       font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .uchip:hover{border-color:var(--accent)}
+  .uchip.on{background:var(--band);border-color:var(--accent);color:var(--ink)}
+  .toolrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 12px;flex-wrap:wrap}
+  .count{font-size:12px;color:var(--muted);font-weight:700}
+  .walkto{font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;border:1px solid var(--line);
+       border-radius:7px;padding:4px 10px;background:var(--bg)}
+  .walkto:hover{border-color:var(--accent)}
+
+  /* ---- word grid ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+  .wcard{text-align:left;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+       padding:11px 13px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+  .wcard:hover{border-color:var(--accent)}
+  .wcard .ww{font-family:var(--font);font-size:21px;line-height:1.3}
+  .wcard .wr{font-size:11.5px;color:var(--muted)}
+  .wcard .wd{font-size:11.5px;color:var(--muted)}
+  .wcard.open{border-color:var(--accent);box-shadow:0 0 0 2px rgba(168,50,50,.12)}
+  .wdetail{grid-column:1/-1;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;
+       background:var(--band);padding:14px 16px}
+  .wdetail .dw{font-family:var(--font);font-size:26px}
+  .wdetail .dr{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .wdetail .dd{font-size:13px;margin-bottom:8px}
+  .wdetail .dex{font-family:var(--font);font-size:15px;margin:6px 0 2px}
+  .wdetail .dexg{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .dparts{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+  .dpart{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);border-radius:8px;
+       padding:4px 10px;background:var(--paper);min-width:52px}
+  .dpart .pk{font-family:var(--font);font-size:20px;line-height:1.2}
+  .dpart .pg{font-size:9px;color:var(--muted)}
+  .dpart.cap-sense{border-color:var(--sense);background:var(--sense-bg)}
+  .dpart.cap-sound{border-color:var(--sound);background:var(--sound-bg)}
+  .dpart.cap-both{border-color:var(--both);background:var(--both-bg)}
+  .dunits{display:flex;gap:6px;flex-wrap:wrap}
+  .dunit{font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;border:1px solid var(--line);
+       border-radius:7px;padding:4px 10px;background:var(--paper)}
+  .dunit:hover{border-color:var(--accent)}
+  .kpnote{font-size:11px;color:var(--muted)}
+  .kpnote b{font-family:var(--font);font-size:14px}
+
+  /* ---- quiz ---- */
+  .quizbox{border:1px solid var(--line-soft);border-radius:12px;background:var(--paper);padding:18px 16px;max-width:640px;margin:0 auto}
+  .qlab{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .qdef{font-size:14.5px;margin-bottom:14px}
+  .qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .qopt{font-family:var(--font);font-size:19px;padding:12px;border:1px solid var(--line);border-radius:9px;
+       background:var(--bg);cursor:pointer;text-align:center}
+  .qopt:hover{border-color:var(--accent)}
+  .qopt.good{border-color:var(--correct);background:var(--okbg);color:var(--correct)}
+  .qopt.bad{border-color:var(--wrong);background:var(--badbg);animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .qnext{text-align:center;margin-top:12px;min-height:44px}
+  .qdone{text-align:center;padding:16px 0}
+  .qdone .big{font-size:34px}
+  .screen{display:none}.screen.active{display:block}
+  .navrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+  .buildtag{margin-top:18px;font-size:10px;color:var(--muted);opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="container">
+    <h1 class="jt-tap" data-jt="title">ことばのホーム</h1>
+    <p class="subtitle jt-tap" data-jt="subtitle">Every word in the suite, one warehouse</p>
+    <span class="poc"><b>PoC.</b> Word lists are drafts (Q6, Q19, Q20); Andrew trims, this page follows.</span>
+
+    <section id="scr-browse" class="screen active">
+      <p class="intro jt-tap" data-jt="how">Pick a year or a unit.</p>
+      <div class="filters" id="grpChips"></div>
+      <div class="uchips" id="unitChips"></div>
+      <div class="toolrow">
+        <span class="count" id="count"></span>
+        <span>
+          <a class="walkto" id="walkLink" href="../walk/" target="_blank" rel="noopener" style="display:none"></a>
+          <button class="btn btn-primary" id="quizBtn">クイズ · quiz this shelf</button>
+        </span>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <section id="scr-quiz" class="screen">
+      <div class="navrow"><button class="linkbtn" id="quizBack">← ことば</button>
+        <span id="quizLever" data-scope="#scr-quiz"></span></div>
+      <div id="quiz-area"></div>
+    </section>
+
+    <div class="buildtag">ことばのホーム build 2026-08-20 · PoC · generated by tools/gen-units.js</div>
+  </div>
+</div>
+
+<script src="lever.js"></script>
+<script>
+"use strict";
+/* DATA — generated. */
+const VWORDS = [
+ {
+  "w": "おはよう",
+  "r": "おはよう",
+  "def": "The cheerful thing you say to someone in the morning when you first see them at school.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "こんにちは",
+  "r": "こんにちは",
+  "def": "The word you say to greet someone once the morning has passed, any time from about lunch to evening.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "さようなら",
+  "r": "さようなら",
+  "def": "What you say when you are leaving and will not see the person again for a while, like at the school gate.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "ありがとう",
+  "r": "ありがとう",
+  "def": "The word you say when someone has done something kind for you, to show you are grateful.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "すみません",
+  "r": "すみません",
+  "def": "A useful word for saying sorry, getting someone's attention, or apologising for a small mistake.",
+  "units": [
+   "u71",
+   "mairport"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "なまえ",
+  "r": "なまえ",
+  "def": "The word people use to call you, chosen for you before you could talk.",
+  "kp": "名前",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "せんせい",
+  "r": "せんせい",
+  "def": "The adult whose job is to stand at the front of the room and teach you.",
+  "kp": "先生",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "がっこう",
+  "r": "がっこう",
+  "def": "The building you go to on weekdays to learn together with other students.",
+  "kp": "学校",
+  "units": [
+   "u71",
+   "u81"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "オーストラリア",
+  "r": "オーストラリア",
+  "def": "The country south of the equator that many students in this course call home, known for kangaroos and sunny beaches.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "アメリカ",
+  "r": "アメリカ",
+  "def": "A large country between Canada and Mexico, known for Hollywood, baseball and fifty stars on its flag.",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "じゅうにさい",
+  "r": "じゅうにさい",
+  "def": "The exact age most students are when they start year seven, a number plus the word for years old.",
+  "kp": "十二歳",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "たんじょうび",
+  "r": "たんじょうび",
+  "def": "The yearly date that marks the day you were born, often celebrated with cake and presents.",
+  "kp": "誕生日",
+  "units": [
+   "u71"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "かぞく",
+  "r": "かぞく",
+  "def": "The whole group of people you live with and are related to, like your parents and any brothers or sisters.",
+  "kp": "家族",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "あに",
+  "r": "あに",
+  "def": "A male sibling older than you; the word you use about him when talking to people outside your family.",
+  "kp": "兄",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "あね",
+  "r": "あね",
+  "def": "A female sibling older than you; the word you use about her when talking to people outside your family.",
+  "kp": "姉",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "おとうと",
+  "r": "おとうと",
+  "def": "A male sibling younger than you, the little brother of the family.",
+  "kp": "弟",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "いもうと",
+  "r": "いもうと",
+  "def": "A female sibling younger than you, the little sister of the family.",
+  "kp": "妹",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "りょうしん",
+  "r": "りょうしん",
+  "def": "Your mother and father, spoken about together as a pair rather than naming each one separately.",
+  "kp": "両親",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "いぬ",
+  "r": "いぬ",
+  "def": "A common four legged pet known for loyalty, walks and barking, kept by many families as a companion.",
+  "kp": "犬",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "ねこ",
+  "r": "ねこ",
+  "def": "A common small pet known for napping, independence and a habit of ignoring you when called.",
+  "kp": "猫",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "どうぶつ",
+  "r": "どうぶつ",
+  "def": "Any living creature that is not a plant, especially the kind people keep and care for at home.",
+  "kp": "動物",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "ペット",
+  "r": "ペット",
+  "def": "A creature someone chooses to keep and look after at home purely for companionship, not for food or work.",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "ハムスター",
+  "r": "ハムスター",
+  "def": "A tiny, round pet that lives in a cage, stores food in its cheeks and is most active at night.",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "きょうだい",
+  "r": "きょうだい",
+  "def": "Brothers, or a brother and sister, spoken about together without saying which is older or younger.",
+  "kp": "兄弟",
+  "units": [
+   "u72"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "おんがく",
+  "r": "おんがく",
+  "def": "Sound arranged into rhythm and melody, whether you are listening to it or making it yourself.",
+  "kp": "音楽",
+  "units": [
+   "u73",
+   "u83"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "えいが",
+  "r": "えいが",
+  "def": "A story told through moving pictures that you watch on a big screen or at home.",
+  "kp": "映画",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "うんどう",
+  "r": "うんどう",
+  "def": "Moving your body on purpose to stay fit and healthy, like running, swimming or playing sport.",
+  "kp": "運動",
+  "units": [
+   "u73",
+   "u81"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "まんが",
+  "r": "まんが",
+  "def": "A story told in drawings arranged in panels, usually read from a printed book or magazine.",
+  "kp": "漫画",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "スポーツ",
+  "r": "スポーツ",
+  "def": "Any physical game or activity played with rules, often in teams, for fun or competition.",
+  "units": [
+   "u73",
+   "u83"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "テニス",
+  "r": "テニス",
+  "def": "A sport played with rackets and a small ball, hit back and forth over a net.",
+  "units": [
+   "u73",
+   "u83"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "サッカー",
+  "r": "サッカー",
+  "def": "A team sport where players kick a ball towards a goal, using every part of the body except their hands.",
+  "units": [
+   "u73",
+   "u83"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "たべもの",
+  "r": "たべもの",
+  "def": "Anything you eat, from a full meal down to a small snack.",
+  "kp": "食べ物",
+  "units": [
+   "u73",
+   "u82"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "くだもの",
+  "r": "くだもの",
+  "def": "The sweet part of a plant that grows from a flower and is usually eaten raw, like an apple or a banana.",
+  "kp": "果物",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "やさい",
+  "r": "やさい",
+  "def": "A plant, or part of one, that is grown to be eaten, usually as part of a savoury meal rather than a sweet one.",
+  "kp": "野菜",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "いろ",
+  "r": "いろ",
+  "def": "The visual quality that lets you tell a red apple apart from a green one.",
+  "kp": "色",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "すし",
+  "r": "すし",
+  "def": "A traditional dish of vinegared rice, often served with raw fish or vegetables on top.",
+  "kp": "寿司",
+  "units": [
+   "u73"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "じかん",
+  "r": "じかん",
+  "def": "The stretch of minutes or hours that something takes, like the length of a lesson.",
+  "kp": "時間",
+  "units": [
+   "u74",
+   "u81"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "ようび",
+  "r": "ようび",
+  "def": "The ending word attached after a day's name to say which day of the week you mean.",
+  "kp": "曜日",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "げつようび",
+  "r": "げつようび",
+  "def": "The first day of the school week, straight after the weekend.",
+  "kp": "月曜日",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "べんきょう",
+  "r": "べんきょう",
+  "def": "The effort of learning something new, done through reading, listening and practising.",
+  "kp": "勉強",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "しけん",
+  "r": "しけん",
+  "def": "A set of questions given to check how much someone has learned, usually done under time pressure.",
+  "kp": "試験",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "じゅぎょう",
+  "r": "じゅぎょう",
+  "def": "A single block of teaching time at school, focused on one subject.",
+  "kp": "授業",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "すうがく",
+  "r": "すうがく",
+  "def": "The school subject built around numbers, shapes and solving problems using them.",
+  "kp": "数学",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "えいご",
+  "r": "えいご",
+  "def": "The language spoken as a first language in countries like Britain, the United States and Australia, and studied as a subject in Japanese schools.",
+  "kp": "英語",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "たいいく",
+  "r": "たいいく",
+  "def": "The school subject where you run, jump, play sport and use your body instead of sitting at a desk.",
+  "kp": "体育",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "びじゅつ",
+  "r": "びじゅつ",
+  "def": "The school subject where you draw, paint and make things by hand.",
+  "kp": "美術",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "テスト",
+  "r": "テスト",
+  "def": "A short, often informal check of what you know, smaller and more frequent than a big formal exam.",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "クラス",
+  "r": "クラス",
+  "def": "A group of students who study together, or the room they meet in for lessons.",
+  "units": [
+   "u74"
+  ],
+  "grp": "7"
+ },
+ {
+  "w": "まいにち",
+  "r": "まいにち",
+  "def": "Something that happens on every single day, without any days off.",
+  "kp": "毎日",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "せいかつ",
+  "r": "せいかつ",
+  "def": "The overall pattern of your days, the ordinary routine you follow again and again.",
+  "kp": "生活",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "あさごはん",
+  "r": "あさごはん",
+  "def": "The meal you eat soon after waking up, before you leave for school.",
+  "kp": "朝ご飯",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "ばんごはん",
+  "r": "ばんごはん",
+  "def": "The meal your family eats together once the day is nearly finished.",
+  "kp": "晩ご飯",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "はやく",
+  "r": "はやく",
+  "def": "Doing something well before the usual time, or getting somewhere sooner than expected.",
+  "kp": "早く",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "おそく",
+  "r": "おそく",
+  "def": "Doing something after the time it should have happened, or staying up past your usual hour.",
+  "kp": "遅く",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "しゅくだい",
+  "r": "しゅくだい",
+  "def": "The set work a teacher gives you to finish at home after school.",
+  "kp": "宿題",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "テレビ",
+  "r": "テレビ",
+  "def": "The box in the lounge room that shows moving pictures and sound for entertainment or news.",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "シャワー",
+  "r": "シャワー",
+  "def": "The quick way to wash yourself standing up, with water falling from above.",
+  "units": [
+   "u81"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "のみもの",
+  "r": "のみもの",
+  "def": "Anything in a cup or bottle that you swallow rather than chew, like juice or tea.",
+  "kp": "飲み物",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "りょうり",
+  "r": "りょうり",
+  "def": "The activity of preparing ingredients and turning them into a finished meal.",
+  "kp": "料理",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "メニュー",
+  "r": "メニュー",
+  "def": "The card or board in a restaurant that lists every dish you can order.",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "ねだん",
+  "r": "ねだん",
+  "def": "How much money you have to hand over to take something home.",
+  "kp": "値段",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "えん",
+  "r": "えん",
+  "def": "The unit that Japanese prices are counted in, written after every number on a price tag.",
+  "kp": "円",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "やすい",
+  "r": "やすい",
+  "def": "Describes something that does not cost very much, easy on your wallet.",
+  "kp": "安い",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "たかい",
+  "r": "たかい",
+  "def": "Describes something that costs a lot, or a building that reaches well up into the sky.",
+  "kp": "高い",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "おいしい",
+  "r": "おいしい",
+  "def": "The word you say about food or drink that tastes really good.",
+  "kp": "美味しい",
+  "units": [
+   "u82",
+   "malley"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "ジュース",
+  "r": "ジュース",
+  "def": "A sweet drink made by squeezing or blending fruit.",
+  "units": [
+   "u82",
+   "u92"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "かいもの",
+  "r": "かいもの",
+  "def": "Going out to a shop and coming home with something you have paid for.",
+  "kp": "買い物",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "レストラン",
+  "r": "レストラン",
+  "def": "A place you go to sit down, order from a menu and be served a cooked meal.",
+  "units": [
+   "u82"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "しゅみ",
+  "r": "しゅみ",
+  "def": "Something you do in your free time simply because you enjoy it, not because you have to.",
+  "kp": "趣味",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "れんしゅう",
+  "r": "れんしゅう",
+  "def": "Doing something again and again on purpose so that you get better at it.",
+  "kp": "練習",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "うた",
+  "r": "うた",
+  "def": "A piece of music with words that people sing.",
+  "kp": "歌",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "せんしゅ",
+  "r": "せんしゅ",
+  "def": "A person who has been chosen to compete in a sport at a high level.",
+  "kp": "選手",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "こうえん",
+  "r": "こうえん",
+  "def": "An open, grassy public space with paths and often play equipment, good for a game outside.",
+  "kp": "公園",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "いっしょに",
+  "r": "いっしょに",
+  "def": "Doing something at the same time and in the same place as somebody else, not alone.",
+  "kp": "一緒に",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "たのしい",
+  "r": "たのしい",
+  "def": "The feeling of really enjoying yourself while you do something.",
+  "kp": "楽しい",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "どようび",
+  "r": "どようび",
+  "def": "The day of the week that comes right after Friday, the start of the weekend.",
+  "kp": "土曜日",
+  "units": [
+   "u83"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "まち",
+  "r": "まち",
+  "def": "A busy area with shops, streets and buildings where lots of people live close together.",
+  "kp": "町",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "みせ",
+  "r": "みせ",
+  "def": "A place you go into to buy something, run by someone who sells goods to customers.",
+  "kp": "店",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "えき",
+  "r": "えき",
+  "def": "The building where trains stop so passengers can get on and off.",
+  "kp": "駅",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "みち",
+  "r": "みち",
+  "def": "The path or street you walk, ride or drive along to get from one place to another.",
+  "kp": "道",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "としょかん",
+  "r": "としょかん",
+  "def": "A quiet public building full of books that you can borrow and take home.",
+  "kp": "図書館",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "えいがかん",
+  "r": "えいがかん",
+  "def": "The building you go to sit in the dark and watch a film on a big screen.",
+  "kp": "映画館",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "バス",
+  "r": "バス",
+  "def": "A large vehicle that drives a set route through town, picking up and dropping off passengers.",
+  "units": [
+   "u84",
+   "u91"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "タクシー",
+  "r": "タクシー",
+  "def": "A car you can hire along with its driver to take you straight to where you want to go.",
+  "units": [
+   "u84",
+   "u91"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "でんしゃ",
+  "r": "でんしゃ",
+  "def": "A vehicle that runs on rails and carries passengers around a city or between towns.",
+  "kp": "電車",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "ちかてつ",
+  "r": "ちかてつ",
+  "def": "A train system built in tunnels running beneath the streets of a big city.",
+  "kp": "地下鉄",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "いえ",
+  "r": "いえ",
+  "def": "The building where you and your family live, the place you head back to at the end of a day out.",
+  "kp": "家",
+  "units": [
+   "u84"
+  ],
+  "grp": "8"
+ },
+ {
+  "w": "しゅうまつ",
+  "r": "しゅうまつ",
+  "def": "Saturday and Sunday together, the two days when there is usually no school.",
+  "kp": "週末",
+  "units": [
+   "u84",
+   "unit10"
+  ],
+  "grp": "8",
+  "ex": "しゅうまつに 友だちと あそびます。",
+  "exGloss": "I hang out with friends on the weekend."
+ },
+ {
+  "w": "町",
+  "r": "まち",
+  "def": "The built-up part of a place where shops, houses and streets cluster together, bigger than a single street but smaller than a whole city.",
+  "parts": [
+   "町"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "店",
+  "r": "みせ",
+  "def": "A building someone runs so people can walk in and buy things, like food, clothes or books.",
+  "parts": [
+   "店"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "駅",
+  "r": "えき",
+  "def": "The building where trains stop, with platforms, ticket machines and gates, so people can get on and off.",
+  "parts": [
+   "駅"
+  ],
+  "units": [
+   "u91",
+   "mstation"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "道",
+  "r": "みち",
+  "def": "A path that people, bikes or cars travel along to get from one place to another.",
+  "parts": [
+   "道"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "右",
+  "r": "みぎ",
+  "def": "The direction you turn towards if you are facing forward and hold your arm out on the side most people write with.",
+  "parts": [
+   "右"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "左",
+  "r": "ひだり",
+  "def": "The direction on the side away from the hand most people write with, opposite to right.",
+  "parts": [
+   "左"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "橋",
+  "r": "はし",
+  "def": "A structure built over a river, road or valley so that people and vehicles can cross to the other side.",
+  "parts": [
+   "橋"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "歩道",
+  "r": "ほどう",
+  "def": "The narrow strip beside a road that is set aside for people on foot, kept separate from the traffic.",
+  "parts": [
+   "歩",
+   "道"
+  ],
+  "units": [
+   "u91"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "電車",
+  "r": "でんしゃ",
+  "def": "A vehicle that runs along rails through a city, powered by electricity, that you board from a platform.",
+  "parts": [
+   "電",
+   "車"
+  ],
+  "units": [
+   "u91",
+   "nihon",
+   "mstation"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "写真",
+  "r": "しゃしん",
+  "def": "A picture made with a camera that captures a real moment or scene exactly as it looked.",
+  "parts": [
+   "写",
+   "真"
+  ],
+  "units": [
+   "u91",
+   "u102",
+   "nihon",
+   "malley"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "味",
+  "r": "あじ",
+  "def": "The particular quality something has on your tongue when you eat or drink it, like sweet, salty or sour.",
+  "parts": [
+   "味"
+  ],
+  "units": [
+   "u92",
+   "mhoshino"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "料理",
+  "r": "りょうり",
+  "def": "A dish that has been prepared and cooked, or the general activity of preparing food.",
+  "parts": [
+   "料",
+   "理"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "飲み物",
+  "r": "のみもの",
+  "def": "Anything liquid that you drink, whether it is hot, cold, sweet or plain.",
+  "parts": [
+   "飲",
+   "物"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "野菜",
+  "r": "やさい",
+  "def": "The edible parts of plants, like carrots or cabbage, that people are told to eat plenty of for good health.",
+  "parts": [
+   "野",
+   "菜"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "健康",
+  "r": "けんこう",
+  "def": "The state of your body and mind being well, without illness, that doctors and healthy habits both aim for.",
+  "parts": [
+   "健",
+   "康"
+  ],
+  "units": [
+   "u92",
+   "seikatsu"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "運動",
+  "r": "うんどう",
+  "def": "Deliberately moving your body to stay fit, such as running, playing sport or going to the gym.",
+  "parts": [
+   "運",
+   "動"
+  ],
+  "units": [
+   "u92",
+   "seikatsu"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "朝食",
+  "r": "ちょうしょく",
+  "def": "The first meal of the day, eaten soon after waking up.",
+  "parts": [
+   "朝",
+   "食"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "昼食",
+  "r": "ちゅうしょく",
+  "def": "The meal eaten around the middle of the day, often at school or work.",
+  "parts": [
+   "昼",
+   "食"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "夕食",
+  "r": "ゆうしょく",
+  "def": "The meal eaten in the evening, usually the biggest meal of the day for many families.",
+  "parts": [
+   "夕",
+   "食"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "辛い",
+  "r": "からい",
+  "def": "A taste that burns a little on your tongue, the kind that comes from chilli or strong spices.",
+  "parts": [
+   "辛"
+  ],
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "サラダ",
+  "r": "サラダ",
+  "def": "A cold dish of mixed vegetables, often with a dressing poured over it.",
+  "units": [
+   "u92"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "晴れ",
+  "r": "はれ",
+  "def": "The kind of sky with no clouds at all, blue and open, the weather everyone hopes for on excursion day.",
+  "parts": [
+   "晴"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "雲",
+  "r": "くも",
+  "def": "The white or grey shapes that float across the sky and sometimes block out the sun.",
+  "parts": [
+   "雲"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "暑い",
+  "r": "あつい",
+  "def": "How the air feels on a summer day when you are sweating and want a cold drink.",
+  "parts": [
+   "暑"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "秋",
+  "r": "あき",
+  "def": "The season between summer and winter, when leaves change colour and the air turns cool.",
+  "parts": [
+   "秋"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "春",
+  "r": "はる",
+  "def": "The season after winter, when flowers bloom and the weather starts to warm up again.",
+  "parts": [
+   "春"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "夏",
+  "r": "なつ",
+  "def": "The hottest season of the year, holiday season for many students, full of beaches and fireworks.",
+  "parts": [
+   "夏"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "冬",
+  "r": "ふゆ",
+  "def": "The coldest season of the year, when some places get snow and everyone rugs up warm.",
+  "parts": [
+   "冬"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "天気",
+  "r": "てんき",
+  "def": "The general state of the sky and air on a given day, whether it is sunny, rainy or cloudy.",
+  "parts": [
+   "天",
+   "気"
+  ],
+  "units": [
+   "u93",
+   "u102"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "台風",
+  "r": "たいふう",
+  "def": "A huge spinning storm that brings strong wind and heavy rain, powerful enough to close schools.",
+  "parts": [
+   "台",
+   "風"
+  ],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "花火",
+  "r": "はなび",
+  "def": "Bright bursts of colour and sparks set off into the night sky, watched by crowds at summer festivals.",
+  "parts": [
+   "花",
+   "火"
+  ],
+  "units": [
+   "u93",
+   "bunka",
+   "malley"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "花見",
+  "r": "はなみ",
+  "def": "The custom of sitting outside with friends or family to look up at trees covered in pale pink blossoms.",
+  "parts": [
+   "花",
+   "見"
+  ],
+  "units": [
+   "u93",
+   "bunka"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "もみじ",
+  "r": "もみじ",
+  "def": "The red and orange autumn leaves, especially maple, and the sight people travel to see at that time of year.",
+  "parts": [],
+  "units": [
+   "u93"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "日本語",
+  "r": "にほんご",
+  "def": "The language spoken in the country these lessons are named after, the one you are learning right now.",
+  "parts": [
+   "日",
+   "本",
+   "語"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "読書",
+  "r": "どくしょ",
+  "def": "The quiet activity of losing yourself in a book, page after page.",
+  "parts": [
+   "読",
+   "書"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "答え",
+  "r": "こたえ",
+  "def": "The response you give when a teacher asks you a question, right or wrong.",
+  "parts": [
+   "答"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "教室",
+  "r": "きょうしつ",
+  "def": "The room inside a school building where a class sits together and a teacher stands up the front.",
+  "parts": [
+   "教",
+   "室"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "先生",
+  "r": "せんせい",
+  "def": "The adult at school whose job is to teach a subject and who knows your name.",
+  "parts": [
+   "先",
+   "生"
+  ],
+  "units": [
+   "u94",
+   "kankei"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "生徒",
+  "r": "せいと",
+  "def": "A young person enrolled at a school to attend classes and sit tests.",
+  "parts": [
+   "生",
+   "徒"
+  ],
+  "units": [
+   "u94",
+   "kankei"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "部活",
+  "r": "ぶかつ",
+  "def": "A Japanese school's after-school activity, like sport or music, that students practise together almost every day.",
+  "parts": [
+   "部",
+   "活"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "授業",
+  "r": "じゅぎょう",
+  "def": "A single scheduled block of learning with a teacher, the unit a timetable is built from.",
+  "parts": [
+   "授",
+   "業"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "宿題",
+  "r": "しゅくだい",
+  "def": "Work a teacher sets that has to be finished at home, not during class time.",
+  "parts": [
+   "宿",
+   "題"
+  ],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "試験",
+  "r": "しけん",
+  "def": "A set task used to check what you have learned, with a result at the end.",
+  "parts": [
+   "試",
+   "験"
+  ],
+  "units": [
+   "u94",
+   "shinro"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "クラブ",
+  "r": "クラブ",
+  "def": "A group students here join outside normal lessons because they share an interest; the everyday word for it at schools like yours.",
+  "parts": [],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "みんな",
+  "r": "みんな",
+  "def": "Every single person in a group, with nobody left out.",
+  "parts": [],
+  "units": [
+   "u94"
+  ],
+  "grp": "9"
+ },
+ {
+  "w": "名前",
+  "r": "なまえ",
+  "def": "What people call you, the word your family chose for you before you could talk.",
+  "parts": [
+   "名",
+   "前"
+  ],
+  "units": [
+   "u101",
+   "seikatsu"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "私",
+  "r": "わたし",
+  "def": "The word you use for yourself when you are speaking politely to someone else.",
+  "parts": [
+   "私"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "紹介",
+  "r": "しょうかい",
+  "def": "The act of telling someone else who a person is, usually with a name and a couple of details.",
+  "parts": [
+   "紹",
+   "介"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "会話",
+  "r": "かいわ",
+  "def": "Two or more people taking turns speaking together about something.",
+  "parts": [
+   "会",
+   "話"
+  ],
+  "units": [
+   "u101",
+   "tsuushin"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "性格",
+  "r": "せいかく",
+  "def": "The kind of person someone is deep down, whether they tend to be cheerful, quiet or something else.",
+  "parts": [
+   "性",
+   "格"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "得意",
+  "r": "とくい",
+  "def": "Something a person does especially well and feels confident doing.",
+  "parts": [
+   "得",
+   "意"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "趣味",
+  "r": "しゅみ",
+  "def": "An activity someone does regularly purely for enjoyment, outside school or work.",
+  "parts": [
+   "趣",
+   "味"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "出身",
+  "r": "しゅっしん",
+  "def": "The particular place a person originally comes from or grew up in.",
+  "parts": [
+   "出",
+   "身"
+  ],
+  "units": [
+   "u101",
+   "mairport"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "特技",
+  "r": "とくぎ",
+  "def": "The one special skill you would actually volunteer to perform, practised until it is genuinely yours.",
+  "parts": [
+   "特",
+   "技"
+  ],
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "電話",
+  "r": "でんわ",
+  "def": "A device used to talk to someone else over a distance by voice.",
+  "parts": [
+   "電",
+   "話"
+  ],
+  "units": [
+   "u101",
+   "tsuushin"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "どきどき",
+  "r": "どきどき",
+  "def": "The nervous, fast feeling your heart gives you right before something exciting happens.",
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "わくわく",
+  "r": "わくわく",
+  "def": "The excited feeling of looking forward to something before it happens.",
+  "units": [
+   "u101"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "泊まる",
+  "r": "とまる",
+  "def": "To spend the night somewhere away from home, like at a hotel or a friend's place.",
+  "parts": [
+   "泊"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "待つ",
+  "r": "まつ",
+  "def": "To stay in one place until someone or something arrives.",
+  "parts": [
+   "待"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "買い物",
+  "r": "かいもの",
+  "def": "The activity of visiting shops to purchase things you want or need.",
+  "parts": [
+   "買",
+   "物"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "荷物",
+  "r": "にもつ",
+  "def": "The bags and belongings a traveller carries or checks in for a trip.",
+  "parts": [
+   "荷",
+   "物"
+  ],
+  "units": [
+   "u102",
+   "nihon"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "旅行",
+  "r": "りょこう",
+  "def": "A trip taken somewhere, usually for pleasure rather than work.",
+  "parts": [
+   "旅",
+   "行"
+  ],
+  "units": [
+   "u102",
+   "nihon"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "予約",
+  "r": "よやく",
+  "def": "Arranging in advance to have a room, table or seat reserved for you.",
+  "parts": [
+   "予",
+   "約"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "出発",
+  "r": "しゅっぱつ",
+  "def": "The moment a journey actually begins, when you leave.",
+  "parts": [
+   "出",
+   "発"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "計画",
+  "r": "けいかく",
+  "def": "A set of steps someone works out ahead of time before doing something.",
+  "parts": [
+   "計",
+   "画"
+  ],
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "かばん",
+  "r": "かばん",
+  "def": "A bag you carry your things in, especially while travelling.",
+  "units": [
+   "u102",
+   "mairport"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "ゆっくり",
+  "r": "ゆっくり",
+  "def": "At an easy, unrushed pace, without hurrying to get things done quickly.",
+  "units": [
+   "u102"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "歌",
+  "r": "うた",
+  "def": "A piece of music with words, meant to be sung.",
+  "parts": [
+   "歌"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "記事",
+  "r": "きじ",
+  "def": "A piece of writing in a newspaper, magazine or website that reports on one particular topic.",
+  "parts": [
+   "記",
+   "事"
+  ],
+  "units": [
+   "u103",
+   "tsuushin"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "番組",
+  "r": "ばんぐみ",
+  "def": "A single show or segment broadcast on television, radio or a streaming service.",
+  "parts": [
+   "番",
+   "組"
+  ],
+  "units": [
+   "u103",
+   "tsuushin"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "歌手",
+  "r": "かしゅ",
+  "def": "A person whose job is singing, especially as a performer or recording artist.",
+  "parts": [
+   "歌",
+   "手"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "雑誌",
+  "r": "ざっし",
+  "def": "A regularly published collection of articles and pictures, thinner than a book and printed on glossy paper.",
+  "parts": [
+   "雑",
+   "誌"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "動画",
+  "r": "どうが",
+  "def": "A short video, especially one shared or watched online.",
+  "parts": [
+   "動",
+   "画"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "人気",
+  "r": "にんき",
+  "def": "How much a person or thing is liked and talked about by a lot of people.",
+  "parts": [
+   "人",
+   "気"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "内容",
+  "r": "ないよう",
+  "def": "What something is actually about, the substance inside a story, article or show.",
+  "parts": [
+   "内",
+   "容"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "感想",
+  "r": "かんそう",
+  "def": "The thoughts and feelings someone has after reading, watching or experiencing something.",
+  "parts": [
+   "感",
+   "想"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "続き",
+  "r": "つづき",
+  "def": "The next part of a story that continues on from where it left off.",
+  "parts": [
+   "続"
+  ],
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "アニメ",
+  "r": "アニメ",
+  "def": "A style of animated show or film, especially one made in Japan.",
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "ドラマ",
+  "r": "ドラマ",
+  "def": "A television show that tells an ongoing fictional story, often serialised across episodes.",
+  "units": [
+   "u103"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "働く",
+  "r": "はたらく",
+  "def": "To do a job, putting in effort in exchange for being paid.",
+  "parts": [
+   "働"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "忙しい",
+  "r": "いそがしい",
+  "def": "Having so much to do that there's barely a spare moment.",
+  "parts": [
+   "忙"
+  ],
+  "units": [
+   "u104",
+   "malley"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "仕事",
+  "r": "しごと",
+  "def": "The regular tasks a person does to earn money or fulfil a role.",
+  "parts": [
+   "仕",
+   "事"
+  ],
+  "units": [
+   "u104",
+   "shinro",
+   "mairport"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "会社",
+  "r": "かいしゃ",
+  "def": "An organisation that people work for, usually to make or sell something.",
+  "parts": [
+   "会",
+   "社"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "将来",
+  "r": "しょうらい",
+  "def": "Your own road ahead: the study, jobs and life you are heading towards.",
+  "parts": [
+   "将",
+   "来"
+  ],
+  "units": [
+   "u104",
+   "shinro"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "目標",
+  "r": "もくひょう",
+  "def": "Something a person aims for and works towards achieving.",
+  "parts": [
+   "目",
+   "標"
+  ],
+  "units": [
+   "u104",
+   "shinro"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "経験",
+  "r": "けいけん",
+  "def": "Something a person has actually done or lived through, and what they learned from it.",
+  "parts": [
+   "経",
+   "験"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "給料",
+  "r": "きゅうりょう",
+  "def": "The money a person is regularly paid for doing their job.",
+  "parts": [
+   "給",
+   "料"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "面接",
+  "r": "めんせつ",
+  "def": "A meeting where someone is asked questions to see if they're right for a job.",
+  "parts": [
+   "面",
+   "接"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "食事",
+  "r": "しょくじ",
+  "def": "A meal, the food you sit down to eat at a set time of day.",
+  "parts": [
+   "食",
+   "事"
+  ],
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "バイト",
+  "r": "バイト",
+  "def": "A part-time job, often done by students alongside school.",
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "のんびり",
+  "r": "のんびり",
+  "def": "Relaxed and unhurried, with nothing pressing you to move fast.",
+  "units": [
+   "u104"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "年齢",
+  "r": "ねんれい",
+  "def": "The number of years someone has been alive.",
+  "parts": [
+   "年",
+   "齢"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "住所",
+  "r": "じゅうしょ",
+  "def": "The particular street and number where you live, used for letters and deliveries.",
+  "parts": [
+   "住",
+   "所"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "誕生日",
+  "r": "たんじょうび",
+  "def": "The yearly date that marks when you were born.",
+  "parts": [
+   "誕",
+   "生",
+   "日"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "毎日",
+  "r": "まいにち",
+  "def": "Something that happens on every single day, without exception.",
+  "parts": [
+   "毎",
+   "日"
+  ],
+  "units": [
+   "seikatsu",
+   "mstation"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "生活",
+  "r": "せいかつ",
+  "def": "The overall way someone lives day to day, their routine and way of doing things.",
+  "parts": [
+   "生",
+   "活"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "近所",
+  "r": "きんじょ",
+  "def": "The area close to your home and the people who live around you.",
+  "parts": [
+   "近",
+   "所"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "自由",
+  "r": "じゆう",
+  "def": "Time or space that is yours to use however you like, with nothing telling you what to do.",
+  "parts": [
+   "自",
+   "由"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "自転車",
+  "r": "じてんしゃ",
+  "def": "A two wheeled vehicle you ride by pushing pedals with your feet.",
+  "parts": [
+   "自",
+   "転",
+   "車"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "週末",
+  "r": "しゅうまつ",
+  "def": "Saturday and Sunday, the two days at the end of the working week.",
+  "parts": [
+   "週",
+   "末"
+  ],
+  "units": [
+   "seikatsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "家族",
+  "r": "かぞく",
+  "def": "The group of people you live with and are related to, like your parents and siblings.",
+  "parts": [
+   "家",
+   "族"
+  ],
+  "units": [
+   "kankei",
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "家庭",
+  "r": "かてい",
+  "def": "A home and the family life that happens inside it.",
+  "parts": [
+   "家",
+   "庭"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "両親",
+  "r": "りょうしん",
+  "def": "Your mother and father, thought of together.",
+  "parts": [
+   "両",
+   "親"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "兄弟",
+  "r": "きょうだい",
+  "def": "Brothers, or a brother and sister thought of together.",
+  "parts": [
+   "兄",
+   "弟"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "姉妹",
+  "r": "しまい",
+  "def": "Sisters, older and younger, thought of together.",
+  "parts": [
+   "姉",
+   "妹"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "友人",
+  "r": "ゆうじん",
+  "def": "Someone you know well and enjoy spending time with, who is not part of your family.",
+  "parts": [
+   "友",
+   "人"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "親友",
+  "r": "しんゆう",
+  "def": "The one friend you trust and feel closest to, more than any other.",
+  "parts": [
+   "親",
+   "友"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "親切",
+  "r": "しんせつ",
+  "def": "The quality of being caring and helpful towards other people.",
+  "parts": [
+   "親",
+   "切"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "地域",
+  "r": "ちいき",
+  "def": "A particular area or district, and the people who live in it.",
+  "parts": [
+   "地",
+   "域"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "動物",
+  "r": "どうぶつ",
+  "def": "A living creature, such as a dog or a cat, that some people keep and look after at home.",
+  "parts": [
+   "動",
+   "物"
+  ],
+  "units": [
+   "kankei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "学校",
+  "r": "がっこう",
+  "def": "The place you go to on weekdays to be taught by teachers and to learn alongside other students.",
+  "parts": [
+   "学",
+   "校"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "高校",
+  "r": "こうこう",
+  "def": "The school you attend in your later teenage years, after junior secondary school.",
+  "parts": [
+   "高",
+   "校"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "大学",
+  "r": "だいがく",
+  "def": "The place people study at after finishing secondary school, usually to earn a degree.",
+  "parts": [
+   "大",
+   "学"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "留学",
+  "r": "りゅうがく",
+  "def": "Going to live in another country for a while in order to study there.",
+  "parts": [
+   "留",
+   "学"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "勉強",
+  "r": "べんきょう",
+  "def": "The effort of learning something, done through reading, practising and doing homework.",
+  "parts": [
+   "勉",
+   "強"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "卒業",
+  "r": "そつぎょう",
+  "def": "Finishing a course of study and officially completing a school or degree.",
+  "parts": [
+   "卒",
+   "業"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "就職",
+  "r": "しゅうしょく",
+  "def": "The act of finding and starting a job, usually after finishing your studies.",
+  "parts": [
+   "就",
+   "職"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "職業",
+  "r": "しょくぎょう",
+  "def": "The particular kind of work a person does as their main occupation.",
+  "parts": [
+   "職",
+   "業"
+  ],
+  "units": [
+   "shinro"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "文化",
+  "r": "ぶんか",
+  "def": "The shared customs, arts and ways of life of a group of people, passed down and lived out together.",
+  "parts": [
+   "文",
+   "化"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "伝統",
+  "r": "でんとう",
+  "def": "A custom or practice handed down from earlier generations that a community keeps doing today.",
+  "parts": [
+   "伝",
+   "統"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "芸術",
+  "r": "げいじゅつ",
+  "def": "Creative work such as painting, sculpture or design, valued for its skill and beauty.",
+  "parts": [
+   "芸",
+   "術"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "音楽",
+  "r": "おんがく",
+  "def": "Sound arranged into rhythm and melody, played or sung for people to enjoy.",
+  "parts": [
+   "音",
+   "楽"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "映画",
+  "r": "えいが",
+  "def": "A story told through moving pictures, shown on a big screen at a cinema.",
+  "parts": [
+   "映",
+   "画"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "漫画",
+  "r": "まんが",
+  "def": "A story told through drawings in panels, usually printed in a book or magazine.",
+  "parts": [
+   "漫",
+   "画"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "着物",
+  "r": "きもの",
+  "def": "The traditional garment worn for special occasions, wrapped and tied rather than buttoned.",
+  "parts": [
+   "着",
+   "物"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "正月",
+  "r": "しょうがつ",
+  "def": "The New Year period, the most important holiday of the year, with its own foods and family visits.",
+  "parts": [
+   "正",
+   "月"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "茶道",
+  "r": "さどう",
+  "def": "The formal, ritual way of preparing and serving powdered green tea.",
+  "parts": [
+   "茶",
+   "道"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "書道",
+  "r": "しょどう",
+  "def": "The art of writing characters beautifully with a brush and ink.",
+  "parts": [
+   "書",
+   "道"
+  ],
+  "units": [
+   "bunka"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "有名",
+  "r": "ゆうめい",
+  "def": "Well known, recognised by many people.",
+  "parts": [
+   "有",
+   "名"
+  ],
+  "units": [
+   "yuumei",
+   "mkonbini"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "有名人",
+  "r": "ゆうめいじん",
+  "def": "A person who is widely recognised, a celebrity or public figure.",
+  "parts": [
+   "有",
+   "名",
+   "人"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "作家",
+  "r": "さっか",
+  "def": "A person who writes books for a living, such as novels or other works.",
+  "parts": [
+   "作",
+   "家"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "画家",
+  "r": "がか",
+  "def": "A person who paints pictures as their profession.",
+  "parts": [
+   "画",
+   "家"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "音楽家",
+  "r": "おんがくか",
+  "def": "A person whose profession is making music, whether composing or performing.",
+  "parts": [
+   "音",
+   "楽",
+   "家"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "芸術家",
+  "r": "げいじゅつか",
+  "def": "A person who creates works of art as their profession.",
+  "parts": [
+   "芸",
+   "術",
+   "家"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "選手",
+  "r": "せんしゅ",
+  "def": "A person chosen to compete in a sport, a player or athlete.",
+  "parts": [
+   "選",
+   "手"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "監督",
+  "r": "かんとく",
+  "def": "The person in charge of directing a film or coaching a sports team.",
+  "parts": [
+   "監",
+   "督"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "歴史",
+  "r": "れきし",
+  "def": "The record of past events, and the study of them.",
+  "parts": [
+   "歴",
+   "史"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "科学者",
+  "r": "かがくしゃ",
+  "def": "A person who studies the natural world through careful observation and experiment.",
+  "parts": [
+   "科",
+   "学",
+   "者"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "実業家",
+  "r": "じつぎょうか",
+  "def": "A person who runs or owns a business, especially on a large scale.",
+  "parts": [
+   "実",
+   "業",
+   "家"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "経営者",
+  "r": "けいえいしゃ",
+  "def": "The person who manages and runs an organisation or company.",
+  "parts": [
+   "経",
+   "営",
+   "者"
+  ],
+  "units": [
+   "yuumei"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "飛行機",
+  "r": "ひこうき",
+  "def": "The machine that flies through the air, what you catch at the airport.",
+  "parts": [
+   "飛",
+   "行",
+   "機"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "空港",
+  "r": "くうこう",
+  "def": "The place where planes take off and land, and where travellers pass through customs.",
+  "parts": [
+   "空",
+   "港"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "切符",
+  "r": "きっぷ",
+  "def": "A small paper or card that proves you have paid for a ride or entry.",
+  "parts": [
+   "切",
+   "符"
+  ],
+  "units": [
+   "nihon",
+   "mstation"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "温泉",
+  "r": "おんせん",
+  "def": "Naturally heated water rising from the ground, and the bath built around it.",
+  "parts": [
+   "温",
+   "泉"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "観光",
+  "r": "かんこう",
+  "def": "Visiting places to look at and enjoy them, sightseeing.",
+  "parts": [
+   "観",
+   "光"
+  ],
+  "units": [
+   "nihon",
+   "mairport"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "銀行",
+  "r": "ぎんこう",
+  "def": "The place where you keep, change or withdraw money.",
+  "parts": [
+   "銀",
+   "行"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "地下鉄",
+  "r": "ちかてつ",
+  "def": "A train system that runs mostly in tunnels below a city.",
+  "parts": [
+   "地",
+   "下",
+   "鉄"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "神社",
+  "r": "じんじゃ",
+  "def": "A place of worship for the native religion of Japan, marked by a gate at its entrance.",
+  "parts": [
+   "神",
+   "社"
+  ],
+  "units": [
+   "nihon"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "環境",
+  "r": "かんきょう",
+  "def": "The natural world around us, including the air, water, land and living things that need to be looked after and protected from damage.",
+  "parts": [
+   "環",
+   "境"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "社会",
+  "r": "しゃかい",
+  "def": "A whole community of people living together and sharing systems, customs and institutions.",
+  "parts": [
+   "社",
+   "会"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "問題",
+  "r": "もんだい",
+  "def": "A difficulty or matter that needs to be thought about, discussed or solved.",
+  "parts": [
+   "問",
+   "題"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "高齢者",
+  "r": "こうれいしゃ",
+  "def": "A person who is elderly, generally of advanced age and often no longer working.",
+  "parts": [
+   "高",
+   "齢",
+   "者"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "高齢化",
+  "r": "こうれいか",
+  "def": "The process by which a population gradually becomes older, with a growing share of elderly people in it.",
+  "parts": [
+   "高",
+   "齢",
+   "化"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "少子化",
+  "r": "しょうしか",
+  "def": "A trend in which fewer children are being born each year, so the number of young people in a population falls.",
+  "parts": [
+   "少",
+   "子",
+   "化"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "温暖化",
+  "r": "おんだんか",
+  "def": "A long term rise in the world's average temperatures, widely linked to human activity and treated as a major environmental concern.",
+  "parts": [
+   "温",
+   "暖",
+   "化"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "核家族",
+  "r": "かくかぞく",
+  "def": "A small family unit made up of just parents and their children, without grandparents or other relatives living together.",
+  "parts": [
+   "核",
+   "家",
+   "族"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "人口",
+  "r": "じんこう",
+  "def": "The total number of people living in a particular place, such as a country or city.",
+  "parts": [
+   "人",
+   "口"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "老人",
+  "r": "ろうじん",
+  "def": "An elderly person, someone who has lived a long life and reached an advanced age.",
+  "parts": [
+   "老",
+   "人"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "資源",
+  "r": "しげん",
+  "def": "Materials, energy or other supplies found in nature that people use and that can be limited in amount.",
+  "parts": [
+   "資",
+   "源"
+  ],
+  "units": [
+   "shakai"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "情報",
+  "r": "じょうほう",
+  "def": "Facts, news or details about something that are collected, shared or passed on to others.",
+  "parts": [
+   "情",
+   "報"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "新聞",
+  "r": "しんぶん",
+  "def": "A daily or weekly printed publication containing news, articles and advertisements.",
+  "parts": [
+   "新",
+   "聞"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "新聞社",
+  "r": "しんぶんしゃ",
+  "def": "The company or organisation that writes, produces and publishes a newspaper.",
+  "parts": [
+   "新",
+   "聞",
+   "社"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "広告",
+  "r": "こうこく",
+  "def": "A public notice or message, often paid for, designed to promote a product, service or event.",
+  "parts": [
+   "広",
+   "告"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "携帯",
+  "r": "けいたい",
+  "def": "A small device that a person carries around with them, especially the everyday short word for a mobile phone.",
+  "parts": [
+   "携",
+   "帯"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "電子",
+  "r": "でんし",
+  "def": "Relating to technology that uses small electric circuits and digital signals, as in an electronic dictionary or device.",
+  "parts": [
+   "電",
+   "子"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "番号",
+  "r": "ばんごう",
+  "def": "A set of digits used to identify or contact something, such as a phone line or a seat.",
+  "parts": [
+   "番",
+   "号"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "放送",
+  "r": "ほうそう",
+  "def": "The sending out of a programme or message to the public by television or radio.",
+  "parts": [
+   "放",
+   "送"
+  ],
+  "units": [
+   "tsuushin"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "技術",
+  "r": "ぎじゅつ",
+  "def": "The practical skills, methods and equipment used to do or make things, especially in science and industry.",
+  "parts": [
+   "技",
+   "術"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "機械",
+  "r": "きかい",
+  "def": "A device with moving parts built to perform a particular job, usually powered by electricity or fuel.",
+  "parts": [
+   "機",
+   "械"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "発明",
+  "r": "はつめい",
+  "def": "Something completely new that a person creates or designs for the first time, often to solve a problem.",
+  "parts": [
+   "発",
+   "明"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "未来",
+  "r": "みらい",
+  "def": "The time that has not happened yet, still to come.",
+  "parts": [
+   "未",
+   "来"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "発展",
+  "r": "はってん",
+  "def": "Growth or advancement over time, becoming bigger, more advanced or more successful.",
+  "parts": [
+   "発",
+   "展"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "進歩",
+  "r": "しんぽ",
+  "def": "Steady improvement or advancement, moving forward towards a better state.",
+  "parts": [
+   "進",
+   "歩"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "自動車",
+  "r": "じどうしゃ",
+  "def": "A vehicle with an engine, used to travel on roads, commonly known simply as a car.",
+  "parts": [
+   "自",
+   "動",
+   "車"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "自動",
+  "r": "じどう",
+  "def": "Working by itself, without a person needing to operate it directly.",
+  "parts": [
+   "自",
+   "動"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "電気",
+  "r": "でんき",
+  "def": "The form of energy used to power lights, devices and machines.",
+  "parts": [
+   "電",
+   "気"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "人工",
+  "r": "じんこう",
+  "def": "Made by people rather than occurring naturally.",
+  "parts": [
+   "人",
+   "工"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "知能",
+  "r": "ちのう",
+  "def": "The ability to learn, understand, reason and solve problems.",
+  "parts": [
+   "知",
+   "能"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "便利",
+  "r": "べんり",
+  "def": "Easy and useful to make use of, saving time or effort.",
+  "parts": [
+   "便",
+   "利"
+  ],
+  "units": [
+   "gijutsu"
+  ],
+  "grp": "VCE"
+ },
+ {
+  "w": "バスケットボール",
+  "r": "ばすけっとぼーる",
+  "def": "basketball",
+  "ex": "バスケットボールのしあいに でます。",
+  "exGloss": "I play in basketball games.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "ネットボール",
+  "r": "ねっとぼーる",
+  "def": "netball",
+  "ex": "ネットボールも 大すきです。",
+  "exGloss": "I love netball too.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "じゅうどう",
+  "r": "じゅうどう",
+  "def": "judo",
+  "ex": "じゅうどうの クラブが ありません。",
+  "exGloss": "There is no judo club.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "すいえい",
+  "r": "すいえい",
+  "def": "swimming",
+  "ex": "すいえいの トレーニングを します。",
+  "exGloss": "I do swimming training.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "しあい",
+  "r": "しあい",
+  "def": "a match, a game",
+  "ex": "よく しあいに でます。",
+  "exGloss": "I often play in matches.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "およぐ",
+  "r": "およぐ",
+  "def": "to swim",
+  "ex": "うみで およぐことが 好きです。",
+  "exGloss": "I like swimming in the sea.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "はなす",
+  "r": "はなす",
+  "def": "to speak, to talk",
+  "ex": "人と はなすことが 好きです。",
+  "exGloss": "I like talking with people.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "つくる",
+  "r": "つくる",
+  "def": "to make",
+  "ex": "ケーキを つくることが とくいです。",
+  "exGloss": "I am good at making cakes.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "のる",
+  "r": "のる",
+  "def": "to ride",
+  "ex": "バイクに のることが とくいです。",
+  "exGloss": "I am good at riding a motorbike.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[聞|き]く",
+  "r": "きく",
+  "def": "to listen",
+  "ex": "おんがくを 聞くことが 好きです。",
+  "exGloss": "I like listening to music.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "おしえる",
+  "r": "おしえる",
+  "def": "to teach",
+  "ex": "子どもに おしえることが 好きです。",
+  "exGloss": "I like teaching children.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[見|み]る",
+  "r": "みる",
+  "def": "to watch, to look",
+  "ex": "テレビで しあいを 見ます。",
+  "exGloss": "I watch matches on TV.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "する",
+  "r": "する",
+  "def": "to do, to play",
+  "ex": "まいにち スポーツを します。",
+  "exGloss": "I play sport every day.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "とくい",
+  "r": "とくい",
+  "def": "good at (something you can do well)",
+  "ex": "およぐことが とくいです。",
+  "exGloss": "I am good at swimming.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[下手|へた]",
+  "r": "へた",
+  "def": "not good at",
+  "ex": "りょうりを することが 下手です。",
+  "exGloss": "I am not good at cooking.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[上手|じょうず]",
+  "r": "じょうず",
+  "def": "skilful (used about other people)",
+  "ex": "友だちは かんじを かくことが 上手です。",
+  "exGloss": "My friend is skilful at writing kanji.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[大好|だいす]き",
+  "r": "だいすき",
+  "def": "love, really like",
+  "ex": "バイクが 大好きです。",
+  "exGloss": "I love motorbikes.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "できる",
+  "r": "できる",
+  "def": "can do, to be able",
+  "ex": "スペインごを はなすことが できます。",
+  "exGloss": "I can speak Spanish.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "コーチ",
+  "r": "こーち",
+  "def": "coach",
+  "ex": "コーチを することが 下手です。",
+  "exGloss": "I am not good at coaching.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "[選手|せんしゅ]",
+  "r": "せんしゅ",
+  "def": "a player, an athlete",
+  "ex": "バスケットボールの 選手に なりたいです。",
+  "exGloss": "I want to become a basketball player.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "とくに",
+  "r": "とくに",
+  "def": "especially",
+  "ex": "とくに、ホンダの バイクが 好きです。",
+  "exGloss": "I especially like Honda motorbikes.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "だから",
+  "r": "だから",
+  "def": "so, therefore",
+  "ex": "だから、しゅうまつに レースを します。",
+  "exGloss": "So, on the weekend I race.",
+  "units": [
+   "unit10"
+  ],
+  "grp": "10"
+ },
+ {
+  "w": "パスポート",
+  "r": "パスポート",
+  "def": "Passport. The officer asks for it first, and your real name is in it.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "どうぞ",
+  "r": "どうぞ",
+  "def": "Here you are; go ahead. The word for handing something over or letting someone through.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "どうも",
+  "r": "どうも",
+  "def": "A casual thanks. Not what you say while handing something over.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "お名前",
+  "r": "おなまえ",
+  "def": "Your name, said politely by the person asking for it.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "来ました",
+  "r": "きました",
+  "def": "Came. With から in front, it says where you came from.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "目的",
+  "r": "もくてき",
+  "def": "Purpose. Why you are here, on a form.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "のりば",
+  "r": "のりば",
+  "def": "A boarding point: a bus stop or platform with a number.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "係員",
+  "r": "かかりいん",
+  "def": "Staff in charge of a place, the person in the uniform by the sign.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "だいじょうぶ",
+  "r": "だいじょうぶ",
+  "def": "It is fine, no harm done. What you say when someone bumps you.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "なくしました",
+  "r": "なくしました",
+  "def": "Lost (something). Past tense of なくす.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "走る",
+  "r": "はしる",
+  "def": "To run. Ten kilometres every morning, in one case.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "毎朝",
+  "r": "まいあさ",
+  "def": "Every morning. 毎 makes 'every' of the time word after it.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "週に一回",
+  "r": "しゅうにいっかい",
+  "def": "Once a week. Period, に, then the number of times.",
+  "units": [
+   "mairport"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "駅員",
+  "r": "えきいん",
+  "def": "Station staff. In Ueno, the one with the cat.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "一日券",
+  "r": "いちにちけん",
+  "def": "A one-day pass. Trains all day for one price.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "千円",
+  "r": "せんえん",
+  "def": "One thousand yen. せん is a thousand; what follows is the hundreds.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "まで",
+  "r": "まで",
+  "def": "As far as, to. 上野まで is 'to Ueno' at any counter.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "行きたい",
+  "r": "いきたい",
+  "def": "Want to go. たい on the stem of 行く.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "忘れ物",
+  "r": "わすれもの",
+  "def": "Lost property, a thing someone left behind.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "猫",
+  "r": "ねこ",
+  "def": "Cat. This one is called Mike and comes at six.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "どのくらい",
+  "r": "どのくらい",
+  "def": "How much, how often, how long. The question before the verb.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "時間どおり",
+  "r": "じかんどおり",
+  "def": "On time, according to schedule.",
+  "units": [
+   "mstation"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "コンビニ",
+  "r": "コンビニ",
+  "def": "Convenience store. Onigiri, dictionaries, and a back room.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "店員",
+  "r": "てんいん",
+  "def": "Shop assistant. The only person who says いらっしゃいませ.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "いらっしゃいませ",
+  "r": "いらっしゃいませ",
+  "def": "Welcome (to the shop). Staff say it; customers do not answer it.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "おにぎり",
+  "r": "おにぎり",
+  "def": "A rice ball. Two for a set price, and crows know you have them.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "これ",
+  "r": "これ",
+  "def": "This one, near me.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "それ",
+  "r": "それ",
+  "def": "That one, near you.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "あれ",
+  "r": "あれ",
+  "def": "That one over there, away from us both.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "こちら",
+  "r": "こちら",
+  "def": "This one, this way (polite これ).",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "あちら",
+  "r": "あちら",
+  "def": "Over there (polite あれ). Where the dictionary shelf is.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "棚",
+  "r": "たな",
+  "def": "Shelf.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "辞書",
+  "r": "じしょ",
+  "def": "Dictionary. Three thousand yen, and free to use where nobody minds.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "おかいけい",
+  "r": "おかいけい",
+  "def": "The bill, the total at the till.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "〜になります",
+  "r": "になります",
+  "def": "Comes to (a total). Shop language for 'that will be'.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "小説",
+  "r": "しょうせつ",
+  "def": "A novel. Nakamura is writing one.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "スパイ",
+  "r": "スパイ",
+  "def": "A spy. In the novel, and at the till.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "と言います",
+  "r": "といいます",
+  "def": "Says (quoted speech). 「〜」と言います.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "身分証",
+  "r": "みぶんしょう",
+  "def": "An ID card. Yours has someone else's photo.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "住んでいます",
+  "r": "すんでいます",
+  "def": "Live (somewhere). Takes に for the place.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "一週間",
+  "r": "いっしゅうかん",
+  "def": "One week.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "一か月",
+  "r": "いっかげつ",
+  "def": "One month.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "つけもの",
+  "r": "つけもの",
+  "def": "Pickles. Home-made, strong, from a former idol.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "アイドル",
+  "r": "アイドル",
+  "def": "A pop idol. One single, 2009, number 38.",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "でした",
+  "r": "でした",
+  "def": "Was, were (polite past of です).",
+  "units": [
+   "mkonbini"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ホテル",
+  "r": "ホテル",
+  "def": "Hotel. One plant, one Suzuki, one soap opera.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "フロント",
+  "r": "フロント",
+  "def": "Front desk, reception.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "チェックイン",
+  "r": "チェックイン",
+  "def": "Check-in.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "書いてください",
+  "r": "かいてください",
+  "def": "Please write. て-form + ください makes the request.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "本当",
+  "r": "ほんとう",
+  "def": "Real, true. 本当の名前 is your real name.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "部屋",
+  "r": "へや",
+  "def": "Room. Yours is 404. It exists.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "寝ています",
+  "r": "ねています",
+  "def": "Is sleeping. Suzuki, standing up, between two and four.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "よね",
+  "r": "よね",
+  "def": "Right? Fishing for agreement at the end of a sentence.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "あまり",
+  "r": "あまり",
+  "def": "Not much, not really (with a negative verb).",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "本部",
+  "r": "ほんぶ",
+  "def": "Headquarters. In Melbourne, asking about Kit Kats.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "レシピ",
+  "r": "レシピ",
+  "def": "Recipe.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "手に入る",
+  "r": "てにはいる",
+  "def": "To get hold of, to obtain.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "だそうです",
+  "r": "だそうです",
+  "def": "I gather that, apparently. Reports something you heard or read.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "と書いてありました",
+  "r": "とかいてありました",
+  "def": "It was written that. Reporting what a page said.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ことにしました",
+  "r": "ことにしました",
+  "def": "Decided to. Your decision, not someone else's.",
+  "units": [
+   "mhotel"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ラーメン",
+  "r": "ラーメン",
+  "def": "Ramen. Soy, miso, salt or pork bone.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "横丁",
+  "r": "よこちょう",
+  "def": "A side street of small shops.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "食券",
+  "r": "しょっけん",
+  "def": "A meal ticket, bought from a machine by the door.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "券売機",
+  "r": "けんばいき",
+  "def": "Ticket machine. Taisho hates his.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "買ってください",
+  "r": "かってください",
+  "def": "Please buy. Ticket first, then sit.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ぎょうざ",
+  "r": "ぎょうざ",
+  "def": "Gyoza, dumplings. Counted with ふたつ on a plate.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ふたつ",
+  "r": "ふたつ",
+  "def": "Two (things). The general counter.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "弟子",
+  "r": "でし",
+  "def": "Apprentice. Hoshino was Taisho's.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "星",
+  "r": "ほし",
+  "def": "Star. The Michelin kind, in this alley.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "から",
+  "r": "から",
+  "def": "Because (after a reason), or from (after a place).",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "おざしき",
+  "r": "おざしき",
+  "def": "A tatami room in a restaurant. Shoes off at the step.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "たたみ",
+  "r": "たたみ",
+  "def": "Tatami, straw floor mats. Never walk on them in shoes.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "くつをぬぐ",
+  "r": "くつをぬぐ",
+  "def": "To take your shoes off.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ごえんりょください",
+  "r": "ごえんりょください",
+  "def": "Please refrain. The polite way to say no photos.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "俳句",
+  "r": "はいく",
+  "def": "Haiku. Five, seven, five sounds.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "注文",
+  "r": "ちゅうもん",
+  "def": "An order (in a restaurant).",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "食べたい",
+  "r": "たべたい",
+  "def": "Want to eat. たい on the stem of 食べる.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "スープ",
+  "r": "スープ",
+  "def": "Soup. Hot, and in one kitchen, spoken to.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "熱い",
+  "r": "あつい",
+  "def": "Hot (to touch or taste).",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "すする",
+  "r": "すする",
+  "def": "To slurp. Fine for noodles.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "てもいい",
+  "r": "てもいい",
+  "def": "May, it is fine to. すすってもいいです.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "てはいけない",
+  "r": "てはいけない",
+  "def": "Must not.",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "たことがある",
+  "r": "たことがある",
+  "def": "Have had the experience of. Have you ever...?",
+  "units": [
+   "malley"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "店主",
+  "r": "てんしゅ",
+  "def": "Shop owner. The one with the star and the fear.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "新人",
+  "r": "しんじん",
+  "def": "A new person, a newcomer. You, on a trial shift.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "働いたことがある",
+  "r": "はたらいたことがある",
+  "def": "Have worked (somewhere) before.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ねぎ",
+  "r": "ねぎ",
+  "def": "Leeks, spring onions. Cut them first.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "切って",
+  "r": "きって",
+  "def": "Cut (て-form). First verb in a sequence happens first.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "見て",
+  "r": "みて",
+  "def": "Watch, look (て-form).",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "それから",
+  "r": "それから",
+  "def": "And then, after that.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "しょっぱい",
+  "r": "しょっぱい",
+  "def": "Salty.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "と思います",
+  "r": "とおもいます",
+  "def": "I think. Plain form goes in front, never です.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "店長",
+  "r": "てんちょう",
+  "def": "Manager, chef. What you call him to his face.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "見てもいいですか",
+  "r": "みてもいいですか",
+  "def": "May I look? Asking permission.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "なければなりません",
+  "r": "なければなりません",
+  "def": "Must. What you have to do, not what you may do.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "電話が鳴る",
+  "r": "でんわがなる",
+  "def": "The phone rings. When the notebook comes out.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ノート",
+  "r": "ノート",
+  "def": "Notebook. On the counter, briefly.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "秘密",
+  "r": "ひみつ",
+  "def": "Secret.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "材料",
+  "r": "ざいりょう",
+  "def": "Ingredients.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "深くなる",
+  "r": "ふかくなる",
+  "def": "To become deeper. い-adjective + く + なる.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "にる",
+  "r": "にる",
+  "def": "To simmer, to boil slowly.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "明日",
+  "r": "あした",
+  "def": "Tomorrow.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "用事",
+  "r": "ようじ",
+  "def": "Things to do, an errand. The all-purpose reason.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "来られません",
+  "r": "こられません",
+  "def": "Cannot come. The negative potential of 来る.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "ので",
+  "r": "ので",
+  "def": "Because (softer than から), good for a refusal.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "がんばれ",
+  "r": "がんばれ",
+  "def": "Come on, do your best. Said to people and, here, to soup.",
+  "units": [
+   "mhoshino"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "医者",
+  "r": "いしゃ",
+  "def": "Doctor. This one collects coins.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "痛い",
+  "r": "いたい",
+  "def": "Hurts, painful. The body part takes が.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "おなか",
+  "r": "おなか",
+  "def": "Stomach, belly.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "どこが",
+  "r": "どこが",
+  "def": "Where (is the one that...). どこが痛いですか.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "受付",
+  "r": "うけつけ",
+  "def": "Reception desk.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "元気",
+  "r": "げんき",
+  "def": "Healthy, lively, energetic. What you were not.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ },
+ {
+  "w": "食べる",
+  "r": "たべる",
+  "def": "To eat. The doctor's advice, in one word.",
+  "units": [
+   "mclinic"
+  ],
+  "grp": "mission"
+ }
+];
+const VUNITS = [
+ {
+  "key": "u71",
+  "title": "はじめまして · First Meetings",
+  "grp": "7",
+  "app": "walk",
+  "words": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11
+  ]
+ },
+ {
+  "key": "u72",
+  "title": "かぞくとペット · Family and Pets",
+  "grp": "7",
+  "app": "walk",
+  "words": [
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23
+  ]
+ },
+ {
+  "key": "u73",
+  "title": "すきなもの · Things I Like",
+  "grp": "7",
+  "app": "walk",
+  "words": [
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35
+  ]
+ },
+ {
+  "key": "u74",
+  "title": "がっこうのいちにち · A School Day",
+  "grp": "7",
+  "app": "walk",
+  "words": [
+   36,
+   37,
+   38,
+   39,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46,
+   47
+  ]
+ },
+ {
+  "key": "u81",
+  "title": "まいにちのせいかつ · Daily Routines and Time",
+  "grp": "8",
+  "app": "walk",
+  "words": [
+   48,
+   49,
+   50,
+   51,
+   7,
+   36,
+   52,
+   53,
+   54,
+   55,
+   56,
+   26
+  ]
+ },
+ {
+  "key": "u82",
+  "title": "たべものとかいもの · Food and Shopping",
+  "grp": "8",
+  "app": "walk",
+  "words": [
+   31,
+   57,
+   58,
+   59,
+   60,
+   61,
+   62,
+   63,
+   64,
+   65,
+   66,
+   67
+  ]
+ },
+ {
+  "key": "u83",
+  "title": "しゅみとスポーツ · Hobbies and Sport",
+  "grp": "8",
+  "app": "walk",
+  "words": [
+   68,
+   28,
+   29,
+   30,
+   69,
+   70,
+   24,
+   71,
+   72,
+   73,
+   74,
+   75
+  ]
+ },
+ {
+  "key": "u84",
+  "title": "わたしのまちとしゅうまつ · My Town and Weekends",
+  "grp": "8",
+  "app": "walk",
+  "words": [
+   76,
+   77,
+   78,
+   79,
+   80,
+   81,
+   82,
+   83,
+   84,
+   85,
+   86,
+   87
+  ]
+ },
+ {
+  "key": "u91",
+  "title": "まちをあるく · Getting Around Town",
+  "grp": "9",
+  "app": "walk",
+  "words": [
+   88,
+   89,
+   90,
+   91,
+   92,
+   93,
+   94,
+   95,
+   96,
+   97,
+   82,
+   83
+  ]
+ },
+ {
+  "key": "u92",
+  "title": "たべることとけんこう · Food and Health",
+  "grp": "9",
+  "app": "walk",
+  "words": [
+   98,
+   99,
+   100,
+   101,
+   102,
+   103,
+   104,
+   105,
+   106,
+   107,
+   108,
+   65
+  ]
+ },
+ {
+  "key": "u93",
+  "title": "てんきときせつ · Weather, Seasons and Festivals",
+  "grp": "9",
+  "app": "walk",
+  "words": [
+   109,
+   110,
+   111,
+   112,
+   113,
+   114,
+   115,
+   116,
+   117,
+   118,
+   119,
+   120
+  ]
+ },
+ {
+  "key": "u94",
+  "title": "がっこうせいかつ · School Life Here and in Japan",
+  "grp": "9",
+  "app": "walk",
+  "words": [
+   121,
+   122,
+   123,
+   124,
+   125,
+   126,
+   127,
+   128,
+   129,
+   130,
+   131,
+   132
+  ]
+ },
+ {
+  "key": "u101",
+  "title": "じぶんをかたる · Talking About Yourself",
+  "grp": "10",
+  "app": "walk",
+  "words": [
+   133,
+   134,
+   135,
+   136,
+   137,
+   138,
+   139,
+   140,
+   141,
+   142,
+   143,
+   144
+  ]
+ },
+ {
+  "key": "u102",
+  "title": "たびのじゅんび · Planning a Trip",
+  "grp": "10",
+  "app": "walk",
+  "words": [
+   145,
+   146,
+   147,
+   148,
+   149,
+   97,
+   150,
+   151,
+   152,
+   116,
+   153,
+   154
+  ]
+ },
+ {
+  "key": "u103",
+  "title": "メディアのせかい · The World of Media",
+  "grp": "10",
+  "app": "walk",
+  "words": [
+   155,
+   156,
+   157,
+   158,
+   159,
+   160,
+   161,
+   162,
+   163,
+   164,
+   165,
+   166
+  ]
+ },
+ {
+  "key": "u104",
+  "title": "はたらくみらい · Work and the Future",
+  "grp": "10",
+  "app": "walk",
+  "words": [
+   167,
+   168,
+   169,
+   170,
+   171,
+   172,
+   173,
+   174,
+   175,
+   176,
+   177,
+   178
+  ]
+ },
+ {
+  "key": "seikatsu",
+  "title": "せいかつ · Personal Identity and Lifestyles",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   133,
+   179,
+   180,
+   181,
+   182,
+   183,
+   184,
+   102,
+   185,
+   186,
+   187,
+   103
+  ]
+ },
+ {
+  "key": "kankei",
+  "title": "にんげんかんけい · Relationships",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   188,
+   189,
+   190,
+   191,
+   192,
+   193,
+   194,
+   195,
+   125,
+   126,
+   196,
+   197
+  ]
+ },
+ {
+  "key": "shinro",
+  "title": "しんろ · Aspirations, Education and Careers",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   198,
+   199,
+   200,
+   201,
+   202,
+   130,
+   203,
+   171,
+   169,
+   204,
+   205,
+   172
+  ]
+ },
+ {
+  "key": "bunka",
+  "title": "ぶんか · Culture, Customs and Festivals",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   206,
+   207,
+   208,
+   209,
+   210,
+   211,
+   212,
+   213,
+   118,
+   119,
+   214,
+   215
+  ]
+ },
+ {
+  "key": "yuumei",
+  "title": "いだいなひと · Significant People",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   216,
+   217,
+   218,
+   219,
+   220,
+   221,
+   222,
+   223,
+   224,
+   225,
+   226,
+   227
+  ]
+ },
+ {
+  "key": "nihon",
+  "title": "にほんでのせいかつ · Living in Japan and Getting Around",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   149,
+   228,
+   229,
+   230,
+   148,
+   97,
+   231,
+   232,
+   233,
+   96,
+   234,
+   235
+  ]
+ },
+ {
+  "key": "shakai",
+  "title": "げんだいしゃかい · Global and Contemporary Society",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   236,
+   237,
+   238,
+   239,
+   240,
+   241,
+   242,
+   188,
+   243,
+   244,
+   245,
+   246
+  ]
+ },
+ {
+  "key": "tsuushin",
+  "title": "つうしんとメディア · Communication and Media",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   247,
+   248,
+   249,
+   250,
+   142,
+   251,
+   252,
+   157,
+   253,
+   156,
+   254,
+   136
+  ]
+ },
+ {
+  "key": "gijutsu",
+  "title": "ぎじゅつのえいきょう · The Influence of Technology",
+  "grp": "VCE",
+  "app": "walk",
+  "words": [
+   255,
+   256,
+   257,
+   258,
+   259,
+   260,
+   261,
+   262,
+   263,
+   264,
+   265,
+   266
+  ]
+ },
+ {
+  "key": "unit10",
+  "title": "ユニット10 · Abilities and Preferences",
+  "grp": "10",
+  "app": "unit10",
+  "words": [
+   267,
+   268,
+   269,
+   270,
+   271,
+   272,
+   273,
+   274,
+   275,
+   276,
+   277,
+   278,
+   279,
+   280,
+   281,
+   282,
+   283,
+   284,
+   285,
+   286,
+   287,
+   288,
+   87
+  ]
+ },
+ {
+  "key": "mairport",
+  "title": "ミッション · 成田空港 · Narita Airport",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   289,
+   290,
+   291,
+   292,
+   140,
+   293,
+   232,
+   169,
+   294,
+   295,
+   296,
+   297,
+   4,
+   153,
+   298,
+   299,
+   300,
+   301
+  ]
+ },
+ {
+  "key": "mstation",
+  "title": "ミッション · 上野駅 · Ueno Station",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   90,
+   302,
+   303,
+   230,
+   304,
+   305,
+   306,
+   307,
+   308,
+   182,
+   309,
+   96,
+   310
+  ]
+ },
+ {
+  "key": "mkonbini",
+  "title": "ミッション · コンビニ · Konbini",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   311,
+   312,
+   313,
+   314,
+   315,
+   316,
+   317,
+   318,
+   319,
+   320,
+   321,
+   322,
+   323,
+   324,
+   325,
+   326,
+   327,
+   328,
+   329,
+   330,
+   331,
+   332,
+   216,
+   333
+  ]
+ },
+ {
+  "key": "mhotel",
+  "title": "ミッション · ホテル · The Hotel",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   334,
+   335,
+   336,
+   337,
+   338,
+   339,
+   340,
+   341,
+   342,
+   343,
+   344,
+   345,
+   346,
+   347,
+   348
+  ]
+ },
+ {
+  "key": "malley",
+  "title": "ミッション · ラーメン横丁 · Ramen Alley",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   349,
+   350,
+   351,
+   352,
+   353,
+   354,
+   355,
+   356,
+   357,
+   168,
+   358,
+   359,
+   360,
+   361,
+   97,
+   362,
+   363,
+   364,
+   365,
+   64,
+   366,
+   367,
+   368,
+   369,
+   370,
+   118,
+   371
+  ]
+ },
+ {
+  "key": "mhoshino",
+  "title": "ミッション · ほしの · Hoshino's Kitchen",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   372,
+   373,
+   374,
+   375,
+   376,
+   377,
+   378,
+   379,
+   380,
+   381,
+   382,
+   383,
+   384,
+   385,
+   386,
+   387,
+   98,
+   388,
+   389,
+   390,
+   391,
+   392,
+   393,
+   394
+  ]
+ },
+ {
+  "key": "mclinic",
+  "title": "ミッション · クリニック · Ueno Clinic",
+  "grp": "mission",
+  "app": "mission",
+  "words": [
+   395,
+   396,
+   397,
+   398,
+   399,
+   400,
+   401
+  ]
+ }
+];
+const VKANJI = {"名":{"g":"name","r":"な・メイ","cap":"sense"},"前":{"g":"front, before","r":"まえ・ゼン","cap":"sense"},"年":{"g":"year","r":"とし・ネン","cap":"sense"},"齢":{"g":"age, years","r":"レイ","cap":"sense"},"住":{"g":"to reside, dwell","r":"す(む)・ジュウ","cap":"sense"},"所":{"g":"place","r":"ところ・ショ","cap":"sense"},"誕":{"g":"birth","r":"タン","cap":"sense"},"生":{"g":"life, to live, to be born","r":"い(きる)・セイ","cap":"both"},"日":{"g":"day, sun","r":"ひ・ニチ","cap":"sense"},"毎":{"g":"every","r":"マイ","cap":"both"},"活":{"g":"lively, activity","r":"カツ","cap":"sense"},"近":{"g":"near, close","r":"ちか(い)・キン","cap":"sense"},"健":{"g":"healthy, robust","r":"すこ(やか)・ケン","cap":"sense"},"康":{"g":"peace, ease","r":"コウ","cap":"sense"},"自":{"g":"self","r":"みずか(ら)・ジ","cap":"sense"},"由":{"g":"reason, cause","r":"よし・ユウ","cap":"sense"},"転":{"g":"to roll, turn","r":"ころ(がる)・テン","cap":"sense"},"車":{"g":"car, vehicle","r":"くるま・シャ","cap":"sense"},"週":{"g":"week","r":"シュウ","cap":"sense"},"末":{"g":"end","r":"すえ・マツ","cap":"sense"},"運":{"g":"to carry, luck","r":"はこ(ぶ)・ウン","cap":"sense"},"動":{"g":"to move","r":"うご(く)・ドウ","cap":"both"},"家":{"g":"house, specialist","r":"いえ・カ","cap":"sense"},"族":{"g":"group, tribe","r":"ゾク","cap":"sense"},"庭":{"g":"garden, courtyard","r":"にわ・テイ","cap":"sense"},"両":{"g":"both, pair","r":"リョウ","cap":"sense"},"親":{"g":"parent, close","r":"おや・シン","cap":"sense"},"兄":{"g":"older brother","r":"あに・キョウ","cap":"sense"},"弟":{"g":"younger brother","r":"おとうと・ダイ","cap":"sense"},"姉":{"g":"older sister","r":"あね・シ","cap":"sense"},"妹":{"g":"younger sister","r":"いもうと・マイ","cap":"sense"},"友":{"g":"friend","r":"とも・ユウ","cap":"sense"},"人":{"g":"person","r":"ひと・ジン","cap":"sense"},"切":{"g":"to cut","r":"き(る)・セツ","cap":"sense"},"先":{"g":"ahead, previous","r":"さき・セン","cap":"both"},"徒":{"g":"pupil, on foot","r":"ト","cap":"sense"},"地":{"g":"earth, ground","r":"チ","cap":"sense"},"域":{"g":"region, zone","r":"イキ","cap":"sense"},"物":{"g":"thing","r":"もの・ブツ","cap":"sense"},"学":{"g":"to study, learning","r":"まな(ぶ)・ガク","cap":"sense"},"校":{"g":"school","r":"コウ","cap":"sense"},"高":{"g":"tall, high","r":"たか(い)・コウ","cap":"sense"},"大":{"g":"big, large","r":"おお(きい)・ダイ","cap":"sense"},"留":{"g":"to stay, detain","r":"と(める)・リュウ","cap":"sense"},"勉":{"g":"to strive, exertion","r":"ベン","cap":"sense"},"強":{"g":"strong","r":"つよ(い)・キョウ","cap":"sense"},"試":{"g":"to try, test","r":"こころ(みる)・シ","cap":"sense"},"験":{"g":"test, effect","r":"ケン","cap":"sense"},"卒":{"g":"graduate, soldier","r":"ソツ","cap":"sense"},"業":{"g":"business, work, industry","r":"ギョウ","cap":"sense"},"将":{"g":"leader, about to","r":"ショウ","cap":"sense"},"来":{"g":"to come","r":"く(る)・ライ","cap":"sense"},"仕":{"g":"to serve","r":"シ","cap":"sense"},"事":{"g":"thing, matter, affair","r":"こと・ジ","cap":"sense"},"就":{"g":"to take up, engage in","r":"つ(く)・シュウ","cap":"sense"},"職":{"g":"occupation, job","r":"ショク","cap":"sense"},"目":{"g":"eye, item","r":"め・モク","cap":"sense"},"標":{"g":"mark, target","r":"ヒョウ","cap":"sense"},"文":{"g":"writing, sentence","r":"ブン・モン","cap":"sense"},"化":{"g":"to change, to become","r":"ば(ける)・カ","cap":"both"},"伝":{"g":"to transmit, legend","r":"つた(わる)・デン","cap":"sense"},"統":{"g":"to unite, govern","r":"トウ","cap":"sense"},"芸":{"g":"art, craft","r":"ゲイ","cap":"sense"},"術":{"g":"art, technique","r":"ジュツ","cap":"sense"},"音":{"g":"sound","r":"おと・オン","cap":"both"},"楽":{"g":"music, comfort","r":"たの(しい)・ガク","cap":"sense"},"映":{"g":"to reflect, project","r":"うつ(る)・エイ","cap":"sense"},"画":{"g":"picture, stroke","r":"ガ","cap":"sense"},"漫":{"g":"idle, random","r":"マン","cap":"sense"},"着":{"g":"to wear, to arrive","r":"き(る)・チャク","cap":"sense"},"正":{"g":"correct, right","r":"ただ(しい)・セイ・ショウ","cap":"sense"},"月":{"g":"moon, month","r":"つき・ゲツ・ガツ","cap":"sense"},"花":{"g":"flower","r":"はな・カ","cap":"sense"},"火":{"g":"fire","r":"ひ・カ","cap":"sense"},"見":{"g":"to see","r":"み(る)・ケン","cap":"sense"},"茶":{"g":"tea","r":"チャ","cap":"sense"},"道":{"g":"road, way","r":"みち・ドウ","cap":"sense"},"書":{"g":"to write, book","r":"か(く)・ショ","cap":"sense"},"有":{"g":"to have, exist","r":"あ(る)・ユウ","cap":"sense"},"作":{"g":"to make","r":"つく(る)・サク","cap":"sense"},"選":{"g":"to choose","r":"えら(ぶ)・セン","cap":"sense"},"手":{"g":"hand, skilled person","r":"て・シュ","cap":"sense"},"監":{"g":"to supervise","r":"カン","cap":"sense"},"督":{"g":"to oversee, direct","r":"トク","cap":"sense"},"歴":{"g":"to pass through, history","r":"レキ","cap":"sense"},"史":{"g":"history, chronicle","r":"シ","cap":"sense"},"科":{"g":"subject, department","r":"カ","cap":"sense"},"者":{"g":"person (-er, -ist)","r":"もの・シャ","cap":"both"},"実":{"g":"truth, fruit","r":"み・ジツ","cap":"sense"},"経":{"g":"to pass through, manage","r":"へ(る)・ケイ","cap":"sense"},"営":{"g":"to operate, manage","r":"いとな(む)・エイ","cap":"sense"},"旅":{"g":"journey","r":"たび・リョ","cap":"sense"},"行":{"g":"to go","r":"い(く)・コウ","cap":"sense"},"飛":{"g":"to fly","r":"と(ぶ)・ヒ","cap":"sense"},"機":{"g":"machine","r":"キ","cap":"sense"},"空":{"g":"sky, empty","r":"そら・クウ","cap":"sense"},"港":{"g":"harbour, port","r":"みなと・コウ","cap":"sense"},"符":{"g":"tally, token","r":"フ","cap":"sense"},"荷":{"g":"load, baggage","r":"に・カ","cap":"sense"},"写":{"g":"to copy","r":"うつ(す)・シャ","cap":"sense"},"真":{"g":"true, real","r":"ま・シン","cap":"sense"},"温":{"g":"warm","r":"あたた(かい)・オン","cap":"sense"},"泉":{"g":"spring of water","r":"いずみ・セン","cap":"both"},"観":{"g":"to view, watch","r":"カン","cap":"sense"},"光":{"g":"light","r":"ひかり・コウ","cap":"sense"},"銀":{"g":"silver","r":"ぎん・ギン","cap":"sense"},"電":{"g":"electricity","r":"デン","cap":"sense"},"下":{"g":"below, down","r":"した・カ","cap":"sense"},"鉄":{"g":"iron","r":"テツ","cap":"sense"},"神":{"g":"god, spirit","r":"かみ・シン","cap":"sense"},"社":{"g":"company, association","r":"シャ","cap":"sense"},"環":{"g":"ring, surround","r":"カン","cap":"sense"},"境":{"g":"border, boundary","r":"さかい・キョウ","cap":"sense"},"会":{"g":"to meet, association","r":"あ(う)・カイ","cap":"sense"},"問":{"g":"to ask, question","r":"と(う)・モン","cap":"sense"},"題":{"g":"topic, title","r":"ダイ","cap":"sense"},"少":{"g":"few, little","r":"すこ(し)・ショウ","cap":"sense"},"子":{"g":"child","r":"こ・シ","cap":"sense"},"暖":{"g":"warm","r":"あたた(かい)・ダン","cap":"sense"},"核":{"g":"nucleus, core","r":"カク","cap":"sense"},"口":{"g":"mouth, opening","r":"くち・コウ","cap":"sense"},"老":{"g":"old, aged","r":"お(いる)・ロウ","cap":"sense"},"資":{"g":"resources, funds","r":"シ","cap":"sense"},"源":{"g":"source, origin","r":"みなもと・ゲン","cap":"sense"},"情":{"g":"feeling, information","r":"なさ(け)・ジョウ","cap":"sense"},"報":{"g":"report, news","r":"むく(いる)・ホウ","cap":"sense"},"新":{"g":"new","r":"あたら(しい)・シン","cap":"sense"},"聞":{"g":"to hear, to listen","r":"き(く)・ブン","cap":"sense"},"広":{"g":"wide, broad","r":"ひろ(い)・コウ","cap":"sense"},"告":{"g":"to tell, to announce","r":"つ(げる)・コク","cap":"sense"},"話":{"g":"to speak, story","r":"はな(す)・ワ","cap":"sense"},"携":{"g":"to carry along","r":"たずさ(える)・ケイ","cap":"sense"},"帯":{"g":"belt, zone","r":"おび・タイ","cap":"sense"},"番":{"g":"number in a series, turn","r":"バン","cap":"sense"},"組":{"g":"to put together, group","r":"く(む)・ソ","cap":"sense"},"号":{"g":"number, title","r":"ゴウ","cap":"sense"},"記":{"g":"to record, to write","r":"しる(す)・キ","cap":"sense"},"放":{"g":"to release, to set free","r":"はな(す)・ホウ","cap":"sense"},"送":{"g":"to send","r":"おく(る)・ソウ","cap":"sense"},"技":{"g":"skill, technique","r":"わざ・ギ","cap":"sense"},"械":{"g":"instrument, mechanism","r":"カイ","cap":"sense"},"発":{"g":"to depart, to occur","r":"ハツ","cap":"sense"},"明":{"g":"bright, clear","r":"あか(るい)・メイ","cap":"sense"},"未":{"g":"not yet","r":"ミ","cap":"sense"},"展":{"g":"to unfold, exhibit","r":"テン","cap":"sense"},"進":{"g":"to advance, progress","r":"すす(む)・シン","cap":"sense"},"歩":{"g":"to walk, step","r":"ある(く)・ホ","cap":"sense"},"気":{"g":"spirit, energy","r":"キ","cap":"sense"},"工":{"g":"craft, construction","r":"コウ","cap":"sound"},"知":{"g":"to know","r":"し(る)・チ","cap":"sense"},"能":{"g":"ability, function","r":"ノウ","cap":"sense"},"便":{"g":"convenience","r":"たよ(り)・ベン","cap":"sense"},"利":{"g":"profit, advantage","r":"リ","cap":"sense"},"町":{"g":"town, neighbourhood","r":"まち・チョウ"},"店":{"g":"shop, store","r":"みせ・テン"},"駅":{"g":"station","r":"エキ"},"右":{"g":"right (direction)","r":"みぎ・ウ"},"左":{"g":"left (direction)","r":"ひだり・サ"},"橋":{"g":"bridge","r":"はし・キョウ"},"味":{"g":"taste, flavour","r":"あじ・ミ"},"料":{"g":"fee, ingredients","r":"リョウ"},"理":{"g":"reason, logic","r":"リ"},"飲":{"g":"drink","r":"の(む)・イン"},"野":{"g":"field, wild","r":"の・ヤ"},"菜":{"g":"greens, vegetable","r":"サイ"},"朝":{"g":"morning","r":"あさ・チョウ"},"食":{"g":"eat, food","r":"た(べる)・ショク"},"昼":{"g":"daytime, noon","r":"ひる・チュウ"},"夕":{"g":"evening","r":"ゆう・セキ"},"辛":{"g":"spicy, hard","r":"から(い)・シン"},"晴":{"g":"clear, fine weather","r":"は(れる)・セイ"},"雲":{"g":"cloud","r":"くも"},"暑":{"g":"hot (weather)","r":"あつ(い)・ショ"},"秋":{"g":"autumn","r":"あき"},"春":{"g":"spring","r":"はる"},"夏":{"g":"summer","r":"なつ"},"冬":{"g":"winter","r":"ふゆ"},"天":{"g":"sky, heaven","r":"テン"},"台":{"g":"platform, stand; counter for machines and vehicles","r":"タイ"},"風":{"g":"wind","r":"かぜ・フウ"},"本":{"g":"book, main, origin","r":"ホン"},"語":{"g":"language, word","r":"ゴ"},"読":{"g":"read","r":"よ(む)・ドク"},"答":{"g":"answer","r":"こた(え)・トウ"},"教":{"g":"teach","r":"キョウ"},"室":{"g":"room","r":"シツ"},"部":{"g":"part, section, club","r":"ブ"},"授":{"g":"give, instruct","r":"ジュ"},"宿":{"g":"lodging, stay","r":"シュク"},"私":{"g":"I, private","r":"わたし"},"紹":{"g":"introduce (link)","r":"ショウ"},"介":{"g":"mediate, introduce","r":"カイ"},"性":{"g":"nature, gender","r":"セイ"},"格":{"g":"status, character","r":"カク"},"得":{"g":"gain, good at","r":"トク"},"意":{"g":"mind, meaning","r":"イ"},"趣":{"g":"interest, gist","r":"シュ"},"出":{"g":"go out, come from","r":"シュツ、で(る)"},"身":{"g":"body, self","r":"シン、み"},"特":{"g":"special","r":"トク"},"泊":{"g":"stay overnight","r":"とまる、ハク"},"待":{"g":"wait","r":"まつ、タイ"},"買":{"g":"buy","r":"かう、バイ"},"予":{"g":"beforehand","r":"ヨ"},"約":{"g":"promise, arrange","r":"ヤク"},"計":{"g":"plan, measure","r":"ケイ"},"歌":{"g":"song, sing","r":"うた、カ"},"雑":{"g":"miscellaneous","r":"ザツ"},"誌":{"g":"magazine, record","r":"シ"},"内":{"g":"inside","r":"ナイ、うち"},"容":{"g":"content, form","r":"ヨウ"},"感":{"g":"feeling, sense","r":"カン"},"想":{"g":"thought, idea","r":"ソウ"},"続":{"g":"continue","r":"つづく、ゾク"},"働":{"g":"work, labour","r":"はたらく、ドウ"},"忙":{"g":"busy","r":"いそがしい、ボウ"},"給":{"g":"supply, wage","r":"キュウ"},"面":{"g":"face, surface","r":"メン"},"接":{"g":"contact, receive","r":"セツ"}};
+
+const GROUPS=[
+ {grp:"7", label:"7年生"}, {grp:"8", label:"8年生"}, {grp:"9", label:"9年生"},
+ {grp:"10", label:"10年生"}, {grp:"VCE", label:"VCE"}, {grp:"mission", label:"ミッション"},
+];
+const UI = {
+  title:["ことばのホーム","ことばのホーム","kotoba no hōmu","Vocab Hub"],
+  subtitle:["スイートの全部のことば、一つの倉庫に","スイートのぜんぶのことば、ひとつのそうこに",
+    "suīto no zenbu no kotoba, hitotsu no sōko ni","every word in the suite, one warehouse"],
+  how:["年かユニットをえらんでください","ねんかユニットをえらんでください","nen ka yunitto o erande kudasai",
+    "Pick a year or a unit. A word that appears in more than one unit shows every door it lives behind; that is the point."],
+};
+
+const S={grp:"7",unit:null,open:null,quiz:null};
+const $=(id)=>document.getElementById(id);
+const esc=(s)=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const F=()=>window.HubLever.form();
+
+function selWords(){
+  if(S.unit){ const u=VUNITS.find((x)=>x.key===S.unit);
+    return u? u.words.map((i)=>VWORDS[i]) : []; }
+  return VWORDS.filter((w)=>w.grp===S.grp);
+}
+function unitOf(key){ return VUNITS.find((x)=>x.key===key); }
+function unitHref(key){
+  const u=unitOf(key);
+  return u&&u.app==="unit10" ? "../unit10/" : u&&u.app==="mission" ? "../mission/" : "../walk/#unit:"+key;
+}
+
+function paint(){
+  $("grpChips").innerHTML=GROUPS.map((g)=>
+    '<button class="fchip'+(S.grp===g.grp&&!S.unit?" on":(S.grp===g.grp?" on":""))+'" data-g="'+g.grp+'">'+esc(g.label)+'</button>').join("");
+  $("grpChips").querySelectorAll("[data-g]").forEach((b)=>{
+    b.onclick=()=>{ S.grp=b.dataset.g; S.unit=null; S.open=null; paint(); };
+  });
+  const us=VUNITS.filter((u)=>u.grp===S.grp);
+  $("unitChips").innerHTML=us.map((u)=>
+    '<button class="uchip'+(S.unit===u.key?" on":"")+'" data-u="'+u.key+'">'+esc(u.title)+'</button>').join("");
+  $("unitChips").querySelectorAll("[data-u]").forEach((b)=>{
+    b.onclick=()=>{ S.unit=S.unit===b.dataset.u?null:b.dataset.u; S.open=null; paint(); };
+  });
+  const words=selWords();
+  $("count").textContent=words.length+" words · "+(S.unit?"1 unit":us.length+" units");
+  const wl=$("walkLink");
+  if(S.unit){ const u=unitOf(S.unit);
+    wl.style.display=""; wl.href=unitHref(S.unit);
+    wl.textContent=u.app==="mission"?"ミッションで使う · use these in the game →":(u.app==="unit10"?"ユニット10で歩く":"単元の道で歩く")+" · walk this unit →";
+  } else wl.style.display="none";
+  let html="";
+  words.forEach((w,i)=>{
+    const kana=!w.parts||!w.parts.length;
+    html+='<button class="wcard'+(S.open===i?" open":"")+'" data-i="'+i+'">'+
+      '<span class="ww">'+esc(w.w)+'</span>'+
+      (kana?(w.kp?'<span class="wr">'+esc(w.kp)+' · the kanji you will meet</span>':""):'<span class="wr">'+esc(w.r)+'</span>')+
+      '<span class="wd">'+esc(w.def)+'</span></button>';
+    if(S.open===i){
+      const partsHtml=(w.parts||[]).map((p)=>{
+        const k=VKANJI[p]||{};
+        const cap=k.cap?' cap-'+k.cap:'';
+        return '<span class="dpart'+cap+'"><span class="pk">'+esc(p)+'</span><span class="pg">'+esc(k.g||"")+'</span></span>';
+      }).join("");
+      const unitsHtml=w.units.map((k)=>{
+        const u=unitOf(k);
+        return '<a class="dunit" href="'+esc(unitHref(k))+'" target="_blank" rel="noopener">'+esc(u?u.title:k)+' →</a>';
+      }).join("");
+      html+='<div class="wdetail">'+
+        '<div class="dw">'+esc(w.w)+'</div>'+
+        '<div class="dr">'+esc(w.r&&w.r!==w.w?w.r:"")+(w.kp?' <span class="kpnote">漢字: <b>'+esc(w.kp)+'</b></span>':"")+'</div>'+
+        '<div class="dd">'+esc(w.def)+'</div>'+
+        (w.ex?'<div class="dex">'+esc(w.ex)+'</div><div class="dexg">'+esc(w.exGloss||"")+'</div>':"")+
+        (partsHtml?'<div class="qlab">部品 · the parts (colours only where the classification is audited)</div><div class="dparts">'+partsHtml+'</div>':"")+
+        '<div class="qlab">この単元で · lives in these units</div>'+
+        '<div class="dunits">'+unitsHtml+'</div></div>';
+    }
+  });
+  $("grid").innerHTML=html;
+  $("grid").querySelectorAll(".wcard").forEach((c)=>{
+    c.onclick=()=>{ S.open=S.open===+c.dataset.i?null:+c.dataset.i; paint(); };
+  });
+  $("quizBtn").onclick=startQuiz;
+}
+
+/* ---- quiz: meaning shown, pick the word. Distractors come from the
+   same shelf (falling back to the whole year) so they are fair. ---- */
+function startQuiz(){
+  const words=selWords();
+  if(words.length<4)return;
+  const order=words.map((w,i)=>i);
+  for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+  S.quiz={words,order:order.slice(0,Math.min(10,order.length)),i:0,right:0,firstTryDone:false};
+  document.querySelectorAll(".screen").forEach((el)=>el.classList.remove("active"));
+  $("scr-quiz").classList.add("active");
+  paintQuiz();
+}
+function paintQuiz(){
+  const z=S.quiz;
+  if(!z)return;
+  if(z.i>=z.order.length){
+    $("quiz-area").innerHTML='<div class="quizbox qdone"><div class="big">'+(z.right===z.order.length?"◎":"○")+'</div>'+
+      '<p>First try: '+z.right+'/'+z.order.length+'.</p>'+
+      '<p style="margin-top:10px"><button class="btn btn-ghost" id="qAgain">もういちど</button> '+
+      '<button class="btn btn-primary" id="qBack2">ことばへ →</button></p></div>';
+    $("qAgain").onclick=startQuiz;
+    $("qBack2").onclick=backToBrowse;
+    return;
+  }
+  const w=z.words[z.order[z.i]];
+  const pool=z.words.length>=4?z.words:VWORDS.filter((x)=>x.grp===w.grp);
+  const opts=[w];
+  while(opts.length<4){
+    const cand=pool[Math.floor(Math.random()*pool.length)];
+    if(!opts.some((o)=>o.w===cand.w))opts.push(cand);
+  }
+  for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
+  z.firstTryDone=false;
+  $("quiz-area").innerHTML='<div class="quizbox">'+
+    '<div class="qlab">'+(z.i+1)+'/'+z.order.length+' · どのことば？ which word is this?</div>'+
+    '<div class="qdef">'+esc(w.def)+'</div>'+
+    '<div class="qopts">'+opts.map((o)=>'<button class="qopt" data-w="'+esc(o.w)+'">'+esc(o.w)+'</button>').join("")+'</div>'+
+    '<div class="qnext" id="qnext"></div></div>';
+  $("quiz-area").querySelectorAll(".qopt").forEach((b)=>{
+    b.onclick=()=>{
+      if(b.dataset.w===w.w){
+        if(!z.firstTryDone){ z.right++; }
+        b.classList.add("good");
+        $("qnext").innerHTML='<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">'+esc(w.r&&w.r!==w.w?w.r:"")+'</div>'+
+          '<button class="btn btn-primary" id="qOn">つぎへ →</button>';
+        $("qOn").onclick=()=>{ z.i++; paintQuiz(); };
+        $("quiz-area").querySelectorAll(".qopt").forEach((x)=>x.disabled=true);
+      }else{
+        z.firstTryDone=true;
+        b.classList.add("bad"); b.disabled=true;
+      }
+    };
+  });
+}
+function backToBrowse(){
+  S.quiz=null;
+  document.querySelectorAll(".screen").forEach((el)=>el.classList.remove("active"));
+  $("scr-browse").classList.add("active");
+  paint();
+}
+$("quizBack").onclick=backToBrowse;
+
+/* ---- boot + deep links ---- */
+window.HubLever.init({ strings:UI, ruby:{}, onChange:()=>{ if(S.quiz)paintQuiz(); else paint(); } });
+function applyHash(){
+  const mu=(location.hash||"").match(/^#unit:([a-z0-9]+)/);
+  const my=(location.hash||"").match(/^#year:(7|8|9|10|VCE|mission)/);
+  if(mu){ const u=VUNITS.find((x)=>x.key===mu[1]);
+    if(u){ S.grp=u.grp; S.unit=u.key; S.open=null; } }
+  else if(my){ S.grp=my[1]; S.unit=null; S.open=null; }
+  if(S.quiz)backToBrowse(); else paint();
+}
+window.addEventListener("hashchange",applyHash);
+applyHash();
+</script>
+</body>
+</html>

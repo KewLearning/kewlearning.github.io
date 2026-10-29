@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<!-- Unlisted on purpose. The tour dates sit next to the places the group will
+     be, so this app is handed out by link rather than left to be found. This
+     asks the search engines to keep it out of results; it is not a lock, and
+     anyone holding the link can still open it. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#e3c273">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Still needed: older iOS reads only the apple- spelling. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- What sits under the icon on the home screen. Without it iOS uses the
+     page title, which is long and in two scripts. -->
+<meta name="apple-mobile-web-app-title" content="Japan Tour">
+<title>日本研修旅行 Japan Study Tour</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9B%A9%3C/text%3E%3C/svg%3E">
+<style>
+  /* Read standing up, outdoors, in September sun, by a 13 year old holding a
+     phone in one hand. That drives every size in here: nothing below 15px,
+     body copy at 18, and tap targets you cannot miss. Menus live at the TOP
+     because that is where a thumb looks first on a page you are reading. */
+  :root{
+    /* The ground is a pale gold leaf, the colour of a 金地 screen rather
+       than metallic gold: warm enough to read as gold, light enough to keep
+       black text and the pale tiles comfortable on top of it. Hiroshima
+       overrides all of this back to a cool grey (see the quiet block). */
+    --bg:#e3c273; --paper:#fffdf4; --ink:#1c1808; --muted:#453a20;
+    --itinerary-paper:rgba(255,247,209,.90);
+    --line:#d4be8c; --line-soft:#e2d2a9; --accent:#a83232;
+    --deep:#16375e; --ok:#2f6a3e;
+    /* Tile blocks, from the traditional palette and kept pale so black text
+       sits on them comfortably: asagi, sakura, wakatake, fuji, yamabuki,
+       sora, matcha, toki. Tiles cycle through these by position. The
+       two that used to be warm yellows, yamabuki and matcha, are a coral
+       and a deeper green here: against a gold ground a pale yellow tile
+       stops reading as a tile at all. */
+    --c1:#d9edf1; --c2:#fbe3e8; --c3:#dcecdc; --c4:#e4e1f0;
+    --c5:#f6d9c8; --c6:#dde9f5; --c7:#dbe6c2; --c8:#f7e3e6;
+    --shadow:0 2px 10px rgba(0,0,0,.08);
+
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    /* Signage is gothic everywhere in Japan, so the drawn signs do not
+       borrow the textbook face the rest of the app reads in. */
+    --font-sign:'Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic',YuGothic,'Noto Sans JP',Meiryo,'MS PGothic',sans-serif;
+    --spk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M4 9v6h4l5 4V5L8 9H4zm12.5 3c0-1.6-.9-2.9-2.2-3.6v7.2c1.3-.7 2.2-2 2.2-3.6zM14.3 4.4v1.9c2.6.8 4.5 3.2 4.5 6s-1.9 5.2-4.5 6v1.9c3.6-.9 6.3-4.2 6.3-7.9s-2.7-7.1-6.3-7.9z'/%3E%3C/svg%3E");
+    --font:var(--font-en),var(--font-jp),sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  /* Real leaf, not a grid of squares: a seamless photographic tile drawn by
+     tools/make-gold-leaf.py. --bg is the fallback, and is the texture's own
+     mean colour, so a phone that never loads the image still gets gold. The
+     tile is 1024px shown at 512, which keeps it sharp on a 2x screen. */
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.6;font-size:18px;overflow-wrap:break-word;
+       background-image:url("gold-leaf.webp");
+       background-size:512px 512px;background-repeat:repeat}
+
+  /* ---------- top bar: title, then the menu ---------- */
+  .top{position:sticky;top:0;z-index:40;background:var(--paper);
+       border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+  .navline{border-top:1px solid var(--line-soft)}
+  /* Same column as nav and main. Without this the Back button sits at the
+     far left of a desktop window while the content is centred, which is a
+     long way to travel for the commonest action in the app. */
+  .bar{display:flex;align-items:center;gap:12px;padding:10px 14px 9px;
+       min-height:56px;max-width:680px;margin:0 auto}
+  .htitle{min-width:0;flex:1}
+  /* The trail replaces the Back button. Every step but the last is a button,
+     so you can jump two levels at once instead of stepping. It is in the
+     sticky bar, which means the way out is always on screen. */
+  .crumb{font-size:18px;font-weight:700;line-height:1.25;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crumb button{border:0;background:none;padding:0;font-family:inherit;
+         font-size:15.5px;font-weight:600;color:var(--deep);cursor:pointer;
+         -webkit-appearance:none;appearance:none;
+         text-decoration:underline;text-underline-offset:3px}
+  .crumb .sep{color:var(--muted);opacity:.7;margin:0 6px;font-weight:400;
+         font-size:15px}
+  .htitle .en{font-size:14px;color:var(--muted);line-height:1.3;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 44px square, which is the smallest thing a thumb hits reliably. */
+  /* ---------- the drawn icons ----------
+     One weight for the whole set, so the tab row and the yen button read as
+     one family. Round caps and joins keep a 2.4px line from looking chipped
+     where two strokes meet at this size. */
+  .iln{fill:none;stroke:currentColor;stroke-width:2.4;
+      stroke-linecap:round;stroke-linejoin:round}
+  .ifl{fill:currentColor;stroke:none}
+  /* The paper streamer is the one piece of fine detail in the set, so it is
+     drawn a shade lighter than the gate it hangs from. */
+  .ishide{fill:none;stroke:currentColor;stroke-width:2.1;
+      stroke-linecap:round;stroke-linejoin:round}
+  .iyen{stroke-width:3}
+  .ibody{stroke-width:3.4}
+  .iarm{stroke-width:2.4}
+  .cnum{font-family:var(--font-en),sans-serif;font-size:11.5px;
+      font-weight:700;text-anchor:middle;fill:currentColor;stroke:none}
+
+  .barbtn{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+       width:46px;height:44px;padding:0;border:1.5px solid var(--deep);
+       border-radius:12px;background:#fff;color:var(--deep);cursor:pointer;
+       -webkit-appearance:none;appearance:none}
+  .barbtn:active{background:#eef2f7}
+  .barbtn svg{display:block;width:26px;height:26px}
+  @media (max-width:340px){ .barbtn{width:42px} .barbtn svg{width:24px} }
+
+  /* Five icons, evenly spread, capped so they cluster instead of drifting to
+     the corners of a laptop window. */
+  nav{display:flex;justify-content:space-between;max-width:400px;margin:0 auto;
+      padding:5px 14px 6px;background:var(--paper)}
+  nav button{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+      width:48px;height:46px;padding:0;border:0;border-radius:13px;
+      background:none;color:var(--deep);cursor:pointer;
+      -webkit-appearance:none;appearance:none}
+  nav button svg{display:block;width:27px;height:27px}
+  /* Where you are: filled in, icon knocked out white. Nothing else on the
+     bar is filled, so there is never a question which one is lit. */
+  nav button.on{background:var(--deep);color:#fff}
+  nav button:active{background:#eef2f7}
+  nav button.on:active{background:var(--deep)}
+  @media (max-width:340px){
+    nav{padding:5px 8px 6px}
+    nav button{width:44px;height:44px}
+    nav button svg{width:25px;height:25px}
+  }
+
+  main{max-width:680px;margin:0 auto;padding:16px 14px 40px}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* ---------- shared ---------- */
+  h2{font-size:25px;line-height:1.2;margin-bottom:3px}
+  h2 .en{display:block;font-size:16px;font-weight:400;color:var(--muted);margin-top:2px}
+  .lede{color:var(--muted);font-size:16.5px;margin:10px 0 18px}
+  /* a big, unmissable section heading, used for the itinerary */
+  .sec{font-size:24px;font-weight:700;margin:26px 0 4px;line-height:1.2}
+  .sec .en{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:1px}
+  /* the panel a manner drops open into */
+  /* Takes the screen rather than opening below the grid. Scrolls if the text
+     is long, and the closing line sits at the end of it rather than floating,
+     so it cannot cover the last sentence. */
+  #sheet{position:fixed;inset:0;z-index:92;display:none;overflow-y:auto;
+      background:var(--paper);padding:26px 22px 30px;
+      padding-top:calc(26px + env(safe-area-inset-top));
+      padding-bottom:calc(30px + env(safe-area-inset-bottom));cursor:pointer}
+  #sheet.on{display:block}
+  #sheet .sh{font-size:30px;font-weight:700;line-height:1.3}
+  #sheet .sh .en{display:block;font-size:17px;font-weight:400;color:var(--muted);
+      margin-top:3px}
+  #sheet p{font-size:19px;line-height:1.65;margin-top:16px}
+  #sheet .mlink{margin-top:20px}
+  #sheet .mlink a{color:var(--deep);font-weight:700;font-size:17px}
+  #sheet .tapout{margin-top:26px;font-size:13.5px;letter-spacing:.09em;
+      text-transform:uppercase;font-weight:800;color:var(--muted)}
+
+  .drop{background:var(--paper);border:1px solid var(--line);border-left:6px solid var(--accent);
+        border-radius:12px;padding:15px 16px;margin-top:12px}
+  .drop .h{font-size:20px;font-weight:700}
+  .drop .h .en{font-size:15px;font-weight:400;color:var(--muted);margin-left:8px}
+  .drop p{font-size:17.5px;margin-top:7px;line-height:1.6}
+  .mlink{margin-top:16px}
+  .mlink a{color:var(--deep);font-weight:700;font-size:16.5px}
+  .drop .mlink{margin-top:12px}
+  .drop .mlink a{color:var(--deep);font-weight:700;font-size:16.5px}
+  .gt.sel{outline:3px solid var(--accent);outline-offset:2px}
+  .stack{display:flex;flex-direction:column;gap:12px}
+
+  /* big, obvious rows: places, and the sights inside a place */
+  .row{display:block;width:100%;text-align:left;background:var(--paper);
+       border:1px solid var(--line);border-radius:14px;padding:16px 17px;
+       font-family:inherit;color:var(--ink);cursor:pointer;box-shadow:var(--shadow);
+       position:relative;padding-right:44px}
+  .row:active{transform:scale(.995)}
+  .row .rja{font-size:21px;font-weight:700;line-height:1.3}
+  .row .ren{font-size:15.5px;color:var(--muted);margin-top:2px}
+  .row .rmeta{font-size:14px;color:var(--muted);margin-top:9px;
+              padding-top:9px;border-top:1px solid var(--line-soft)}
+  .row::after{content:"›";position:absolute;right:17px;top:50%;
+              transform:translateY(-50%);font-size:26px;color:var(--line);
+              line-height:1}
+
+  /* ---------- before you fly ---------- */
+  .pfrow{margin-bottom:14px;border-color:var(--accent)}
+  .pfcount{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--accent);margin:0 2px 12px}
+  .pfitem{background:var(--paper);border:1px solid var(--line);border-radius:14px;
+       padding:14px 16px 16px;box-shadow:var(--shadow)}
+  .pfitem.done{opacity:.72}
+  .pftick{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+       background:none;border:0;padding:0;font-family:inherit;color:var(--ink);cursor:pointer}
+  .pftick .box{flex:0 0 auto;width:26px;height:26px;border-radius:7px;
+       border:2px solid var(--line);background:#fff;position:relative}
+  .pfitem.done .pftick .box{background:var(--deep);border-color:var(--deep)}
+  /* The tick is drawn rather than typed so it never lands on a missing glyph. */
+  .pfitem.done .pftick .box::after{content:"";position:absolute;left:8px;top:3px;
+       width:6px;height:12px;border:solid #fff;border-width:0 3px 3px 0;
+       transform:rotate(42deg)}
+  .pftick .nm{font-size:19px;font-weight:700;line-height:1.35}
+  .pfitem.done .pftick .nm{text-decoration:line-through;text-decoration-thickness:2px}
+  .pfitem .why{font-size:16px;margin:10px 0 0}
+  .pfitem .how{font-size:15px;color:var(--muted);margin:9px 0 0;padding-top:9px;
+       border-top:1px solid var(--line-soft)}
+  .pflinks{margin:12px 0 0;display:flex;flex-wrap:wrap;gap:9px}
+  .pfget{display:inline-block;background:var(--deep);color:#fbf7ee;text-decoration:none;
+       font-size:15px;font-weight:700;padding:9px 15px;border-radius:9px}
+  .pffork{margin-top:12px;padding:12px 14px;border-radius:11px;
+       background:var(--bg);border:1px solid var(--line-soft)}
+  .pffork .fl{font-size:13px;font-weight:800;letter-spacing:.08em;
+       text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .pffork p{margin:0;font-size:15.5px}
+  .pfextra{margin-top:18px;padding:14px 16px;border-radius:14px;
+       border:1px dashed var(--line);background:var(--paper)}
+  .pfextra .fl{font-size:13px;font-weight:800;letter-spacing:.08em;
+       text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .pfextra p{margin:0;font-size:15.5px;color:var(--muted)}
+  /* ---------- the daily question ---------- */
+  .qbox{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+  /* Gold rather than the usual accent: this label sits on the deep blue of
+     the today card, where a dark red barely separates from the ground. */
+  .qbox .ql{font-size:12.5px;font-weight:800;letter-spacing:.08em;
+       text-transform:uppercase;color:var(--bg);margin-bottom:5px}
+  .qbox p{margin:0;font-size:17px;line-height:1.55}
+  /* The journal prompt is a second, quieter block: different job from the
+     question, so it should not read as more of the same sentence. */
+  .jbox{margin-top:11px;padding-top:11px}
+  .qlink{margin-top:18px}
+  .qlink button{border:0;background:none;padding:0;font-family:inherit;
+       font-size:16.5px;font-weight:700;color:var(--deep);cursor:pointer;
+       text-align:left}
+  /* Glued on with a non-breaking space, or the chevron wraps to a line of
+     its own on a narrow phone. */
+  .qlink button::after{content:"\00a0\203a";font-weight:800}
+  .jrow{margin-top:11px;padding-top:10px;border-top:1px dashed var(--line)}
+  .jrow .jl{font-size:12px;font-weight:800;letter-spacing:.07em;
+       text-transform:uppercase;color:var(--deep)}
+  .jrow p{margin:5px 0 0;font-size:15.5px;line-height:1.5;color:var(--muted)}
+  .qcard{position:relative;background:var(--paper);border:1px solid var(--line);
+       border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+  .qcard.now{border-color:var(--accent);border-width:2px}
+  .qcard .qn{font-size:13px;font-weight:800;letter-spacing:.07em;
+       text-transform:uppercase;color:var(--muted)}
+  .qcard .qn span{display:block;font-size:15px;font-weight:600;letter-spacing:0;
+       text-transform:none;color:var(--ink);margin-top:2px}
+  .qcard p{margin:9px 0 0;font-size:16.5px;line-height:1.55}
+  .qcard .qtag{position:absolute;top:-9px;right:14px;background:var(--accent);
+       color:#fff;font-size:11.5px;font-weight:800;letter-spacing:.09em;
+       text-transform:uppercase;padding:3px 9px;border-radius:7px}
+
+  /* ---------- money ---------- */
+  .rateset{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;
+       background:var(--paper);border:1px solid var(--line);border-radius:14px;
+       padding:13px 16px;box-shadow:var(--shadow);margin-bottom:12px}
+  .rateset label{font-size:22px;font-weight:700}
+  .rateset input{width:5.2em;font:inherit;font-size:22px;font-weight:700;
+       color:var(--deep);border:0;border-bottom:2px solid var(--accent);
+       background:none;padding:0 2px;text-align:center;-moz-appearance:textfield}
+  .rateset input::-webkit-outer-spin-button,
+  .rateset input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .rateset .rn{font-size:13.5px;color:var(--muted)}
+  .conv{display:flex;align-items:center;gap:10px;background:var(--paper);
+       border:1px solid var(--line);border-radius:14px;padding:13px 16px;
+       box-shadow:var(--shadow)}
+  .conv label{flex:1;font-size:17px;font-weight:700;display:flex;
+       align-items:baseline;gap:6px}
+  .conv input{width:100%;min-width:0;font:inherit;font-size:21px;font-weight:700;
+       color:var(--deep);border:0;border-bottom:2px solid var(--line);
+       background:none;padding:2px;-moz-appearance:textfield}
+  .conv input::-webkit-outer-spin-button,
+  .conv input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .conv .eq{font-size:19px;color:var(--muted)}
+  .cvhint{font-size:13.5px;color:var(--muted);margin:7px 2px 0}
+  .ladder{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+  .lr{background:var(--paper);border:1px solid var(--line);border-radius:11px;
+       padding:9px 12px;display:flex;justify-content:space-between;align-items:baseline}
+  .lr .ly{font-size:17px;font-weight:700}
+  .lr .la{font-size:16px;color:var(--deep);font-weight:700}
+  .tipbox .th{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+  .tipbox{background:var(--paper);border:1px dashed var(--line);border-radius:14px;
+       padding:13px 16px;margin:16px 0 0;font-size:15.5px;color:var(--muted)}
+  .cost{background:var(--paper);border:1px solid var(--line);border-radius:14px;
+       padding:13px 16px;box-shadow:var(--shadow)}
+  .cost .cw{font-size:17px;font-weight:700}
+  .cost .cy{font-size:20px;font-weight:700;color:var(--deep);margin-top:3px}
+  .cost .cy .ca{font-size:15px;color:var(--muted);font-weight:600;margin-left:9px}
+  .cost .cn{font-size:14.5px;color:var(--muted);margin:8px 0 0}
+
+  /* ---------- if something goes wrong ---------- */
+  .row.urgent{border-color:var(--accent);border-width:2px}
+  .dial{display:block;text-decoration:none;color:var(--ink);background:var(--paper);
+       border:2px solid var(--accent);border-radius:14px;padding:14px 17px;
+       box-shadow:var(--shadow);margin-bottom:11px}
+  .dial .dn{display:block;font-size:44px;line-height:1.05;font-weight:800;
+       color:var(--accent);letter-spacing:.04em}
+  .dial .dn.sm{font-size:26px;letter-spacing:0}
+  .dial .dw{display:block;font-size:17px;margin-top:3px}
+  .dial .dw b{font-weight:700;margin-right:9px}
+  .dial .dd{display:block;font-size:14.5px;color:var(--muted);margin-top:7px;
+       padding-top:7px;border-top:1px solid var(--line-soft)}
+  .dial .dtag{display:block;font-size:12px;font-weight:800;letter-spacing:.09em;
+       text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+  .dial.calm{border-color:var(--line)}
+  .dial.calm .dn{color:var(--deep)}
+
+  /* ---------- revision, at the foot of the itinerary ---------- */
+  .revise{margin-top:18px;padding:14px 16px;border-radius:14px;
+       border:1px solid var(--line);background:var(--paper)}
+  .revise .fl{font-size:16px;font-weight:700;margin-bottom:5px}
+  .revise p{margin:0;font-size:15px;color:var(--muted)}
+  /* An update lands silently otherwise, and a student on a train has no way
+     of knowing one arrived. Bottom of the screen so a thumb reaches it, and
+     clear of the kana tab on the right edge. */
+  #newver{position:fixed;left:12px;right:12px;bottom:12px;z-index:95;
+      display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+      background:var(--deep);color:#fbf7ee;border:0;border-radius:13px;
+      padding:13px 17px;font-family:inherit;font-size:17px;font-weight:700;
+      text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  #newver[hidden]{display:none}
+  #newver span{font-size:14px;font-weight:600;opacity:.85}
+  #newver .nvh{font-size:17px;font-weight:700;opacity:1}
+  /* ---------- today ---------- */
+  /* A pale yellow wash softens the leaf behind the itinerary, not the text. */
+  #v-home{background:var(--itinerary-paper);border:1px solid var(--line);
+          border-radius:14px;padding:14px}
+  .today{background:var(--deep);color:#fbf7ee;border-radius:14px;padding:17px 18px;
+         margin-bottom:18px;box-shadow:var(--shadow)}
+  .today .lbl{font-size:12px;font-weight:800;letter-spacing:.13em;
+              text-transform:uppercase;opacity:.75}
+  .today .d{font-size:23px;font-weight:700;margin-top:6px;line-height:1.28}
+  .today .d .en{display:block;font-size:15.5px;font-weight:400;opacity:.9;margin-top:3px}
+  .today .nt{font-size:16px;margin-top:11px;padding-top:11px;
+             border-top:1px solid rgba(251,247,238,.25);opacity:.95}
+
+  .day{display:grid;grid-template-columns:38px 1fr;gap:12px;padding:12px 0;
+       border-bottom:1px solid var(--line-soft)}
+  .day:last-child{border-bottom:0}
+  .day .n{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:4px}
+  .day .n .wd{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;
+       text-transform:uppercase;margin-top:1px}
+  .day.now .n{color:var(--accent);font-weight:800}
+  .day .t{font-size:18px;font-weight:700}
+  .day .t .en{display:block;font-size:15px;font-weight:400;color:var(--muted)}
+  .day .nt{font-size:15px;color:var(--muted);margin-top:4px}
+  .day.now{background:var(--paper);border-radius:12px;padding:12px 13px;
+           border:1px solid var(--accent)}
+
+  /* ---------- tiles: one component for places, sights and spots ----------
+     Fixed height so the grid stays even whether or not a photo exists, and
+     small enough that a screen holds six of them. Block colour instead of a
+     white card, because a wall of white cards is what made this dull. */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .gt{height:138px;display:flex;flex-direction:column;overflow:hidden;
+      border-radius:13px;border:1px solid rgba(0,0,0,.07);cursor:pointer;
+      font-family:inherit;text-align:left;color:var(--ink);padding:0;
+      box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .gt:active{transform:scale(.985)}
+  .gt .ph{flex:1;position:relative;overflow:hidden;min-height:0}
+  .gt .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .gt .ph.contain img{object-fit:contain;background:rgba(255,255,255,.5)}
+  /* no photo: the Japanese name carries the tile */
+  .gt .big{flex:1;display:flex;align-items:center;justify-content:center;
+           padding:6px 8px 0;min-height:0}
+  .gt .big span{font-size:34px;line-height:1.15;text-align:center;opacity:.9}
+  .gt .big span.s3{font-size:28px}
+  .gt .big span.s4{font-size:23px}
+  .gt .big span.s5{font-size:18px}
+  .gt .lab{padding:8px 11px 10px}
+  .gt .lab .ja{font-size:15.5px;font-weight:700;line-height:1.25;
+               white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gt .lab .en{font-size:12.5px;line-height:1.3;opacity:.72;margin-top:1px;
+               display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+               overflow:hidden}
+  .gt .lab .en.solo{font-size:14px;font-weight:600;opacity:.85;-webkit-line-clamp:2}
+  .gt .lab .meta{font-size:11px;opacity:.62;margin-top:3px}
+
+  /* ---------- spot detail ---------- */
+  .hook{font-size:19px;line-height:1.68;margin:16px 0 0;white-space:pre-line}
+  .look{margin-top:20px;background:var(--paper);border:1px solid var(--accent);
+        border-left-width:6px;border-radius:12px;padding:15px 16px}
+  .look .lbl{font-size:12px;font-weight:800;letter-spacing:.12em;
+             text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .look p{font-size:17.5px;line-height:1.6}
+  /* ---------- the Japanese half ----------
+     Soja carries a Japanese version of every paragraph, so a student can hand
+     the phone to their host family and they can read straight on. It sits
+     under the English rather than behind a switch: nothing to find and
+     nothing hidden. Looser leading than the English, because kanji need the
+     air, and the Japanese face first so the digits inside a Japanese sentence
+     do not jump into Calibri halfway through. */
+  .ja2{margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
+       font-family:var(--font-jp),var(--font-en),sans-serif;
+       font-size:16px;line-height:1.95;color:var(--muted)}
+  .hook.ja2{font-size:17px;margin-top:16px}
+  .look .ja2{font-size:16px;margin-top:13px}
+  .bigshot{aspect-ratio:16/10;background:var(--paper);border:1px solid var(--line);
+           border-radius:14px;margin-top:16px;overflow:hidden;position:relative}
+  .bigshot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .bigshot.contain{aspect-ratio:4/3;background:var(--bg)}
+  .bigshot.contain img{object-fit:contain}
+  /* A hero keeps the photographer's framing: no fixed ratio and no cropping,
+     because the whole point of one is that nothing is cut off. */
+  .heroshot{margin-top:16px;border:1px solid var(--line);border-radius:14px;
+            overflow:hidden;background:var(--paper);box-shadow:var(--shadow)}
+  .heroshot img{display:block;width:100%;height:auto}
+  /* ---------- maps ---------- */
+  .maps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;align-items:start}
+  .mp.wide{grid-column:1 / -1}
+  .mp{background:#dde9f5;border:1px solid var(--line);border-radius:12px;
+      padding:8px;position:relative;overflow:hidden}
+  .mp svg{display:block;width:100%;height:auto}
+  .mp .cap{font-size:11.5px;color:var(--muted);text-align:center;margin-top:5px;
+           font-weight:600;letter-spacing:.02em}
+  .credit{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .where{font-size:15px;color:var(--muted);margin-top:4px}
+
+  /* ---------- quiet tone (Hiroshima) ---------- */
+  body.quiet,
+  .quiet{--paper:#f2f1ef;--bg:#eceae7;--accent:#4a5560;--line:#c9c7c3;
+         --line-soft:#dedcd8;--muted:#524f49}
+  body.quiet{background:var(--bg);background-image:none}
+  body.quiet .top{background:var(--paper);border-bottom-color:var(--line)}
+  .quiet .look{border-left-width:4px;background:transparent}
+  body.quiet .gt{background:#e6e6e4!important;border-color:rgba(0,0,0,.09)}
+  .quiet .tone-note{background:transparent;border:1px solid var(--line);
+        border-radius:12px;padding:15px 16px;margin:16px 0 4px;
+        font-size:16.5px;color:var(--muted);line-height:1.62}
+
+  /* ---------- phrases ---------- */
+  .grp{margin-top:26px}
+  .grp:first-of-type{margin-top:6px}
+  .grp h3{font-size:20px;font-weight:700}
+  .grp h3 .en{font-size:15px;font-weight:400;color:var(--muted);margin-left:8px}
+  .grp .note{font-size:15.5px;color:var(--muted);margin:5px 0 13px}
+  .phrase{width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);
+          border-radius:14px;padding:15px 16px;font-family:inherit;color:var(--ink);
+          cursor:pointer;box-shadow:var(--shadow);display:block}
+  .phrase .plabel{font-size:12px;font-weight:800;letter-spacing:.08em;
+        text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+  /* A section heading sits on the gold between the cards, so the run of
+     items under it reads as a group. */
+  .psec{font-size:15px;font-weight:800;letter-spacing:.09em;
+        text-transform:uppercase;color:var(--ink);margin:22px 2px 0}
+  .stack > .psec:first-child{margin-top:2px}
+  /* Sign art sits full-width at the top of its card, capped so a tall sign
+     and a wide one still make a tidy row down the page. */
+  .signart{margin:-2px 0 12px;display:flex;justify-content:center}
+  .signart svg{display:block;width:auto;max-width:100%;height:auto;max-height:132px}
+  .signart .sa text{font-family:var(--font-sign);letter-spacing:.02em}
+  /* The play control sits over the corner of its card. It stays hidden until
+     we know the device can actually say something; a recording shows it
+     regardless, because that plays anywhere. */
+  .pwrap{position:relative}
+  .say{display:none;position:absolute;top:9px;right:10px;z-index:2;
+       width:42px;height:42px;border-radius:50%;border:1px solid var(--line);
+       background:var(--paper);color:var(--deep);cursor:pointer;padding:0;
+       align-items:center;justify-content:center;box-shadow:var(--shadow)}
+  body.hasvoice .say,.say.rec{display:flex}
+  .novoice{background:var(--paper);border:1px solid var(--line);
+       border-left:5px solid var(--deep);border-radius:12px;
+       padding:12px 14px;margin:0 0 16px;font-size:15.5px;line-height:1.55;
+       color:var(--muted)}
+  body.hasvoice .novoice{display:none}
+  /* The mirror of .novoice: this one only makes sense when there IS a voice
+     and therefore a button to press. */
+  .silentnote{display:none;background:var(--paper);border:1px solid var(--line);
+       border-left:5px solid var(--accent);border-radius:12px;
+       padding:12px 14px;margin:0 0 16px;font-size:15.5px;line-height:1.55;
+       color:var(--muted)}
+  body.hasvoice .silentnote{display:block}
+  /* ---------- the tune button ---------- */
+  .tunebtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+       margin:0 0 16px;padding:13px 16px;border:1.5px solid var(--deep);
+       border-radius:13px;background:#fff;color:var(--deep);cursor:pointer;
+       font-family:inherit;-webkit-appearance:none;appearance:none}
+  .tunebtn .tl{font-size:17px;font-weight:700;line-height:1.25}
+  .tunebtn .tl .en{display:block;font-size:13.5px;font-weight:600;opacity:.7}
+  /* A triangle that becomes a square while it is playing, so the one control
+     says both what it will do and that it is doing it. */
+  .tunebtn .ti{flex:0 0 auto;width:0;height:0;margin-left:4px;
+       border-left:17px solid currentColor;border-top:11px solid transparent;
+       border-bottom:11px solid transparent}
+  .tunebtn.on{background:var(--deep);color:#fff}
+  .tunebtn.on .ti{width:16px;height:16px;margin-left:5px;border:0;
+       background:currentColor;border-radius:2px}
+  .say .spk{width:19px;height:19px;background:currentColor;
+       -webkit-mask:var(--spk) center/contain no-repeat;mask:var(--spk) center/contain no-repeat}
+  .say.on{background:var(--deep);color:var(--paper);border-color:var(--deep)}
+  .pwrap .phrase{padding-right:62px}
+  /* A card with sign art has no play button, so it keeps its full width. */
+  .pwrap .phrase:has(.signart){padding-right:16px}
+  #showSay .say{position:static;width:56px;height:56px;display:none}
+  body.hasvoice #showSay .say,#showSay .say.rec{display:flex}
+  #showSay .say .spk{width:25px;height:25px}
+  .phrase .jp{font-size:24px;line-height:1.5;font-weight:600;white-space:pre-line}
+  /* Anything already written out in lines, like the anthem, sets smaller so
+     a line of it does not wrap and lose its shape. */
+  .phrase .jp.lines{font-size:18.5px;line-height:1.5;font-weight:600}
+  /* Furigana needs headroom or the readings collide with the line above.
+     ruby-position keeps them over the kanji on the browsers that ask. */
+  .phrase .jp.ruby{line-height:2.1}
+  .phrase .jp.ruby.lines{line-height:2.15}
+  .phrase .jp ruby{ruby-position:over;-webkit-ruby-position:over}
+  .phrase .jp rt{font-size:.46em;font-weight:600;color:var(--muted);
+       letter-spacing:.02em;line-height:1.1;text-align:center}
+  .phrase .en{font-size:17px;margin-top:6px}
+  .phrase .tip{font-size:15px;color:var(--muted);margin-top:10px;padding-top:10px;
+               white-space:pre-line;
+               border-top:1px solid var(--line-soft)}
+  .kanaswap{display:block;width:100%;margin:0 0 14px;padding:12px;border-radius:12px;
+        border:1px solid var(--line);background:var(--paper);color:var(--ink);
+        font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
+        -webkit-appearance:none;appearance:none;box-shadow:var(--shadow)}
+  .kanaswap .en{font-size:13.5px;font-weight:400;color:var(--muted);margin-left:9px}
+  .kanaswap.on{background:var(--deep);border-color:var(--deep);color:#fbf7ee}
+  .kanaswap.on .en{color:rgba(251,247,238,.8)}
+  .phrase .ch{cursor:pointer}
+  #readbub{position:fixed;z-index:92;display:none;background:var(--deep);
+        color:#fbf7ee;border-radius:12px;padding:9px 14px 10px;text-align:center;
+        box-shadow:0 4px 16px rgba(0,0,0,.3);pointer-events:none}
+  #readbub.on{display:block}
+  #readbub b{display:block;font-size:30px;line-height:1.15;font-weight:600}
+  #readbub i{display:block;font-family:var(--font-en),sans-serif;font-style:normal;
+        font-size:14px;opacity:.85;margin-top:2px;white-space:nowrap}
+  #readbub::after{content:"";position:absolute;left:50%;margin-left:-7px;
+        border:7px solid transparent;border-top-color:var(--deep);top:100%}
+  #readbub.below::after{top:auto;bottom:100%;border-top-color:transparent;
+        border-bottom-color:var(--deep)}
+  .showtag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--paper);background:var(--deep);
+           border-radius:12px;padding:5px 11px;margin-top:11px}
+
+  /* ---------- kana charts ----------
+     A tab down the right edge of every screen. It sits under the two
+     full-screen panels, which are opaque, so it disappears on its own
+     when one of them is open. */
+  /* iOS Safari does not lay a button out reliably with writing-mode, and
+     without -webkit-appearance:none it repaints one in its own style. So the
+     tab is stacked one character per line instead of rotated, and every
+     default button style is turned off explicitly. */
+  #kanatab{position:fixed;right:0;top:52%;transform:translateY(-50%);z-index:80;
+        -webkit-appearance:none;appearance:none;
+        background:var(--deep);color:#fbf7ee;
+        border:0;border-radius:13px 0 0 13px;padding:13px 9px;font-family:inherit;
+        font-size:16px;font-weight:700;line-height:1.18;cursor:pointer;
+        display:block;width:auto;text-align:center;
+        box-shadow:-2px 2px 10px rgba(0,0,0,.22)}
+  #kanatab span{display:block}
+
+  #kana{position:fixed;inset:0;z-index:95;background:var(--bg);display:none;
+        flex-direction:column;padding-top:env(safe-area-inset-top)}
+  #kana.on{display:flex}
+  #kana .kbar{display:flex;gap:8px;align-items:center;padding:11px 12px;
+        background:var(--paper);border-bottom:1px solid var(--line)}
+  #kana .kbar button{flex:1;padding:12px 8px;border-radius:11px;border:1px solid var(--line);
+        background:var(--bg);color:var(--ink);font-family:inherit;font-size:16px;
+        font-weight:700;cursor:pointer}
+  #kana .kbar button.on{background:var(--deep);border-color:var(--deep);color:#fbf7ee}
+  #kana .kbar #kanaClose{flex:0 0 auto;width:46px;font-size:22px;font-weight:400}
+  /* The whole chart has to be visible at once, so the image is fitted to
+     whatever room is left rather than scrolled. */
+  #kana .kwrap{flex:1;min-height:0;display:flex;align-items:center;
+        justify-content:center;padding:8px 8px 4px}
+  #kana .kmore{flex:0 0 auto;padding:6px 10px calc(12px + env(safe-area-inset-bottom))}
+  #kana .kmore button{width:100%;padding:12px;border-radius:11px;
+        border:1px solid var(--line);background:var(--paper);color:var(--ink);
+        font-family:inherit;font-size:15.5px;font-weight:600;cursor:pointer;
+        -webkit-appearance:none;appearance:none;line-height:1.25}
+  #kana .kmore .en{font-size:13px;font-weight:400;color:var(--muted);margin-left:8px}
+  #kana .kmore button.on .en{color:rgba(251,247,238,.8)}
+  #kana .kmore button.on{background:var(--deep);border-color:var(--deep);color:#fbf7ee}
+  #kana .kwrap img{max-width:100%;max-height:100%;width:auto;height:auto;
+        display:block;border-radius:12px}
+
+  #show{position:fixed;inset:0;z-index:90;background:var(--paper);display:none;
+        flex-direction:column;padding:24px;padding-top:calc(24px + env(safe-area-inset-top));
+        overflow-y:auto}
+  #show.on{display:flex}
+  /* A long card (an anthem verse, a ceremony speech) is taller than the phone.
+     The body grows, the dialog scrolls, and Close stays stuck to the bottom of
+     the screen, because there is no Escape key on a phone. */
+  #show .body{flex:1 0 auto;display:flex;flex-direction:column;align-items:center;
+              justify-content:center;text-align:center;gap:20px;min-height:0}
+  #show .jp{font-size:38px;line-height:1.65;font-weight:700}
+  #show .jp.long{font-size:26px;line-height:1.7}
+  #show .jp.verse{font-size:22px;line-height:1.75}
+  #show .en{font-size:18px;color:var(--muted)}
+  #show .hint{font-size:13px;color:var(--muted);letter-spacing:.09em;
+              text-transform:uppercase;font-weight:800}
+  #show button{border:1px solid var(--line);background:var(--bg);color:var(--ink);
+               font-family:inherit;font-size:18px;font-weight:600;padding:16px;
+               border-radius:12px;cursor:pointer;width:100%}
+  #show #showClose{position:sticky;bottom:0;flex:none;margin-top:20px;
+                   box-shadow:0 -10px 16px -8px rgba(0,0,0,.18)}
+
+  /* ---------- manners ---------- */
+  .manner{background:var(--paper);border:1px solid var(--line);border-radius:14px;
+          padding:15px 16px;box-shadow:var(--shadow)}
+  .manner .h{font-size:19px;font-weight:700}
+  .manner .h .en{font-size:15px;font-weight:400;color:var(--muted);margin-left:8px}
+  .manner p{font-size:17px;margin-top:6px}
+
+  /* ---------- offline ---------- */
+  .save{background:var(--paper);border:1px solid var(--line);border-radius:14px;
+        padding:16px;margin-top:22px;box-shadow:var(--shadow)}
+  .save h3{font-size:18px;font-weight:700}
+  .save h3 .en{font-size:15px;font-weight:400;color:var(--muted);margin-left:7px}
+  .save p{font-size:15.5px;color:var(--muted);margin-top:6px}
+  .save button{margin-top:13px;width:100%;padding:16px;border-radius:12px;
+        border:1px solid var(--deep);background:var(--deep);color:#fbf7ee;
+        font-family:inherit;font-size:17px;font-weight:700;cursor:pointer}
+  .save button[disabled]{opacity:.55;cursor:default}
+  .save .done{margin-top:13px;padding:13px 14px;border-radius:12px;
+        border:1px solid var(--ok);color:var(--ok);font-size:15.5px;font-weight:600}
+
+  /* The last page in a branch has nothing further to open, so the page itself
+     is the way back. The hint says so, because an invisible gesture is not a
+     feature. */
+  /* The trail alone was not enough at the middle levels: a 48px word in
+     Japanese does not read as a control. Every detail page now opens with a
+     back that names where it goes, in the same place every time. */
+  .topback{display:inline-flex;align-items:center;gap:9px;margin-bottom:16px;
+        padding:11px 17px 11px 14px;border-radius:12px;
+        border:1px solid var(--line);background:var(--paper);color:var(--ink);
+        font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;
+        -webkit-appearance:none;appearance:none;box-shadow:var(--shadow)}
+  .topback .en{font-size:14.5px;font-weight:400;color:var(--muted)}
+  #v-detail.leaf{cursor:pointer}
+  .tapout{margin-top:24px;text-align:center;font-size:14.5px;color:var(--muted);
+        letter-spacing:.02em}
+  .foot{font-size:14.5px;color:var(--muted);text-align:center;margin-top:28px;line-height:1.6}
+  .foot .build{display:block;margin-top:8px;font-size:12.5px;opacity:.7;
+        letter-spacing:.04em}
+  :focus-visible{outline:3px solid var(--deep);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="bar">
+    <div class="htitle">
+      <div class="crumb" id="hja">日本研修旅行</div>
+      <div class="en" id="hen">Japan Study Tour 2026</div>
+    </div>
+    <!-- Money is the thing you need in the middle of something else: at a
+         counter, in a shop, halfway through reading about a temple. The
+         Today button that used to sit here has gone: the itinerary tab is a
+         dated calendar now and does the same job in the same one tap. The
+         yen is stroked rather than set as text, so it matches the weight of
+         the tab icons instead of whatever the phone's bold happens to be. -->
+    <button class="barbtn ratebtn" data-money="1" aria-label="Yen and dollars: the converter and what things cost">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g class="iln iyen">
+          <path d="M5.5 5 14 14.8"/><path d="M22.5 5 14 14.8"/>
+          <path d="M14 14.8v9.4"/>
+          <path d="M7 17.2h14"/><path d="M7 21h14"/>
+        </g>
+      </svg>
+    </button>
+  </div>
+  <!-- Icons rather than labels, and the one you are on is filled in. Five
+       words of English and five of Japanese were taking a bar's worth of
+       height to say what a filled square says at a glance, and the header no
+       longer has to repeat the name of the tab you are standing on.
+       Everything is drawn here: no icon font, no emoji, nothing fetched. -->
+  <div class="navline"><nav>
+    <button data-go="places" class="on" aria-label="Places">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g class="iln">
+          <path d="M2.5 6.2h23"/><path d="M5.5 10.8h17"/>
+          <path d="M8 6.2 7 25.6"/><path d="M20 6.2 21 25.6"/>
+        </g>
+        <path class="ishide" d="M14 11v1.8l-3 1.5 3 1.5-3 1.5"/>
+      </svg></button>
+    <button data-go="phrases" aria-label="Phrases">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g class="iln">
+          <circle cx="10.2" cy="14" r="7.6"/>
+          <path d="M7.2 16.9q3 2.7 6 0"/>
+          <path d="M21.2 10.4a7 7 0 0 1 0 7.2"/>
+          <path d="M24.6 7.6a11.5 11.5 0 0 1 0 12.8"/>
+        </g>
+        <circle class="ifl" cx="7.8" cy="11.7" r="1.35"/>
+        <circle class="ifl" cx="12.6" cy="11.7" r="1.35"/>
+      </svg></button>
+    <button data-go="manners" aria-label="Etiquette">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <circle class="ifl" cx="7.4" cy="7.4" r="4.4"/>
+        <path class="iln ibody" d="M11 11 19.4 16.6 20.2 25.8"/>
+        <path class="iln iarm" d="M12.8 12.2 11.8 18.6"/>
+      </svg></button>
+    <button data-go="home" aria-label="Itinerary and today">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g class="iln">
+          <path d="M9 2.6v4"/><path d="M19 2.6v4"/>
+          <rect x="3" y="4.6" width="22" height="20.8" rx="3.4"/>
+          <path d="M3 11.6h22"/>
+        </g>
+        <text class="cnum" id="calnum" x="14" y="22.3">1</text>
+      </svg></button>
+    <button data-go="info" aria-label="Travel information">
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g class="iln">
+          <circle cx="14" cy="14" r="11"/>
+          <path d="M14 13.2v7.4"/>
+        </g>
+        <circle class="ifl" cx="14" cy="8.4" r="1.7"/>
+      </svg></button>
+  </nav></div>
+</div>
+
+<main>
+  <div class="view" id="v-home"></div>
+  <div class="view on" id="v-places"></div>
+  <div class="view" id="v-phrases"></div>
+  <div class="view" id="v-manners"></div>
+  <div class="view" id="v-info"></div>
+  <div class="view" id="v-detail"></div>
+</main>
+
+<div id="show" role="dialog" aria-modal="true" aria-label="Show this to someone">
+  <div class="body">
+    <div class="hint">Hold this up</div>
+    <div class="jp" id="showJp"></div>
+    <div class="en" id="showEn"></div>
+    <div id="showSay"></div>
+  </div>
+  <button id="showClose">Close</button>
+</div>
+
+<div id="sheet" role="dialog" aria-modal="true" aria-label="Etiquette">
+  <div class="sbody" id="sheetBody"></div>
+  <p class="tapout" id="sheetOut">Tap anywhere to close</p>
+</div>
+
+<div id="readbub" aria-hidden="true"></div>
+
+<button id="newver" hidden><span class="nvh" id="nvhead">New version ready</span><span id="nvsub">Tap to load it</span></button>
+
+<button id="kanatab" aria-label="Open the kana charts"><span>か</span><span>な</span></button>
+
+<div id="kana" role="dialog" aria-modal="true" aria-label="Kana charts">
+  <div class="kbar">
+    <button id="kanaClose" aria-label="Close">×</button>
+    <button data-kana="hiragana" class="on">ひらがな</button>
+    <button data-kana="katakana">カタカナ</button>
+  </div>
+  <div class="kwrap"><img id="kanaImg" alt="Kana chart"></div>
+  <div class="kmore"><button id="kanaMore">＋ だくてん・ようおん<span class="en"></span></button></div>
+</div>
+
+<script src="map.js"></script>
+<script src="data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+    });
+  }
+  function head(ja, en){
+    return '<h2>' + esc(ja) + '<span class="en">' + esc(en) + '</span></h2>';
+  }
+  function src(photo, small){
+    var u = small ? photo.replace(/\.webp$/, "-t.webp") : photo;
+    if (window.PHOTOS && window.PHOTOS[u]) return window.PHOTOS[u];
+    return u;
+  }
+  // Two panels: where this place sits in Japan, and a closer view of the
+  // stretch of coast the whole tour runs along. Both are drawn from real
+  // coastline, inline, so they work with no connection.
+  /* Where each label sits relative to its dot on the closer-up map. Worked
+     out by eye so nothing collides: the six stops run diagonally and two of
+     them, Hiroshima and Miyajima, are almost on top of each other. */
+  var MAP_LABEL = {
+    kyoto:     { dx:  0,   dy: -2.6, a: "middle", t: "Kyoto" },
+    kobe:      { dx:  0.4, dy:  4.2, a: "middle", t: "Kobe" },
+    himeji:    { dx:  0,   dy: -2.6, a: "middle", t: "Himeji" },
+    soja:      { dx:  0,   dy: -2.6, a: "middle", t: "Soja" },
+    hiroshima: { dx:  2.2, dy: -1.8, a: "start",  t: "Hiroshima" },
+    miyajima:  { dx: -2.2, dy:  3.4, a: "end",    t: "Miyajima" }
+  };
+  /* Two towns nobody stays in but everybody passes through or lands at. */
+  var MAP_CONTEXT = [
+    { k: "Osaka",          dx: 0.6, dy: -2.4, a: "middle" },
+    { k: "Kansai Airport", dx: 1.6, dy:  3.2, a: "middle" }
+  ];
+
+  function mapPanel(view, here){
+    var m = window.MAP; if (!m) return "";
+    var v = m[view], key = view === "japan" ? "j" : "r";
+    var reg = view === "region";
+    var svg = '<svg viewBox="0 0 ' + v.w + ' ' + v.h + '" aria-hidden="true">' +
+              '<rect width="' + v.w + '" height="' + v.h + '" fill="#dde9f5"/>';
+    v.d.forEach(function(d){
+      svg += '<path d="' + d + '" fill="#eef1e4" stroke="#a9b3a5" stroke-width="0.35"/>';
+    });
+    function label(x, y, o, txt, size, fill, weight){
+      // A pale halo under the text so a name stays readable over the coast.
+      return '<text x="' + (x + o.dx) + '" y="' + (y + o.dy) + '" text-anchor="' +
+             o.a + '" font-size="' + size + '" fill="#eef1e4" stroke="#eef1e4" ' +
+             'stroke-width="1.5" stroke-linejoin="round">' + esc(txt) + '</text>' +
+             '<text x="' + (x + o.dx) + '" y="' + (y + o.dy) + '" text-anchor="' +
+             o.a + '" font-size="' + size + '" font-weight="' + weight + '" fill="' +
+             fill + '">' + esc(txt) + '</text>';
+    }
+    // The rest of the tour, so a student can see where this stop sits in it.
+    // Named on the closer-up map, where there is room for names.
+    Object.keys(m.places).forEach(function(id){
+      if (id === here) return;
+      var q = m.places[id][key];
+      svg += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + (reg ? 1.1 : 0.9) +
+             '" fill="#8a8f88"/>';
+      if (reg && MAP_LABEL[id]) svg += label(q[0], q[1], MAP_LABEL[id],
+                                             MAP_LABEL[id].t, 3.1, "#4a5148", "600");
+    });
+    if (reg){
+      MAP_CONTEXT.forEach(function(c){
+        var a = m.anchors[c.k]; if (!a) return;
+        svg += '<circle cx="' + a.r[0] + '" cy="' + a.r[1] + '" r="0.8" fill="#b3b8b1"/>' +
+               label(a.r[0], a.r[1], c, c.k, 2.7, "#7a8078", "400");
+      });
+    }
+    var pnt = m.places[here] && m.places[here][key];
+    if (pnt){
+      svg += '<circle cx="' + pnt[0] + '" cy="' + pnt[1] + '" r="3.2" fill="none" ' +
+             'stroke="#a83232" stroke-width="0.8"/>' +
+             '<circle cx="' + pnt[0] + '" cy="' + pnt[1] + '" r="1.7" fill="#a83232"/>';
+      var o = reg ? MAP_LABEL[here] : null;
+      if (o) svg += label(pnt[0], pnt[1], { dx:o.dx, dy:o.dy<0 ? o.dy-1.4 : o.dy+1.4, a:o.a },
+                          o.t, 3.6, "#a83232", "700");
+    }
+    if (view === "japan"){
+      // On the whole country the six stops are almost one dot, so only the
+      // two ends of the map are named: it is orientation, not a road map.
+      [["Tokyo", 2.5, 1.6, "start"], ["Fukuoka", 0, 5, "middle"]].forEach(function(a){
+        var q = m.anchors[a[0]]; if (!q) return;
+        svg += '<circle cx="' + q.j[0] + '" cy="' + q.j[1] + '" r="1" fill="#556"/>' +
+               label(q.j[0], q.j[1], { dx:a[1], dy:a[2], a:a[3] }, a[0], 4, "#445", "400");
+      });
+    }
+    return svg + '</svg>';
+  }
+  function maps(placeId){
+    if (!window.MAP || !window.MAP.places[placeId]) return "";
+    return '<div class="maps">' +
+      '<div class="mp wide">' + mapPanel("region", placeId) +
+        '<div class="cap">The tour, closer up</div></div>' +
+      '<div class="mp">' + mapPanel("japan", placeId) +
+        '<div class="cap">Where that is in Japan</div></div>' +
+    '</div>';
+  }
+
+  // One tile, used for places, sights and spots. Colour comes from position
+  // so a grid never repeats a shade side by side.
+  function tile(item, attr, meta, i){
+    var body;
+    if (item.photo){
+      body = '<div class="ph' + (item.fit === "contain" ? " contain" : "") + '">' +
+             '<img src="' + esc(src(item.photo, true)) + '" alt="" loading="lazy"></div>';
+    } else {
+      var g = String(item.ja || "");
+      var k = g.length <= 2 ? "" : (g.length === 3 ? " s3" : (g.length === 4 ? " s4" : " s5"));
+      body = '<div class="big"><span class="' + k.trim() + '">' + esc(g) + '</span></div>';
+    }
+    var bg = item.tone === "quiet" ? "#e4e5e3" : "var(--c" + ((i % 8) + 1) + ")";
+    return '<button class="gt" style="background:' + bg + '" ' + attr + '>' +
+             body +
+             '<div class="lab">' +
+             (item.photo ? '<div class="ja">' + esc(item.ja) + '</div>' : '') +
+             '<div class="en' + (item.photo ? '' : ' solo') + '">' + esc(item.en) + '</div>' +
+             (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+           '</div></button>';
+  }
+
+  function todayIndex(){
+    var n = new Date();
+    var t = n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") +
+            "-" + String(n.getDate()).padStart(2,"0");
+    for (var i=0;i<TRIP.days.length;i++){ if (TRIP.days[i].date === t) return i; }
+    return -1;
+  }
+  function daysUntil(){
+    var n = new Date(); n.setHours(0,0,0,0);
+    return Math.round((new Date(TRIP.start + "T00:00:00") - n) / 86400000);
+  }
+
+  /* ================= HOME ================= */
+  /* Worked out from the date rather than typed in, so it cannot drift if a
+     day ever moves. Parsed as local rather than letting the browser read the
+     string as UTC, which can land a day early depending on where you are. */
+  var DAYNAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  function weekday(iso, short){
+    var p = String(iso).split("-");
+    if (p.length !== 3) return "";
+    var name = DAYNAMES[new Date(+p[0], +p[1] - 1, +p[2]).getDay()] || "";
+    return short ? name.slice(0, 3) : name;
+  }
+
+  function stampToday(){
+    var el = $("calnum");
+    if (el) el.textContent = String(new Date().getDate());
+  }
+
+  function renderHome(){
+    stampToday();
+    var i = todayIndex(), h = "";
+    if (i > -1){
+      var d = TRIP.days[i];
+      h += '<div class="today"><div class="lbl">Today  きょう</div>' +
+           '<div class="d">' + esc(d.ja) + '<span class="en">' +
+           esc(weekday(d.date)) + ' \u00b7 day ' + d.n + ' of 12: ' +
+           esc(d.en) + '</span></div><div class="nt">' + esc(d.note) + '</div>' +
+           // Today's question rides on today's card, because that is where
+           // somebody already is when they open the app in the evening.
+           (d.q ? '<div class="qbox"><div class="ql">Today\'s question  きょうの しつもん</div>' +
+                  '<p>' + esc(d.q) + '</p></div>' : "") +
+           (d.j ? '<div class="qbox jbox"><div class="ql">In your journal  にっき</div>' +
+                  '<p>' + esc(d.j) + '</p></div>' : "") +
+           '</div>';
+    } else {
+      var n = daysUntil();
+      var line = n > 0 ? (n === 1 ? "Tomorrow." : n + " days to go.")
+                       : "The tour is over. Welcome home.";
+      h += '<div class="today"><div class="lbl">Departure  しゅっぱつ</div>' +
+           '<div class="d">' + esc(line) +
+           '<span class="en">' + esc(weekday(TRIP.days[0].date)) +
+           ' 20 September 2026, 18:25 from Melbourne</span></div>' +
+           '<div class="nt">Open this on the day and it shows where we are up to.</div></div>';
+    }
+    /* The tab is called Itinerary now, so the page does not repeat itself. */
+    h += '<div>';
+    TRIP.days.forEach(function(d, k){
+      h += '<div class="day' + (k === i ? " now" : "") + '"><div class="n">' + d.n +
+           '<span class="wd">' + esc(weekday(d.date, true)) + '</span></div>' +
+           '<div><div class="t">' + esc(d.ja) + '<span class="en">' + esc(d.en) + '</span></div>' +
+           '<div class="nt">' + esc(d.note) + '</div></div></div>';
+    });
+    h += '</div>';
+    /* The way through to all twelve, for reading ahead or looking back.
+       Today's pair is already on the card above, so this needs to be
+       findable and nothing more: a line of text, not another card. */
+    h += '<p class="qlink"><button data-questions="1">' +
+         'All twelve questions and journal prompts</button></p>';
+    h += '<p class="foot">Meeting points, phone numbers and your emergency details ' +
+         'are on your lanyard, not in this app.' +
+         // A visible version, so "which one am I looking at" is answerable
+         // without guessing. Keep BUILD in step with CACHE in sw.js.
+         '<span class="build">' + esc(BUILD) + '</span></p>';
+    $("v-home").innerHTML = h;
+  }
+
+  /* ================= before you fly =================
+     Ticks live in this browser and nowhere else: no account, nothing sent,
+     and a student who clears their history simply starts again. Both store
+     links are shown rather than guessing the phone from the user agent,
+     because a wrong guess sends someone to a store they cannot install from
+     and there is no way for them to tell that is what happened. */
+  var PF_KEY = "jtPreflight-v1";
+  function pfDone(){
+    try { return JSON.parse(localStorage.getItem(PF_KEY) || "{}") || {}; }
+    catch (e){ return {}; }
+  }
+  function pfSet(id, on){
+    var d = pfDone();
+    if (on) d[id] = 1; else delete d[id];
+    try { localStorage.setItem(PF_KEY, JSON.stringify(d)); } catch (e){}
+  }
+  function pfCount(){
+    var d = pfDone(), n = 0;
+    PREFLIGHT.items.forEach(function(it){ if (d[it.id]) n++; });
+    return n;
+  }
+  function store(url, label){
+    if (!/^https:\/\//.test(url)) return "";
+    return '<a class="pfget" href="' + esc(url) + '" target="_blank" ' +
+           'rel="noopener noreferrer">' + esc(label) + '</a>';
+  }
+  function preflightHtml(){
+    var d = pfDone();
+    var h = head(PREFLIGHT.ja, PREFLIGHT.en) +
+            '<p class="lede">' + esc(PREFLIGHT.note) + '</p>' +
+            '<p class="pfcount" id="pfcount">' + pfCount() + ' of ' +
+            PREFLIGHT.items.length + ' done</p><div class="stack">';
+    PREFLIGHT.items.forEach(function(it){
+      h += '<div class="pfitem' + (d[it.id] ? " done" : "") + '" data-pf="' + esc(it.id) + '">' +
+           '<button class="pftick" aria-pressed="' + (d[it.id] ? "true" : "false") + '">' +
+             '<span class="box" aria-hidden="true"></span>' +
+             '<span class="nm">' + esc(it.name) + '</span></button>' +
+           '<p class="why">' + esc(it.why) + '</p>' +
+           (it.how ? '<p class="how">' + esc(it.how) + '</p>' : "");
+      if (it.site) h += '<p class="pflinks">' + store(it.site.url, it.site.label) + '</p>';
+      if (it.ios || it.android){
+        h += '<p class="pflinks">' + store(it.ios, "iPhone") +
+             store(it.android, "Android") + '</p>';
+      }
+      (it.forks || []).forEach(function(f){
+        h += '<div class="pffork"><div class="fl">' + esc(f.label) + '</div>' +
+             '<p>' + esc(f.text) + '</p>' +
+             (f.url ? '<p class="pflinks">' + store(f.url, "Get the app") + '</p>' : "") +
+             '</div>';
+      });
+      h += '</div>';
+    });
+    h += '</div><div class="pfextra"><div class="fl">' + esc(PREFLIGHT.extra.head) +
+         '</div><p>' + esc(PREFLIGHT.extra.text) + '</p></div>';
+    return h;
+  }
+
+  /* ================= travel information =================
+     Emergency numbers, the app checklist and the money pages were each built
+     wherever there was room at the time, which left them scattered across the
+     itinerary. They are one kind of thing and they belong behind one label a
+     worried student or parent can find without hunting. */
+  function renderInfo(){
+    var h = head("あんない", "Travel Information") +
+            '<p class="lede">Everything practical in one place: who to ring, ' +
+            'what to install before we go, and what things cost. Worth reading ' +
+            'through once at home rather than for the first time when you ' +
+            'need it.</p>';
+    h += '<button class="row urgent" data-sos="1">' +
+           '<div class="rja">' + esc(EMERGENCY.ja) + '</div>' +
+           '<div class="ren">' + esc(EMERGENCY.en) + '</div>' +
+           '<div class="rmeta">110 and 119 first, then consular help. And ' +
+             'what to say once somebody answers.</div></button>';
+    h += '<button class="row pfrow" data-preflight="1">' +
+           '<div class="rja">' + esc(PREFLIGHT.ja) + '</div>' +
+           '<div class="ren">' + esc(PREFLIGHT.en) + '</div>' +
+           '<div class="rmeta">' + pfCount() + ' of ' + PREFLIGHT.items.length +
+             ' done. Apps to install and one form to fill in, all on wifi ' +
+             'before we go.</div></button>';
+    h += '<button class="row" data-money="1">' +
+           '<div class="rja">' + esc(MONEY.ja) + '</div>' +
+           '<div class="ren">' + esc(MONEY.en) + '</div>' +
+           '<div class="rmeta">A converter you set yourself, what things ' +
+             'cost, and getting an IC card working on your phone.</div></button>';
+    h += '<div class="revise"><div class="fl">' + esc(REVISE.ja) + '  ' +
+         esc(REVISE.en) + '</div><p>' + esc(REVISE.note) + '</p>' +
+         '<p class="pflinks">' +
+         REVISE.links.map(function(l){ return store(l.url, l.label); }).join("") +
+         '</p></div>';
+    h += '<p class="foot">Meeting points, your teachers\' numbers and your ' +
+         'emergency details are on your lanyard, not in this app.</p>';
+    $("v-info").innerHTML = h;
+  }
+
+  /* ================= the daily question =================
+     Twelve questions, one per day, and not one of them answerable from a
+     phone. Every answer is somewhere a student has to be standing, looking
+     at the thing. Shown ahead as well as on the day, because knowing what
+     you will be asked is what makes you look in the first place. */
+  function questionsHtml(){
+    var today = todayIndex();
+    var h = head("しつもん と にっき", "The question and the journal") +
+            '<p class="lede">Two things for each day. The question has no ' +
+            'answer in here or anywhere else on your phone: you have to be ' +
+            'there, looking at the thing. Read tomorrow\'s question tonight, ' +
+            'because knowing what to look for is what makes you spot it. The ' +
+            'journal prompt is for the paper book, in the evening, and you ' +
+            'will want to read day one again on the last night.</p>' +
+            '<div class="stack">';
+    TRIP.days.forEach(function(d, i){
+      if (!d.q) return;
+      h += '<div class="qcard' + (i === today ? " now" : "") + '">' +
+             '<div class="qn">Day ' + d.n + '<span>' + esc(d.ja) + '  ' +
+               esc(d.en) + '</span></div>' +
+             '<p>' + esc(d.q) + '</p>' +
+             (d.j ? '<div class="jrow"><div class="jl">In your journal  にっき</div>' +
+                    '<p>' + esc(d.j) + '</p></div>' : "") +
+             (i === today ? '<div class="qtag">today</div>' : "") +
+           '</div>';
+    });
+    return h + '</div>';
+  }
+
+  /* ================= money =================
+     The rate is the student's, kept in their own browser, because no app on
+     a Japanese train can go and look one up. Everything on the page is
+     derived from it, so changing it changes the lot. */
+  var RATE_KEY = "jtRate-v1";
+  function rate(){
+    var v;
+    try { v = parseFloat(localStorage.getItem(RATE_KEY)); } catch (e){}
+    return (v && v > 0 && v < 100000) ? v : MONEY.rate;
+  }
+  function setRate(v){ try { localStorage.setItem(RATE_KEY, String(v)); } catch (e){} }
+  function aud(yen){
+    var v = yen / rate();
+    /* Cents below ten dollars, whole dollars above: nobody at a vending
+       machine needs two decimal places on a jacket. */
+    return v < 10 ? "$" + v.toFixed(2) : "$" + Math.round(v);
+  }
+  function moneyHtml(){
+    var h = head(MONEY.ja, MONEY.en) + '<p class="lede">' + esc(MONEY.note) + '</p>';
+    h += '<div class="rateset"><label for="rateIn">¥<input id="rateIn" type="number" ' +
+         'inputmode="decimal" min="1" step="0.5" value="' + rate() + '"> = A$1</label>' +
+         '<span class="rn">Tap the number to change it</span></div>';
+    h += '<div class="conv">' +
+         '<label>¥ <input id="cvYen" type="number" inputmode="numeric" placeholder="1000"></label>' +
+         '<span class="eq">=</span>' +
+         '<label>A$ <input id="cvAud" type="number" inputmode="decimal" placeholder="9"></label>' +
+         '</div><p class="cvhint">Type in either box.</p>';
+    h += '<div class="ladder" id="ladder">' + ladderHtml() + '</div>';
+    // Anchored to the live rate rather than a figure baked into the text,
+    // which would quietly start lying the moment somebody changes it.
+    h += '<div class="tipbox"><div class="th">' + esc(MONEY.shortcutHead) + '</div>' +
+         esc(MONEY.shortcut) + '<b id="anchor">' + aud(1000) + '</b>.</div>';
+    // The IC card is a money question that happens to involve an app, and it
+    // was getting lost at the bottom of a list of downloads.
+    h += '<h3 class="psec">' + esc(MONEY.icHead) + '</h3>' +
+         '<p class="lede">' + esc(MONEY.icNote) + '</p>';
+    MONEY.ic.forEach(function(f){
+      h += '<div class="pffork"><div class="fl">' + esc(f.label) + '</div>' +
+           '<p>' + esc(f.text) + '</p>' +
+           (f.url ? '<p class="pflinks">' + store(f.url, "Get the app") + '</p>' : "") +
+           '</div>';
+    });
+    h += '<h3 class="psec">' + esc(MONEY.costsHead) + '</h3>' +
+         '<p class="lede">' + esc(MONEY.costsNote) + '</p><div class="stack">';
+    MONEY.costs.forEach(function(c){
+      h += '<div class="cost"><div class="cw">' + esc(c.what) + '</div>' +
+           '<div class="cy">¥' + esc(c.yen) + '<span class="ca" data-yenrange="' +
+             esc(c.yen) + '">' + costAud(c.yen) + '</span></div>' +
+           '<p class="cn">' + esc(c.note) + '</p></div>';
+    });
+    return h + '</div>';
+  }
+  function ladderHtml(){
+    return MONEY.ladder.map(function(y){
+      return '<div class="lr"><span class="ly">¥' + y.toLocaleString() +
+             '</span><span class="la">' + aud(y) + '</span></div>';
+    }).join("");
+  }
+  function costAud(range){
+    var n = String(range).match(/\d+/g);
+    if (!n) return "";
+    return n.length > 1 ? aud(+n[0]) + " to " + aud(+n[n.length - 1]) : aud(+n[0]);
+  }
+  /* One rate change has to move every number on the page at once. */
+  function moneyRefresh(){
+    var l = $("ladder"); if (l) l.innerHTML = ladderHtml();
+    var an = $("anchor"); if (an) an.textContent = aud(1000);
+    var cs = document.querySelectorAll("[data-yenrange]");
+    for (var i = 0; i < cs.length; i++) cs[i].textContent = costAud(cs[i].dataset.yenrange);
+    var y = $("cvYen");
+    if (y && y.value !== "") convFrom("yen");
+  }
+  function convFrom(which){
+    var y = $("cvYen"), a = $("cvAud");
+    if (!y || !a) return;
+    if (which === "yen"){
+      a.value = y.value === "" ? "" : (parseFloat(y.value) / rate()).toFixed(2);
+    } else {
+      y.value = a.value === "" ? "" : Math.round(parseFloat(a.value) * rate());
+    }
+  }
+
+  /* ================= if something goes wrong =================
+     Two numbers, then the words. The words are the part that fails people:
+     dialling is easy and freezing once somebody answers is not. */
+  function emergencyHtml(){
+    var h = head(EMERGENCY.ja, EMERGENCY.en) +
+            '<p class="lede">' + esc(EMERGENCY.note) + '</p>';
+    EMERGENCY.numbers.forEach(function(x){
+      h += '<a class="dial" href="tel:' + esc(x.n) + '">' +
+             '<span class="dn">' + esc(x.n) + '</span>' +
+             '<span class="dw"><b>' + esc(x.who) + '</b>' + esc(x.ja) + '</span>' +
+             '<span class="dd">' + esc(x.detail) + '</span></a>';
+    });
+    h += '<p class="tipbox">' + esc(EMERGENCY.facts) + '</p>';
+    h += '<h3 class="psec">' + esc(EMERGENCY.sayHead) + '</h3><div class="stack">';
+    EMERGENCY.say.forEach(function(x){
+      h += '<div class="phrase"><div class="jp">' + readable(x.ja) + '</div>' +
+           '<div class="en">' + esc(x.en) + '</div></div>';
+    });
+    h += '</div>';
+    h += '<h3 class="psec">' + esc(EMERGENCY.whereHead) + '</h3>' +
+         '<p class="lede">' + esc(EMERGENCY.where) + '</p>';
+    h += '<h3 class="psec">' + esc(EMERGENCY.lostHead) + '</h3>' +
+         '<p class="lede">' + esc(EMERGENCY.lost) + '</p>';
+    (EMERGENCY.consular || []).forEach(function(c, i){
+      if (i === 0){
+        h += '<h3 class="psec">Consular help</h3>';
+        if (EMERGENCY.consularNote)
+          h += '<p class="lede">' + esc(EMERGENCY.consularNote) + '</p>';
+      }
+      h += '<a class="dial calm" href="tel:' + esc(String(c.n).replace(/[^+\d]/g, "")) +
+           '">' + (c.tag ? '<span class="dtag">' + esc(c.tag) + '</span>' : "") +
+           '<span class="dn sm">' + esc(c.n) + '</span>' +
+           '<span class="dw"><b>' + esc(c.who) + '</b></span>' +
+           (c.detail ? '<span class="dd">' + esc(c.detail) + '</span>' : "") + '</a>';
+    });
+    return h;
+  }
+
+  /* ================= PLACES: three short levels ================= */
+  function renderPlaces(){
+    var h = head("ばしょ", "Places we are going") +
+            '<p class="lede">Tap a place, then the thing you are standing in front of.</p>' +
+            '<div class="grid">';
+    PLACES.forEach(function(p, i){
+      var n = p.sights.reduce(function(a,s){ return a + s.spots.length; }, 0);
+      h += tile(p, 'data-place="' + esc(p.id) + '"', p.days + " · " + n + " to find", i);
+    });
+    h += '</div>';
+    h += '<div class="save" id="save"><h3>Save for offline<span class="en">オフライン</span></h3>' +
+         '<p>Press this on hotel or home wifi before you go out for the day. It ' +
+         'stores every page and photo on your phone, so the app still works with ' +
+         'no signal and no data.</p>' +
+         '<button id="saveBtn">Save it all  ぜんぶ保存</button></div>';
+    $("v-places").innerHTML = h;
+  }
+
+  /* The Japanese twin of a paragraph, or nothing at all where a place has
+     not been translated yet. lang="ja" so a phone picks its Japanese face and
+     breaks the lines by Japanese rules rather than English ones. */
+  function ja2(cls, text){
+    if (!text) return "";
+    return '<p class="' + (cls ? cls + " " : "") + 'ja2" lang="ja">' +
+           esc(text) + '</p>';
+  }
+
+  // level 2: the sights in a place, as short rows rather than one long page
+  function placeHtml(p){
+    var q = p.tone === "quiet";
+    var h = '<div' + (q ? ' class="quiet"' : '') + '>' + head(p.ja, p.en) +
+            '<p class="lede">' + esc(p.intro) + '</p>' + ja2("lede", p.introJa) +
+            (p.note ? '<div class="tone-note">' + esc(p.note) + '</div>' : '') +
+            '<div class="grid" style="margin-top:16px">';
+    p.sights.forEach(function(s2, i){
+      // a sight can override the count, which is how Nijo says on its tile
+      // that it is not on this year's itinerary
+      h += tile(s2, 'data-sight="' + esc(p.id + "/" + s2.id) + '"',
+                s2.meta || (s2.spots.length + " to look at"), i);
+    });
+    // The maps go under the tiles. Andrew: it is the tiles they came for, and
+    // anyone who wants to know where they are can scroll for it.
+    return h + '</div>' + maps(p.id) + '</div>';
+  }
+
+  // level 3: the tiles for one sight
+  function sightHtml(p, s){
+    var q = p.tone === "quiet";
+    // A sight can carry a `hero`: an image worth seeing at full size when you
+    // open the page, separate from the `photo` the tile crops to a strip.
+    // Failing that the tile's own photo shows here, because otherwise the
+    // page prints a credit for a picture that is not on it.
+    var big = s.hero || s.photo;
+    var h = '<div' + (q ? ' class="quiet"' : '') + '>' + head(s.ja, s.en) +
+            '<p class="lede">' + esc(s.intro) + '</p>' + ja2("lede", s.introJa) +
+            (big ? '<div class="heroshot"><img src="' + esc(src(big, false)) +
+               '" alt=""></div>' : '') +
+            (s.credit ? '<p class="credit">' + esc(s.credit) + '</p>' : '') +
+            '<div class="grid">';
+    s.spots.forEach(function(sp, i){
+      h += tile(sp, 'data-spot="' + esc(p.id + "/" + s.id + "/" + sp.id) + '"', "", i);
+    });
+    return h + '</div></div>';
+  }
+
+  function spotHtml(p, s, sp){
+    var q = p.tone === "quiet";
+    var lbl = q ? "Something to think about  かんがえてみよう"
+                : "Go and do this  やってみよう";
+    return '<div' + (q ? ' class="quiet"' : '') + '>' + head(sp.ja, sp.en) +
+           '<p class="where">' + esc(s.ja) + '  ' + esc(s.en) + '</p>' +
+           (sp.photo ? '<div class="bigshot' + (sp.fit === "contain" ? " contain" : "") +
+              '"><img src="' + esc(src(sp.photo, false)) + '" alt=""></div>' : '') +
+           (sp.credit ? '<p class="credit">' + esc(sp.credit) + '</p>' : '') +
+           '<p class="hook">' + esc(sp.hook) + '</p>' + ja2("hook", sp.hookJa) +
+           '<div class="look"><div class="lbl">' + esc(lbl) + '</div>' +
+           '<p>' + esc(sp.look) + '</p>' + ja2("", sp.lookJa) + '</div>' +
+           // One https link out, for the few things that have to be looked up
+           // on the day. Whatever matters is in the text as well, since this
+           // needs signal and the rest of the app does not.
+           (sp.link && /^https:\/\//.test(sp.link.url)
+             ? '<p class="mlink"><a href="' + esc(sp.link.url) + '" target="_blank" ' +
+               'rel="noopener noreferrer">' + esc(sp.link.label) + '</a></p>' : '') +
+           '</div>';
+  }
+
+  function find(path){
+    var b = path.split("/");
+    var p = PLACES.filter(function(x){ return x.id === b[0]; })[0]; if (!p) return null;
+    var s = b[1] ? p.sights.filter(function(x){ return x.id === b[1]; })[0] : null;
+    var sp = (s && b[2]) ? s.spots.filter(function(x){ return x.id === b[2]; })[0] : null;
+    return { p: p, s: s, sp: sp };
+  }
+
+  /* ================= PHRASES ================= */
+  var phraseIndex = [];
+  function renderPhrases(){
+    phraseIndex = [];
+    PHRASES.forEach(function(g){ g.items.forEach(function(it){
+      // A group can opt out of the synthetic voice while still
+      // playing a recording, so the item has to remember its group.
+      it.__say = g.say !== false;
+      phraseIndex.push(it);
+    }); });
+    var h = head("ことば", "Phrases") +
+            '<p class="lede">Pick the situation you are in. Everything is in kana. ' +
+            'The \u304b\u306a tab down the side opens the charts if a character has ' +
+            'gone out of your head, and tapping a kana anywhere in the app tells ' +
+            'you what it says. The last few are set pieces: learn those before ' +
+            'you fly.</p>' + voiceNote() + '<div class="grid">';
+    PHRASES.forEach(function(g, i){
+      h += tile(g, 'data-group="' + esc(g.id) + '"',
+                g.items.length + " " + (g.unit || "phrases"), i);
+    });
+    $("v-phrases").innerHTML = h + '</div>';
+  }
+  /* Speeches carry an all-kana version as well as the real text. A Year 8
+     reading aloud in front of a school should be able to rehearse from
+     something they can actually read. One switch for the whole group rather
+     than a control on every card. */
+  var kanaOnly = false;
+  /* ---- tap a kana to be told what it says --------------------------------
+     A student who cannot read ひ should not have to leave the phrase, open a
+     chart and scan 46 cells. Kana is a closed set, so every reading is here:
+     one string, parsed once. Yoon are matched as pairs, so tapping き in きゃ
+     gives kya rather than ki. Kanji is deliberately not tappable: its reading
+     depends on the word around it, and guessing would teach the wrong thing. */
+  var KANA_READ = (function(){
+    var rows =
+      "\u3042a \u3044i \u3046u \u3048e \u304ao \u304bka \u304dki \u304fku \u3051ke \u3053ko " +
+      "\u3055sa \u3057shi \u3059su \u305bse \u305dso \u305fta \u3061chi \u3064tsu \u3066te \u3068to " +
+      "\u306ana \u306bni \u306cnu \u306dne \u306eno \u306fha \u3072hi \u3075fu \u3078he \u307bho " +
+      "\u307ema \u307fmi \u3080mu \u3081me \u3082mo \u3084ya \u3086yu \u3088yo " +
+      "\u3089ra \u308ari \u308bru \u308cre \u308dro \u308fwa \u3092o \u3093n " +
+      "\u304cga \u304egi \u3050gu \u3052ge \u3054go \u3056za \u3058ji \u305azu \u305cze \u305ezo " +
+      "\u3060da \u3062ji \u3065zu \u3067de \u3069do \u3070ba \u3073bi \u3076bu \u3079be \u307cbo " +
+      "\u3071pa \u3074pi \u3077pu \u307ape \u307dpo " +
+      "\u30a2a \u30a4i \u30a6u \u30a8e \u30aao \u30abka \u30adki \u30afku \u30b1ke \u30b3ko " +
+      "\u30b5sa \u30b7shi \u30b9su \u30bbse \u30bdso \u30bfta \u30c1chi \u30c4tsu \u30c6te \u30c8to " +
+      "\u30cana \u30cbni \u30ccnu \u30cdne \u30ceno \u30cfha \u30d2hi \u30d5fu \u30d8he \u30dbho " +
+      "\u30dema \u30dfmi \u30e0mu \u30e1me \u30e2mo \u30e4ya \u30e6yu \u30e8yo " +
+      "\u30e9ra \u30eari \u30ebru \u30ecre \u30edro \u30efwa \u30f2o \u30f3n " +
+      "\u30acga \u30aegi \u30b0gu \u30b2ge \u30b4go \u30b6za \u30b8ji \u30bazu \u30bcze \u30bezo " +
+      "\u30c0da \u30c2ji \u30c5zu \u30c7de \u30c9do \u30d0ba \u30d3bi \u30d6bu \u30d9be \u30dcbo " +
+      "\u30d1pa \u30d4pi \u30d7pu \u30dape \u30ddpo";
+    var yoon =
+      "\u304d\u3083kya \u304d\u3085kyu \u304d\u3087kyo \u3057\u3083sha \u3057\u3085shu \u3057\u3087sho " +
+      "\u3061\u3083cha \u3061\u3085chu \u3061\u3087cho \u306b\u3083nya \u306b\u3085nyu \u306b\u3087nyo " +
+      "\u3072\u3083hya \u3072\u3085hyu \u3072\u3087hyo \u307f\u3083mya \u307f\u3085myu \u307f\u3087myo " +
+      "\u308a\u3083rya \u308a\u3085ryu \u308a\u3087ryo \u304e\u3083gya \u304e\u3085gyu \u304e\u3087gyo " +
+      "\u3058\u3083ja \u3058\u3085ju \u3058\u3087jo \u3073\u3083bya \u3073\u3085byu \u3073\u3087byo " +
+      "\u3074\u3083pya \u3074\u3085pyu \u3074\u3087pyo " +
+      "\u30ad\u30e3kya \u30ad\u30e5kyu \u30ad\u30e7kyo \u30b7\u30e3sha \u30b7\u30e5shu \u30b7\u30e7sho " +
+      "\u30c1\u30e3cha \u30c1\u30e5chu \u30c1\u30e7cho \u30cb\u30e3nya \u30cb\u30e5nyu \u30cb\u30e7nyo " +
+      "\u30d2\u30e3hya \u30d2\u30e5hyu \u30d2\u30e7hyo \u30df\u30e3mya \u30df\u30e5myu \u30df\u30e7myo " +
+      "\u30ea\u30e3rya \u30ea\u30e5ryu \u30ea\u30e7ryo \u30ae\u30e3gya \u30ae\u30e5gyu \u30ae\u30e7gyo " +
+      "\u30b8\u30e3ja \u30b8\u30e5ju \u30b8\u30e7jo \u30d3\u30e3bya \u30d3\u30e5byu \u30d3\u30e7byo " +
+      "\u30d4\u30e3pya \u30d4\u30e5pyu \u30d4\u30e7pyo " +
+      // the borrowed-word sounds katakana adds, which the app needs for
+      // ホストファミリー and フェアウェル
+      "\u30d5\u30a1fa \u30d5\u30a3fi \u30d5\u30a7fe \u30d5\u30a9fo " +
+      "\u30a6\u30a3wi \u30a6\u30a7we \u30a6\u30a9wo \u30c6\u30a3ti \u30c7\u30a3di " +
+      "\u30c1\u30a7che \u30b7\u30a7she \u30b8\u30a7je \u30c4\u30a1tsa";
+    var m = {};
+    function add(str, n){
+      str.split(" ").forEach(function(e){
+        if (e) m[e.slice(0, n)] = e.slice(n);
+      });
+    }
+    add(rows, 1); add(yoon, 2);
+    m["\u3063"] = m["\u30c3"] = "doubles the next consonant";
+    m["\u30fc"] = "holds the vowel before it";
+    return m;
+  })();
+
+  /* Wrap every readable kana in its own tappable span. Everything else, kanji
+     and punctuation included, passes through as plain text. */
+  function readable(text){
+    var out = "", i = 0;
+    while (i < text.length){
+      var two = text.substr(i, 2), one = text.charAt(i);
+      if (KANA_READ[two]){
+        out += '<span class="ch" data-ch="' + esc(two) + '">' + esc(two) + '</span>';
+        i += 2;
+      } else if (KANA_READ[one]){
+        out += '<span class="ch" data-ch="' + esc(one) + '">' + esc(one) + '</span>';
+        i += 1;
+      } else {
+        out += esc(one);
+        i += 1;
+      }
+    }
+    return out;
+  }
+
+  /* 漢字[かんじ] becomes <ruby>. The base keeps its tappable kana the way
+     the rest of the app has them; the small reading above does not, because
+     nobody can hit six-point type with a thumb. */
+  function rubyHtml(text){
+    var out = "", re = /([\u4e00-\u9faf々〆ヶ]+)\[([^\]]*)\]/g, last = 0, m;
+    while ((m = re.exec(text))){
+      out += readable(text.slice(last, m.index));
+      out += "<ruby>" + readable(m[1]) + "<rt>" + esc(m[2]) + "</rt></ruby>";
+      last = m.index + m[0].length;
+    }
+    return out + readable(text.slice(last));
+  }
+
+  function showRead(el){
+    var ch = el.dataset.ch, read = KANA_READ[ch];
+    if (!read) return;
+    var bub = $("readbub");
+    bub.innerHTML = '<b>' + esc(ch) + '</b><i>' + esc(read) + '</i>';
+    bub.className = "on";
+    var r = el.getBoundingClientRect(), bw = bub.offsetWidth, bh = bub.offsetHeight;
+    // sits above the character, or below it when there is no room above
+    var x = Math.min(Math.max(8, r.left + r.width / 2 - bw / 2),
+                     window.innerWidth - bw - 8);
+    var above = r.top > bh + 14;
+    bub.style.left = x + "px";
+    bub.style.top = (above ? r.top - bh - 10 : r.bottom + 10) + "px";
+    bub.className = "on" + (above ? "" : " below");
+  }
+  function hideRead(){ $("readbub").className = ""; }
+  window.addEventListener("scroll", hideRead, { passive: true });
+
+  /* ---- sign art ------------------------------------------------------
+     Drawn rather than photographed. A photo of a station board brings the
+     crowd, the angle, the lighting and the four other signs beside it; what
+     a student needs first is the shape, the colour and the characters. Drawn
+     also means nothing to licence and nothing extra to download. Gothic
+     lettering throughout, because no real sign is set in a textbook face. */
+  var SIGNART = {
+    exit: '<svg viewBox="0 0 260 110" class="sa" role="img" aria-label="Yellow station sign: an arrow and the characters 出口, Exit"><rect x="2" y="2" width="256" height="106" rx="8" fill="#f3c500" stroke="#8a6c00" stroke-width="2"/><path d="M30 55 L58 32 L58 46 L96 46 L96 64 L58 64 L58 78 Z" fill="#15120a"/><text x="176" y="66" font-size="46" font-weight="700" fill="#15120a" text-anchor="middle">出口</text><text x="176" y="92" font-size="15" font-weight="600" fill="#15120a" text-anchor="middle">Exit</text></svg>',
+    entrance: '<svg viewBox="0 0 260 110" class="sa" role="img" aria-label="White sign reading 入口, Entrance, with an arrow"><rect x="2" y="2" width="256" height="106" rx="8" fill="#fff" stroke="#b9b2a0" stroke-width="2"/><text x="96" y="66" font-size="46" font-weight="700" fill="#15120a" text-anchor="middle">入口</text><text x="96" y="92" font-size="15" font-weight="600" fill="#15120a" text-anchor="middle">Entrance</text><path d="M230 55 L202 32 L202 46 L164 46 L164 64 L202 64 L202 78 Z" fill="#15120a"/></svg>',
+    compass: '<svg viewBox="0 0 230 202" class="sa" role="img" aria-label="Yellow exit board listing 北口, 南口, 東口 and 西口, each with its own arrow"><rect x="2" y="2" width="226" height="198" rx="8" fill="#f3c500" stroke="#8a6c00" stroke-width="2"/><text x="76" y="58" font-size="28" font-weight="700" fill="#15120a" text-anchor="middle">北口</text><g transform="translate(162,49)"><path d="M0 -11 L9 1 L3.6 1 L3.6 11 L-3.6 11 L-3.6 1 L-9 1 Z" fill="#15120a"/></g><text x="76" y="102" font-size="28" font-weight="700" fill="#15120a" text-anchor="middle">南口</text><g transform="translate(162,93)"><path d="M0 11 L9 -1 L3.6 -1 L3.6 -11 L-3.6 -11 L-3.6 -1 L-9 -1 Z" fill="#15120a"/></g><text x="76" y="146" font-size="28" font-weight="700" fill="#15120a" text-anchor="middle">東口</text><g transform="translate(162,137)"><path d="M11 0 L-1 9 L-1 3.6 L-11 3.6 L-11 -3.6 L-1 -3.6 L-1 -9 Z" fill="#15120a"/></g><text x="76" y="190" font-size="28" font-weight="700" fill="#15120a" text-anchor="middle">西口</text><g transform="translate(162,181)"><path d="M-11 0 L1 -9 L1 -3.6 L11 -3.6 L11 3.6 L1 3.6 L1 9 Z" fill="#15120a"/></g></svg>',
+    gate: '<svg viewBox="0 0 250 130" class="sa" role="img" aria-label="Two ticket-gate units with card readers and an arrow between them, labelled 改札口"><rect x="34" y="34" width="42" height="66" rx="6" fill="#8d8d8d" stroke="#5d5d5d" stroke-width="2"/><rect x="174" y="34" width="42" height="66" rx="6" fill="#8d8d8d" stroke="#5d5d5d" stroke-width="2"/><rect x="40" y="40" width="30" height="16" rx="4" fill="#17559e"/><rect x="180" y="40" width="30" height="16" rx="4" fill="#17559e"/><path d="M96 68 L140 68" stroke="#15120a" stroke-width="7" stroke-linecap="round"/><path d="M136 56 L156 68 L136 80 Z" fill="#15120a"/><text x="125" y="122" font-size="24" font-weight="700" fill="#15120a" text-anchor="middle">改札口</text></svg>',
+    noriba: '<svg viewBox="0 0 170 186" class="sa" role="img" aria-label="A boarding-point pole sign showing a bus and the word のりば"><rect x="78" y="106" width="14" height="80" fill="#6e6e6e"/><rect x="10" y="8" width="150" height="100" rx="10" fill="#fff" stroke="#17559e" stroke-width="4"/><rect x="52" y="24" width="66" height="36" rx="7" fill="#17559e"/><rect x="58" y="30" width="24" height="15" rx="3" fill="#fff"/><rect x="88" y="30" width="24" height="15" rx="3" fill="#fff"/><circle cx="66" cy="63" r="7" fill="#3c3c3c"/><circle cx="104" cy="63" r="7" fill="#3c3c3c"/><text x="85" y="96" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">のりば</text></svg>',
+    platform: '<svg viewBox="0 0 230 132" class="sa" role="img" aria-label="A hanging platform board reading 3番線, Platform 3"><path d="M52 4 L62 26 M178 4 L168 26" stroke="#5d5d5d" stroke-width="3"/><rect x="14" y="24" width="202" height="86" rx="8" fill="#12325c" stroke="#0a1f3c" stroke-width="2"/><text x="72" y="88" font-size="60" font-weight="700" fill="#fff" text-anchor="middle">３</text><text x="150" y="82" font-size="30" font-weight="700" fill="#fff" text-anchor="middle">番線</text><text x="150" y="104" font-size="13" font-weight="600" fill="#cfe0f5" text-anchor="middle">Platform</text></svg>',
+    fare: '<svg viewBox="0 0 250 128" class="sa" role="img" aria-label="A fare table with two columns: 大人 240 yen and 小人 120 yen"><rect x="2" y="2" width="246" height="124" rx="8" fill="#fff" stroke="#b9b2a0" stroke-width="2"/><rect x="2" y="2" width="246" height="40" rx="8" fill="#eee6d2"/><path d="M125 2 L125 126 M2 42 L248 42" stroke="#b9b2a0" stroke-width="2"/><text x="64" y="32" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">大人</text><text x="187" y="32" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">小人</text><text x="64" y="92" font-size="30" font-weight="600" fill="#15120a" text-anchor="middle">¥240</text><text x="187" y="92" font-size="30" font-weight="600" fill="#15120a" text-anchor="middle">¥120</text></svg>',
+    toiletmf: '<svg viewBox="0 0 250 140" class="sa" role="img" aria-label="Two toilet door plates: a blue one with a male figure and 男, a red one with a female figure and 女"><rect x="6" y="6" width="112" height="128" rx="8" fill="#17559e"/><circle cx="62" cy="43.0" r="7.0" fill="#fff"/><path d="M51.0 53.0 L73.0 53.0 L70.0 69.0 L54.0 69.0 Z" fill="#fff"/><path d="M54.0 71.0 L60.0 71.0 L60.0 88.0 L54.0 88.0 Z" fill="#fff"/><path d="M64.0 71.0 L70.0 71.0 L70.0 88.0 L64.0 88.0 Z" fill="#fff"/><text x="62" y="124" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">男</text><rect x="132" y="6" width="112" height="128" rx="8" fill="#c3172c"/><circle cx="188" cy="43.0" r="7.0" fill="#fff"/><path d="M178.0 53.0 L198.0 53.0 L204.0 78.0 L172.0 78.0 Z" fill="#fff"/><path d="M179.0 80.0 L185.0 80.0 L185.0 88.0 L179.0 88.0 Z" fill="#fff"/><path d="M191.0 80.0 L197.0 80.0 L197.0 88.0 L191.0 88.0 Z" fill="#fff"/><text x="188" y="124" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">女</text></svg>',
+    toiletword: '<svg viewBox="0 0 260 112" class="sa" role="img" aria-label="A corridor sign with both toilet figures, お手洗い, Restroom, and an arrow"><rect x="2" y="2" width="256" height="108" rx="8" fill="#fff" stroke="#b9b2a0" stroke-width="2"/><circle cx="40" cy="36.7" r="4.34" fill="#17559e"/><path d="M33.18 42.9 L46.82 42.9 L44.96 52.82 L35.04 52.82 Z" fill="#17559e"/><path d="M35.04 54.06 L38.76 54.06 L38.76 64.6 L35.04 64.6 Z" fill="#17559e"/><path d="M41.24 54.06 L44.96 54.06 L44.96 64.6 L41.24 64.6 Z" fill="#17559e"/><circle cx="78" cy="36.7" r="4.34" fill="#c3172c"/><path d="M71.8 42.9 L84.2 42.9 L87.92 58.4 L68.08 58.4 Z" fill="#c3172c"/><path d="M72.42 59.64 L76.14 59.64 L76.14 64.6 L72.42 64.6 Z" fill="#c3172c"/><path d="M79.86 59.64 L83.58 59.64 L83.58 64.6 L79.86 64.6 Z" fill="#c3172c"/><text x="160" y="52" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">お手洗い</text><text x="160" y="78" font-size="14" font-weight="600" fill="#15120a" text-anchor="middle">Restroom</text><path d="M244 56 L224 40 L224 50 L206 50 L206 62 L224 62 L224 72 Z" fill="#15120a"/></svg>',
+    latch: '<svg viewBox="0 0 240 114" class="sa" role="img" aria-label="Two cubicle latch indicators: a red one reading 使用中 and a green one reading 空き"><rect x="8" y="14" width="104" height="86" rx="10" fill="#dcdcdc" stroke="#a8a8a8" stroke-width="2"/><rect x="24" y="30" width="72" height="38" rx="5" fill="#c3172c"/><text x="60" y="57" font-size="21" font-weight="700" fill="#fff" text-anchor="middle">使用中</text><rect x="42" y="76" width="36" height="10" rx="5" fill="#9a9a9a"/><rect x="128" y="14" width="104" height="86" rx="10" fill="#dcdcdc" stroke="#a8a8a8" stroke-width="2"/><rect x="144" y="30" width="72" height="38" rx="5" fill="#127a3e"/><text x="180" y="57" font-size="21" font-weight="700" fill="#fff" text-anchor="middle">空き</text><rect x="162" y="76" width="36" height="10" rx="5" fill="#9a9a9a"/></svg>',
+    pushpull: '<svg viewBox="0 0 250 130" class="sa" role="img" aria-label="Two glass-door stickers: 押 for push and 引 for pull"><rect x="10" y="10" width="104" height="110" rx="6" fill="#e8f1f2" stroke="#9fb8bb" stroke-width="2"/><rect x="136" y="10" width="104" height="110" rx="6" fill="#e8f1f2" stroke="#9fb8bb" stroke-width="2"/><circle cx="62" cy="56" r="26" fill="#fff" stroke="#15120a" stroke-width="3"/><circle cx="188" cy="56" r="26" fill="#fff" stroke="#15120a" stroke-width="3"/><text x="62" y="66" font-size="30" font-weight="700" fill="#15120a" text-anchor="middle">押</text><text x="188" y="66" font-size="30" font-weight="700" fill="#15120a" text-anchor="middle">引</text><text x="62" y="106" font-size="14" font-weight="600" fill="#15120a" text-anchor="middle">PUSH</text><text x="188" y="106" font-size="14" font-weight="600" fill="#15120a" text-anchor="middle">PULL</text></svg>',
+    fudaopen: '<svg viewBox="0 0 150 168" class="sa" role="img" aria-label="A wooden shop sign hanging on a cord, reading 営業中 from top to bottom"><path d="M50 6 L66 30 M100 6 L84 30" stroke="#7a6a52" stroke-width="3"/><rect x="44" y="28" width="62" height="134" rx="8" fill="#c9a26b" stroke="#8a6a3a" stroke-width="3"/><circle cx="75" cy="42" r="5" fill="#8a6a3a"/><text x="75" y="78" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">営</text><text x="75" y="108" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">業</text><text x="75" y="138" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">中</text></svg>',
+    fudaclosed: '<svg viewBox="0 0 150 168" class="sa" role="img" aria-label="A wooden shop sign hanging on a cord, reading 準備中 from top to bottom"><path d="M50 6 L66 30 M100 6 L84 30" stroke="#7a6a52" stroke-width="3"/><rect x="44" y="28" width="62" height="134" rx="8" fill="#c9a26b" stroke="#8a6a3a" stroke-width="3"/><circle cx="75" cy="42" r="5" fill="#8a6a3a"/><text x="75" y="78" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">準</text><text x="75" y="108" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">備</text><text x="75" y="138" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">中</text></svg>',
+    tax: '<svg viewBox="0 0 250 128" class="sa" role="img" aria-label="A shelf price label: 税抜 1,000 yen above, 税込 1,100 yen below"><rect x="2" y="2" width="246" height="124" rx="8" fill="#fff" stroke="#b9b2a0" stroke-width="2"/><path d="M2 66 L248 66" stroke="#ded6c2" stroke-width="2"/><text x="74" y="48" font-size="22" font-weight="700" fill="#6a6152" text-anchor="middle">税抜</text><text x="176" y="50" font-size="32" font-weight="600" fill="#15120a" text-anchor="middle">¥1,000</text><text x="74" y="106" font-size="22" font-weight="700" fill="#6a6152" text-anchor="middle">税込</text><text x="176" y="108" font-size="32" font-weight="600" fill="#c3172c" text-anchor="middle">¥1,100</text></svg>',
+    nophoto: '<svg viewBox="0 0 180 180" class="sa" role="img" aria-label="A camera crossed out by a red circle and bar, labelled 撮影禁止"><rect x="38" y="54" width="104" height="66" rx="10" fill="#9a9a9a"/><rect x="66" y="43" width="34" height="14" rx="4" fill="#9a9a9a"/><circle cx="90" cy="87" r="24" fill="#efefef"/><circle cx="90" cy="87" r="13" fill="#6f6f6f"/><circle cx="126" cy="66" r="5" fill="#efefef"/><circle cx="90" cy="87" r="56" fill="none" stroke="#c3172c" stroke-width="10"/><path d="M50 127 L130 47" stroke="#c3172c" stroke-width="10" stroke-linecap="round"/><text x="90" y="170" font-size="26" font-weight="700" fill="#15120a" text-anchor="middle">撮影禁止</text></svg>',
+    noentry: '<svg viewBox="0 0 250 176" class="sa" role="img" aria-label="A rope slung between two posts, with a wooden tag hanging from it reading 立入禁止"><rect x="24" y="34" width="17" height="122" rx="3" fill="#9a9384"/><rect x="209" y="34" width="17" height="122" rx="3" fill="#9a9384"/><path d="M33 46 Q125 90 217 46" fill="none" stroke="#b9483f" stroke-width="8" stroke-linecap="round"/><path d="M125 76 L125 86" stroke="#8a6a3a" stroke-width="3"/><rect x="92" y="86" width="66" height="84" rx="6" fill="#fdfaf0" stroke="#a89a76" stroke-width="2"/><text x="125" y="106" font-size="17" font-weight="700" fill="#15120a" text-anchor="middle">立</text><text x="125" y="125" font-size="17" font-weight="700" fill="#15120a" text-anchor="middle">入</text><text x="125" y="144" font-size="17" font-weight="700" fill="#15120a" text-anchor="middle">禁</text><text x="125" y="163" font-size="17" font-weight="700" fill="#15120a" text-anchor="middle">止</text></svg>',
+    genkan: '<svg viewBox="0 0 250 176" class="sa" role="img" aria-label="A genkan seen from above: the raised floor along the top, the door along the bottom, and a pair of shoes between them with their toes turned back towards the door"><rect x="0" y="0" width="250" height="40" fill="#d8b37a"/><path d="M0 13 L250 13 M0 27 L250 27" stroke="#c49a63" stroke-width="2"/><path d="M0 40 L250 40" stroke="#a8834f" stroke-width="4"/><rect x="0" y="40" width="250" height="98" fill="#c2bba6"/><rect x="0" y="138" width="250" height="38" fill="#dfd3b4"/><path d="M0 138 L250 138" stroke="#a89a76" stroke-width="3"/><rect x="150" y="151" width="40" height="9" rx="4.5" fill="#8a7c58"/><path d="M71 99 Q70 115 86 117 Q102 115 101 99 L96 69 Q96 56 86 56 Q76 56 76 69 Z" fill="#4a4038"/><ellipse cx="86" cy="73" rx="7" ry="10" fill="#7d6f62"/><path d="M125 99 Q124 115 140 117 Q156 115 155 99 L150 69 Q150 56 140 56 Q130 56 130 69 Z" fill="#4a4038"/><ellipse cx="140" cy="73" rx="7" ry="10" fill="#7d6f62"/><text x="215" y="96" font-size="24" font-weight="700" fill="#15120a" text-anchor="middle">玄関</text></svg>',
+    room: '<svg viewBox="0 0 230 104" class="sa" role="img" aria-label="A door plate reading 保健室, Sick bay"><rect x="4" y="4" width="222" height="96" rx="8" fill="#fdfaf0" stroke="#b0a48a" stroke-width="3"/><rect x="18" y="18" width="10" height="68" rx="5" fill="#c3172c"/><text x="130" y="58" font-size="34" font-weight="700" fill="#15120a" text-anchor="middle">保健室</text><text x="130" y="84" font-size="14" font-weight="600" fill="#6a6152" text-anchor="middle">Sick bay</text></svg>',
+    danger: '<svg viewBox="0 0 180 168" class="sa" role="img" aria-label="A yellow warning triangle with an exclamation mark, labelled 危険"><path d="M90 12 L172 128 L8 128 Z" fill="#f3c500" stroke="#15120a" stroke-width="7" stroke-linejoin="round"/><text x="90" y="104" font-size="56" font-weight="700" fill="#15120a" text-anchor="middle">！</text><text x="90" y="158" font-size="28" font-weight="700" fill="#c3172c" text-anchor="middle">危険</text></svg>',
+    caution: '<svg viewBox="0 0 180 168" class="sa" role="img" aria-label="A yellow warning triangle with an exclamation mark, labelled 注意"><path d="M90 12 L172 128 L8 128 Z" fill="#f3c500" stroke="#15120a" stroke-width="7" stroke-linejoin="round"/><text x="90" y="104" font-size="56" font-weight="700" fill="#15120a" text-anchor="middle">！</text><text x="90" y="158" font-size="28" font-weight="700" fill="#15120a" text-anchor="middle">注意</text></svg>',
+    emergency: '<svg viewBox="0 0 240 148" class="sa" role="img" aria-label="The green emergency-exit sign: a white running figure heading for a doorway, labelled 非常口"><rect x="2" y="2" width="236" height="144" rx="8" fill="#00803c"/><rect x="150" y="20" width="70" height="100" fill="none" stroke="#fff" stroke-width="8"/><rect x="196" y="28" width="16" height="84" fill="#fff"/><circle cx="54" cy="30" r="12" fill="#fff"/><path d="M46 46 L70 78" stroke="#fff" stroke-width="15" stroke-linecap="round"/><path d="M56 52 L86 44" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M50 54 L26 66" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M68 76 L90 90 L98 106" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M68 76 L48 92 L32 80" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><text x="120" y="138" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">非常口</text></svg>',
+  };
+
+  /* ================= saying it out loud =================
+     A recording always wins. `audio` on an item names a file in audio/, and
+     that is the voice a student should be copying. Where there is no
+     recording the device reads the Japanese itself, and where the device has
+     no Japanese voice the button does not appear at all: a Japanese sentence
+     in an English voice teaches the wrong thing, and silence is honest.
+     Browsers publish the voice list late, so anything that asks early asks
+     again when it lands. */
+  var SAY = (function(){
+    var can = "speechSynthesis" in window, jaV = null, settled = false, waiting = [];
+    function find(){
+      try {
+        var vs = speechSynthesis.getVoices() || [];
+        for (var i=0;i<vs.length;i++) if (/^ja(-|_|$)/i.test(vs[i].lang)) return vs[i];
+      } catch (e){}
+      return null;
+    }
+    function land(){
+      jaV = find(); settled = true;
+      document.body.classList.toggle("hasvoice", !!jaV);
+      waiting.splice(0).forEach(function(f){ f(); });
+    }
+    if (can){
+      try {
+        if (speechSynthesis.getVoices().length) land();
+        speechSynthesis.addEventListener("voiceschanged", land);
+        /* One look after two seconds was too trusting. A phone can hand over
+           its voice list late, and a web app launched from the home screen
+           on iOS often hands it over later still, or not until something has
+           been spoken. Giving up once meant the play buttons stayed hidden
+           for the rest of the session on a phone that could in fact speak. */
+        [600, 2000, 5000, 10000].forEach(function(t){ setTimeout(land, t); });
+      } catch (e){ settled = true; }
+    }
+    var el = null;
+    function stop(){
+      try { if (el){ el.pause(); el = null; } } catch (e){}
+      try { if (can) speechSynthesis.cancel(); } catch (e){}
+    }
+    return {
+      hasJa: function(){ return !!jaV; },
+      ready: function(f){ if (settled) f(); else waiting.push(f); },
+      /* One thing plays at a time: two phrases over each other is noise. */
+      play: function(it, ok, done){
+        stop();
+        if (it.audio){
+          el = new Audio("audio/" + it.audio);
+          el.onended = el.onerror = function(){ el = null; done(); };
+          el.play().then(ok, function(){ el = null; done(); });
+          return;
+        }
+        // Last look before giving up: the list may have arrived since.
+        if (!jaV) land();
+        if (!jaV) return done();
+        var u = new SpeechSynthesisUtterance(it.ja);
+        u.voice = jaV; u.lang = "ja-JP"; u.rate = 0.85;
+        u.onend = u.onerror = done;
+        try { speechSynthesis.speak(u); ok(); } catch (e){ done(); }
+      },
+      stop: stop
+    };
+  })();
+
+  /* ================= the chiptune =================
+     Synthesised here rather than downloaded. A tune is a couple of hundred
+     bytes of note names instead of a megabyte of audio, which matters for an
+     app that saves itself for offline use, and there is nothing to fetch, so
+     it works on a phone that has never had signal. Two voices, the way a
+     sound chip does it: a square lead with a triangle an octave below for
+     body.
+
+     Notes are written NOTE[octave]:eighths, or r:eighths for a rest, so the
+     tune in data.js stays something a person can read and correct.
+
+     Nothing starts without a tap. Phones refuse to make sound before the
+     person has touched the page, which is why this is a button and not
+     something that fires when the page opens. */
+  var CHIP = (function(){
+    var STEP = { C:0, "C#":1, D:2, "D#":3, E:4, "E#":5, F:5, "F#":6,
+                 G:7, "G#":8, A:9, "A#":10, B:11, "Bb":10, "Eb":3,
+                 "Ab":8, "Db":1, "Gb":6 };
+    var ctx = null, live = [], timer = null, onDone = null;
+
+    function freq(tok){
+      var oct = parseInt(tok.slice(-1), 10);
+      var name = tok.slice(0, -1);
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      var n = STEP[name];
+      if (n === undefined || isNaN(oct)) return 0;
+      return 440 * Math.pow(2, (n + 12 * (oct + 1) - 69) / 12);
+    }
+
+    function stop(){
+      if (timer){ clearTimeout(timer); timer = null; }
+      live.splice(0).forEach(function(o){ try { o.stop(); } catch (e){} });
+      var f = onDone; onDone = null;
+      if (f) f();
+    }
+
+    function play(tune, done){
+      stop();
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC || !tune || !tune.notes){ if (done) done(); return false; }
+      try { if (!ctx) ctx = new AC(); } catch (e){ if (done) done(); return false; }
+      // Safari hands back a suspended context until a gesture unlocks it.
+      if (ctx.state === "suspended"){ try { ctx.resume(); } catch (e){} }
+
+      onDone = done;
+      var eighth = 30 / (tune.bpm || 100);
+      var t = ctx.currentTime + 0.06, end = t;
+
+      tune.notes.split(/\s+/).forEach(function(tok){
+        if (!tok) return;
+        var bits = tok.split(":");
+        var beats = parseFloat(bits[1] || "1") || 1;
+        var dur = beats * eighth;
+        var f = bits[0].toLowerCase() === "r" ? 0 : freq(bits[0]);
+        if (f){
+          // a hair of silence at the tail, so two of the same note in a row
+          // are heard as two notes rather than one long one
+          var d = Math.max(0.05, dur - 0.012);
+          var g = ctx.createGain();
+          g.connect(ctx.destination);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.linearRampToValueAtTime(0.28, t + 0.006);
+          g.gain.linearRampToValueAtTime(0.16, t + d * 0.8);
+          g.gain.linearRampToValueAtTime(0.0001, t + d);
+
+          [["square", f, 1], ["triangle", f / 2, 0.5]].forEach(function(v){
+            var o = ctx.createOscillator();
+            o.type = v[0];
+            o.frequency.setValueAtTime(v[1], t);
+            var vg = ctx.createGain();
+            vg.gain.value = v[2];
+            o.connect(vg); vg.connect(g);
+            o.start(t); o.stop(t + d);
+            live.push(o);
+          });
+        }
+        t += dur;
+        end = t;
+      });
+
+      timer = setTimeout(stop, Math.max(0, (end - ctx.currentTime) * 1000) + 60);
+      return true;
+    }
+
+    return { play: play, stop: stop, on: function(){ return !!timer; } };
+  })();
+
+  /* When the phone offers no Japanese voice the play buttons are hidden,
+     which left a student looking at a page that simply had no audio on it
+     and no way to tell whether that was the app, the phone or them. Say so.
+     CSS hides this the moment a voice turns up, including on the later
+     looks, so it never contradicts what is on screen. */
+  function voiceNote(){
+    var ios = navigator.standalone === true;
+    return '<p class="novoice">No play buttons on the phrases? This phone is ' +
+           'not offering the app a Japanese voice, so it cannot read them ' +
+           'aloud. ' +
+           (ios ? 'Opening the app in Safari, rather than from the icon on ' +
+                  'your home screen, usually brings the sound back.'
+                : 'A Japanese voice has to be installed on the device before ' +
+                  'any app can speak Japanese.') +
+           ' Everything else here works as normal.</p>';
+  }
+
+  /* The other way the audio looks broken, and the one that actually caught
+     us: the silent switch on the side of an iPhone mutes speech even with
+     the volume up, and the volume buttons do not release it. Shown only
+     while there is a voice to play, since otherwise the note above is the
+     right explanation, and only until something has been heard. */
+  var HEARD_KEY = "jtHeard-v1";
+  function heard(){
+    try { return !!localStorage.getItem(HEARD_KEY); } catch (e){ return false; }
+  }
+  function markHeard(){
+    try { localStorage.setItem(HEARD_KEY, "1"); } catch (e){}
+    [].forEach.call(document.querySelectorAll(".silentnote"), function(n){
+      n.parentNode && n.parentNode.removeChild(n);
+    });
+  }
+  function silentNote(){
+    if (heard()) return "";
+    return '<p class="silentnote">Press a play button and hear nothing? On an ' +
+           'iPhone the silent switch on the side mutes this, even with the ' +
+           'volume turned up, and the volume buttons will not undo it. Flick ' +
+           'the switch back and try again. This note goes once you have heard ' +
+           'one.</p>';
+  }
+
+  /* Nothing to play, nothing to show: signs are read rather than said, and
+     the ceremony speeches wait for a human voice rather than a synthetic one.
+     Either still plays a recording the moment one is dropped in. */
+  function sayBtn(it, i){
+    if (!it.audio && (it.__say === false || !it.ja)) return "";
+    return '<button class="say' + (it.audio ? " rec" : "") + '" data-say="' + i +
+           '" aria-label="Play this phrase"><span class="spk" aria-hidden="true"></span></button>';
+  }
+
+  function groupHtml(g){
+    var base = 0;
+    for (var i=0;i<PHRASES.length;i++){
+      if (PHRASES[i].id === g.id) break;
+      base += PHRASES[i].items.length;
+    }
+    var h = head(g.ja, g.en) + '<p class="lede">' + esc(g.note) + '</p>' +
+            (g.say === false ? "" : voiceNote() + silentNote());
+    // A group can carry a tune. The button only exists where one does.
+    if (g.tune && g.tune.notes){
+      h += '<button class="tunebtn" data-tune="' + esc(g.id) + '">' +
+           '<span class="ti" aria-hidden="true"></span>' +
+           '<span class="tl">Play the tune<span class="en">' +
+           esc(g.tune.label || "Chiptune, one verse") + '</span></span></button>';
+    }
+    var anyKana = g.items.some(function(x){ return !!x.kana; });
+    if (anyKana){
+      h += '<button class="kanaswap' + (kanaOnly ? " on" : "") + '" data-kanaswap="1">' +
+           (kanaOnly ? "\u6f22\u5b57\u3092\u3060\u3059<span class=\"en\">Put the kanji back</span>"
+                     : "\u304b\u306a\u3060\u3051<span class=\"en\">All kana</span>") + '</button>';
+    }
+    h += '<div class="stack">';
+    g.items.forEach(function(it, k){
+      it.__say = g.say !== false;
+      // `section` heads a run of items and belongs on the page. `label` names
+      // one item and belongs inside its card. The speeches use the second.
+      if (it.section) h += '<h3 class="psec">' + esc(it.section) + '</h3>';
+      // The card is itself a button, so the play control cannot live inside
+      // it. It sits over the corner as a sibling instead.
+      h += '<div class="pwrap">' + sayBtn(it, base + k) +
+           '<button class="phrase" data-ph="' + (base + k) + '">' +
+             // A sign is a picture before it is a word, so it leads the card:
+             // down a long list the drawing is what the eye catches first.
+             (it.art && SIGNART[it.art]
+                ? '<div class="signart">' + SIGNART[it.art] + '</div>' : "") +
+             // A speech needs its occasion above it, not buried in the tip:
+             // the student delivering it has to find theirs at a glance.
+             (it.label ? '<div class="plabel">' + esc(it.label) + '</div>' : "") +
+             (function(){
+               // All-kana wins when it is switched on; otherwise the furigana
+               // version if this item has one, and plain kanji if it does not.
+               var kana = kanaOnly && it.kana;
+               var body = kana ? it.kana : (it.furi || it.ja);
+               var plain = kana ? it.kana : it.ja;
+               return '<div class="jp' + (plain.indexOf("\n") > -1 ? " lines" : "") +
+                      (!kana && it.furi ? " ruby" : "") + '">' +
+                      (!kana && it.furi ? rubyHtml(body) : readable(body)) + '</div>';
+             })() +
+             '<div class="en">' + esc(it.en) + '</div>' +
+             (it.tip ? '<div class="tip">' + esc(it.tip) + '</div>' : "") +
+             (it.show ? '<div class="showtag">tap to show someone</div>' : "") +
+           '</button></div>';
+    });
+    return h + '</div>';
+  }
+
+  /* ---- kana charts ----------------------------------------------------
+     One image per script, drawn as an SVG so it stays sharp at any size and
+     is precached with the rest of the app. The charts are the standard
+     五十音表: columns read right to left from あ and finish at ん. The tab
+     opens on the 46 alone so it is a quick check at a glance; the voiced
+     set and the yoon are one tap further in rather than something to
+     scroll past. All four images are precached. */
+  var kanaScript = "hiragana", kanaExtra = false;
+  function drawKana(){
+    [].forEach.call(document.querySelectorAll("[data-kana]"), function(b){
+      b.className = b.dataset.kana === kanaScript ? "on" : "";
+    });
+    var img = $("kanaImg"), name = kanaScript + (kanaExtra ? "-plus" : "");
+    img.src = "kana-" + name + ".svg";
+    img.alt = (kanaScript === "katakana" ? "Katakana" : "Hiragana") +
+              (kanaExtra ? " voiced and small kana chart" : " chart");
+    var b = $("kanaMore");
+    b.className = kanaExtra ? "on" : "";
+    b.firstChild.nodeValue = kanaExtra ? "\u2190 \u3054\u3058\u3085\u3046\u304a\u3093"
+                                       : "\uff0b \u3060\u304f\u3066\u3093\u30fb\u3088\u3046\u304a\u3093";
+    b.querySelector(".en").textContent = kanaExtra ? "Back to the 46"
+                                                   : "Voiced and small kana";
+  }
+  /* A tap is a press and a release in the same place. Anything else is a
+     scroll or a drag, and must not be read as "go back". */
+  var dragged = false, downX = 0, downY = 0;
+  document.addEventListener("pointerdown", function(e){
+    dragged = false; downX = e.clientX; downY = e.clientY;
+  }, { passive: true });
+  document.addEventListener("pointerup", function(e){
+    if (Math.abs(e.clientX - downX) > 10 || Math.abs(e.clientY - downY) > 10) dragged = true;
+  }, { passive: true });
+
+  /* ---- swipe between sections ------------------------------------------
+     Andrew: the tabs should not be something you scroll back up to reach.
+     They are pinned to the top anyway, but on a phone a sideways swipe is
+     the quicker move, so the whole page takes one. Inside a place, a swipe
+     right goes back a level, which is what a thumb expects. A swipe only
+     counts if it is clearly sideways, so it never fights normal scrolling. */
+  var TAB_ORDER = ["places", "phrases", "manners", "home", "info"];
+  var tsX = 0, tsY = 0, tsT = 0, tracking = false;
+  document.addEventListener("touchstart", function(e){
+    if (e.touches.length !== 1) { tracking = false; return; }
+    if ($("kana").className === "on" || $("show").className === "on" ||
+        $("sheet").className === "on"){
+      tracking = false; return;
+    }
+    tsX = e.touches[0].clientX; tsY = e.touches[0].clientY;
+    tsT = Date.now(); tracking = true;
+  }, { passive: true });
+  document.addEventListener("touchend", function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - tsX, dy = t.clientY - tsY;
+    if (Date.now() - tsT > 700) return;            // a drag, not a flick
+    if (Math.abs(dx) < 65 || Math.abs(dx) < Math.abs(dy) * 2) return;
+    if (stack.length){ if (dx > 0) back(); return; }
+    var cur = document.querySelector("nav button.on");
+    var i = TAB_ORDER.indexOf(cur ? cur.dataset.go : "places");
+    var n = i + (dx < 0 ? 1 : -1);
+    if (n < 0 || n >= TAB_ORDER.length) return;    // no wrapping round
+    goTab(TAB_ORDER[n]);
+  }, { passive: true });
+
+  function openKana(){
+    kanaExtra = false;
+    drawKana();
+    $("kana").className = "on";
+  }
+  function closeKana(){ $("kana").className = ""; }
+
+  /* ================= MANNERS ================= */
+  function renderManners(){
+    var h = head("マナー", "Etiquette") +
+            '<p class="lede">How these things are usually done in Japan. Not a full ' +
+            'list, just the ones that come up in the first couple of days. Tap one ' +
+            'to read it.</p><div class="grid">';
+    MANNERS.forEach(function(m, i){
+      h += tile(m, 'data-manner="' + i + '"', "", i);
+    });
+    $("v-manners").innerHTML = h + '</div>';
+  }
+  /* It used to open under the whole grid, which meant tapping the first tile
+     put the text somewhere below eight others, well off the screen. It takes
+     over the screen now and closes on a tap anywhere, so there is nowhere for
+     it to hide and nothing to scroll back from. */
+  function openManner(i){
+    var m = MANNERS[i]; if (!m) return;
+    $("sheetBody").innerHTML =
+      '<div class="sh">' + esc(m.ja) + '<span class="en">' + esc(m.en) +
+      '</span></div><p>' + esc(m.body) + '</p>' +
+      // Only ever an https link we put here ourselves. It needs signal, so
+      // whatever matters is in the body text as well.
+      (m.link && /^https:\/\//.test(m.link.url)
+        ? '<p class="mlink"><a href="' + esc(m.link.url) + '" target="_blank" ' +
+          'rel="noopener noreferrer">' + esc(m.link.label) + '</a></p>' : '');
+    $("sheet").className = "on";
+    $("sheet").scrollTop = 0;
+  }
+  function closeSheet(){ $("sheet").className = ""; }
+
+  /* ================= navigation ================= */
+  var BUILD = "Version 80, 29 September 2026";
+  /* The number on its own. Students compare these across a table to work out
+     who has not updated, so it has to be somewhere glanceable rather than
+     only at the foot of the itinerary. Derived from BUILD so there is one
+     place to change and the two can never disagree. */
+  var VER = (BUILD.match(/\d+/) || ["?"])[0];
+  var TABS = { home:["りょてい","Itinerary"], places:["ばしょ","Places"],
+               phrases:["ことば","Phrases"], manners:["マナー","Etiquette"],
+               // The tab says Info because "Travel Information" will not sit on
+               // one line on a 360px phone, and a label that wraps makes its
+               // tab taller than the rest. The page it opens says the name in
+               // full, in both scripts.
+               info:["あんない","Travel Information"] };
+  var stack = [];
+  function setQuiet(on){ document.body.classList[on ? "add":"remove"]("quiet"); }
+  // The trail: the tab, then every level above this one, then where you are.
+  // Everything but the last is a button that jumps straight to that depth.
+  function crumbHtml(ja, tight){
+    var h = "", sep = '<span class="sep">\u203a</span>';
+    if (stack.length){
+      h += '<button data-depth="0">' + esc(TABS[curTab()][0]) + '</button>' + sep;
+      if (tight){
+        h += '<span class="sep">\u2026</span>' + sep;
+      } else {
+        for (var i = 0; i < stack.length - 1; i++){
+          h += '<button data-depth="' + (i + 1) + '">' + esc(stack[i].ja) +
+               '</button>' + sep;
+        }
+      }
+    }
+    return h + esc(ja);
+  }
+  /* Four levels deep on a narrow phone the trail does not fit, and plain
+     truncation eats it from the right, which is the end that says where you
+     are. So when it overflows we keep the way out and the page you are on
+     and drop the middles instead. */
+  function setHeader(ja, en){
+    var el = $("hja");
+    el.innerHTML = crumbHtml(ja, false);
+    if (stack.length > 1 && el.scrollWidth > el.clientWidth + 1){
+      el.innerHTML = crumbHtml(ja, true);
+    }
+    $("hen").textContent = en;
+  }
+  function showView(id){
+    ["home","places","phrases","manners","info","detail"].forEach(function(v){
+      $("v-"+v).className = "view" + (v === id ? " on" : "");
+    });
+    window.scrollTo(0,0);
+  }
+  function curTab(){
+    var c = document.querySelector("nav button.on");
+    return c ? c.dataset.go : "places";
+  }
+  var APP = ["日本研修旅行", "Japan Study Tour 2026  \u00b7  v" + VER];
+  function showTab(name){
+    closeSheet();
+    // Walking away from a page should not leave it playing behind you.
+    SAY.stop(); clearSay(); CHIP.stop();
+    /* The itinerary is the one view that goes stale on its own: an app left
+       open overnight would still be showing yesterday's card, yesterday's
+       question and yesterday's journal prompt. Rebuild it on the way in. */
+    if (name === "home") renderHome();
+    stampToday();
+    setQuiet(false); showView(name);
+    /* The lit icon says which tab you are on, so the header says what the app
+       is instead of saying it a second time. Go one level deeper and the
+       trail replaces it, which is the point at which a name earns its keep. */
+    setHeader(APP[0], APP[1]);
+    [].forEach.call(document.querySelectorAll("nav button"), function(b){
+      var on = b.dataset.go === name;
+      b.className = on ? "on" : "";
+      if (on) b.setAttribute("aria-current", "page");
+      else b.removeAttribute("aria-current");
+    });
+  }
+  // Draws whatever is on top of the stack, or the current tab if it is empty,
+  // and puts a labelled way back at the end of the page.
+  function renderTop(){
+    if (!stack.length) return showTab(curTab());
+    var s = stack[stack.length-1];
+    s.draw(); showView("detail"); setHeader(s.ja, s.en);
+    var up = stack.length > 1 ? stack[stack.length-2]
+                              : { ja: TABS[curTab()][0], en: TABS[curTab()][1] };
+    $("v-detail").insertAdjacentHTML("afterbegin",
+      '<button class="topback" data-upback="1">\u2039 ' + esc(up.ja) +
+      '<span class="en">' + esc(up.en) + '</span></button>');
+    $("v-detail").className = "view on" + (s.leaf ? " leaf" : "");
+    if (s.leaf){
+      $("v-detail").insertAdjacentHTML("beforeend",
+        '<p class="tapout">Tap anywhere to go back to ' + esc(up.en) + '</p>');
+    }
+  }
+
+  // Jump straight to a depth rather than stepping. 0 is the tab itself.
+  function goDepth(target){
+    var n = stack.length - target;
+    if (n <= 0) return;
+    if (history.state && history.state.d){ history.go(-n); return; }
+    while (n--) fwd.push(stack.pop());
+    renderTop();
+  }
+
+  /* Every level of depth is a real browser history entry, so the browser's own
+     Back, Alt+Left, a mouse's back button and the phone's edge swipe all go up
+     one level instead of leaving the app. The app's own Back goes through the
+     browser too, so there is one path and the two cannot disagree. */
+  // Levels stepped back out of are kept here, so Forward can step back in.
+  var fwd = [];
+  function push(draw, ja, en, leaf){
+    fwd = [];
+    stack.push({ draw: draw, ja: ja, en: en, leaf: !!leaf });
+    renderTop();
+    try { history.pushState({ d: stack.length }, ""); } catch (e){}
+  }
+  function back(){
+    SAY.stop(); clearSay(); CHIP.stop();
+    if (!stack.length) return;
+    if (history.state && history.state.d){ history.back(); return; }
+    fwd.push(stack.pop()); renderTop();
+  }
+  // One handler for both directions: read the depth the browser has landed on
+  // and make the stack match it. Popping only would send Forward to the tab
+  // list instead of back down into the page you came from.
+  window.addEventListener("popstate", function(e){
+    var target = (e.state && e.state.d) || 0;
+    while (stack.length > target) fwd.push(stack.pop());
+    while (stack.length < target && fwd.length) stack.push(fwd.pop());
+    renderTop();
+  });
+  function goTab(name){
+    var n = stack.length;
+    stack = []; fwd = [];
+    showTab(name);
+    // give the entries this depth owned back to the browser, so its Back does
+    // not walk through pages the app has already left
+    if (n) { try { history.go(-n); } catch (e){} }
+  }
+
+  document.addEventListener("click", function(e){
+    var t;
+    if ((t = e.target.closest("nav button"))) return goTab(t.dataset.go);
+    if ((t = e.target.closest("[data-depth]"))) return goDepth(+t.dataset.depth);
+    if (e.target.closest("[data-upback]")) return back();
+    if ((t = e.target.closest("[data-place]"))){
+      var r = find(t.dataset.place); if (!r) return;
+      return push(function(){ setQuiet(r.p.tone === "quiet");
+        $("v-detail").innerHTML = placeHtml(r.p); }, r.p.ja, r.p.en);
+    }
+    if ((t = e.target.closest("[data-sight]"))){
+      var r2 = find(t.dataset.sight); if (!r2 || !r2.s) return;
+      return push(function(){ setQuiet(r2.p.tone === "quiet");
+        $("v-detail").innerHTML = sightHtml(r2.p, r2.s); }, r2.s.ja, r2.s.en);
+    }
+    if ((t = e.target.closest("[data-spot]"))){
+      var r3 = find(t.dataset.spot); if (!r3 || !r3.sp) return;
+      return push(function(){ setQuiet(r3.p.tone === "quiet");
+        $("v-detail").innerHTML = spotHtml(r3.p, r3.s, r3.sp); },
+        r3.sp.ja, r3.sp.en, true);
+    }
+    if ((t = e.target.closest("[data-group]"))){
+      var g = PHRASES.filter(function(x){ return x.id === t.dataset.group; })[0];
+      if (!g) return;
+      return push(function(){ $("v-detail").innerHTML = groupHtml(g); }, g.ja, g.en);
+    }
+    // A tap anywhere on the sheet closes it, except on the one link it may
+    // carry, which has somewhere else to go.
+    if (e.target.closest("#sheet")){
+      if (!e.target.closest("a")) closeSheet();
+      return;
+    }
+    if ((t = e.target.closest("[data-manner]"))) return openManner(+t.dataset.manner);
+    if ((t = e.target.closest("[data-ch]"))) return showRead(t);
+    hideRead();
+    if (e.target.closest("[data-questions]")){
+      return push(function(){ $("v-detail").innerHTML = questionsHtml(); },
+                  "しつもん と にっき", "The question and the journal");
+    }
+    if (e.target.closest("[data-money]")){
+      // The bar button is on every page, including this one, so guard against
+      // pushing a second copy of the page you are already looking at.
+      var top = stack[stack.length - 1];
+      if (top && top.en === MONEY.en) return;
+      return push(function(){ $("v-detail").innerHTML = moneyHtml(); },
+                  MONEY.ja, MONEY.en);
+    }
+    if (e.target.closest("[data-sos]")){
+      return push(function(){ $("v-detail").innerHTML = emergencyHtml(); },
+                  EMERGENCY.ja, EMERGENCY.en);
+    }
+    if (e.target.closest("[data-preflight]")){
+      return push(function(){ $("v-detail").innerHTML = preflightHtml(); },
+                  PREFLIGHT.ja, PREFLIGHT.en);
+    }
+    if ((t = e.target.closest(".pftick"))){
+      var row = t.closest("[data-pf]"), id = row.dataset.pf;
+      var on = !row.classList.contains("done");
+      row.classList.toggle("done", on);
+      t.setAttribute("aria-pressed", on ? "true" : "false");
+      pfSet(id, on);
+      var c = $("pfcount");
+      if (c) c.textContent = pfCount() + " of " + PREFLIGHT.items.length + " done";
+      renderInfo();
+      return;
+    }
+    if ((t = e.target.closest("[data-tune]"))){
+      var grp = PHRASES.filter(function(x){ return x.id === t.dataset.tune; })[0];
+      if (!grp || !grp.tune) return;
+      if (t.classList.contains("on")){ CHIP.stop(); return; }
+      SAY.stop(); clearSay();
+      var btn = t;
+      if (CHIP.play(grp.tune, function(){ btn.classList.remove("on"); })){
+        btn.classList.add("on");
+      }
+      return;
+    }
+    if ((t = e.target.closest("[data-say]"))){
+      e.stopPropagation();
+      return playSay(t, phraseIndex[+t.dataset.say]);
+    }
+    if ((t = e.target.closest("[data-ph]"))) return openShow(phraseIndex[+t.dataset.ph]);
+    if (e.target.closest("#showClose")) return closeShow();
+    // Last page in a branch: the page itself is the way back. Ignore it if the
+    // pointer travelled (a scroll or a drag), if text is selected, or if
+    // something on the page wanted the tap.
+    if (e.target.closest("#v-detail.leaf") &&
+        !e.target.closest("button, a, [data-ch]") &&
+        !dragged &&
+        !(window.getSelection && String(window.getSelection()))) return back();
+    if (e.target.closest("#kanatab")) return openKana();
+    if (e.target.closest("#kanaClose")) return closeKana();
+    if (e.target.closest("#kanaMore")){ kanaExtra = !kanaExtra; return drawKana(); }
+    if (e.target.closest("[data-kanaswap]")){
+      kanaOnly = !kanaOnly;
+      if (stack.length) stack[stack.length - 1].draw();
+      return;
+    }
+    if ((t = e.target.closest("[data-kana]"))){ kanaScript = t.dataset.kana; return drawKana(); }
+  });
+
+  /* The button marks itself while it is talking, so a student who taps twice
+     can see why nothing new happened. */
+  var sayingNow = null;
+  function playSay(btn, it){
+    if (!it) return;
+    if (sayingNow === btn){ SAY.stop(); clearSay(); return; }
+    clearSay();
+    sayingNow = btn;
+    // Something actually started, so the silent-switch note has done its job.
+    SAY.play(it, function(){ btn.classList.add("on"); markHeard(); }, clearSay);
+  }
+  function clearSay(){
+    if (sayingNow) sayingNow.classList.remove("on");
+    sayingNow = null;
+  }
+
+  function openShow(it){
+    if (!it) return;
+    // A speech or an anthem verse does not fit at phrase size; step it down so
+    // it can still be read at arm's length without three screens of scrolling.
+    var jp = $("showJp"), n = it.ja.length;
+    jp.textContent = it.ja;
+    jp.className = "jp" + (n > 120 ? " verse" : n > 40 ? " long" : "");
+    $("showEn").textContent = it.en;
+    // Held up to a stranger, the phrase is worth hearing as well as reading.
+    var i = phraseIndex.indexOf(it);
+    $("showSay").innerHTML = i < 0 ? "" : sayBtn(it, i);
+    $("show").className = "on";
+  }
+  function closeShow(){ SAY.stop(); clearSay(); $("show").className = ""; }
+  document.addEventListener("input", function(e){
+    if (e.target.id === "rateIn"){
+      var v = parseFloat(e.target.value);
+      if (v && v > 0 && v < 100000){ setRate(v); moneyRefresh(); }
+      return;
+    }
+    if (e.target.id === "cvYen") return convFrom("yen");
+    if (e.target.id === "cvAud") return convFrom("aud");
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "Escape") return;
+    if ($("sheet").className === "on") closeSheet();
+    else if ($("kana").className === "on") closeKana();
+    else if ($("show").className === "on") closeShow();
+    else if (stack.length) back();
+  });
+
+  /* ================= offline ================= */
+  /* Registered only where it can work: a service worker needs http or https,
+     so opening the file straight off a disk does nothing and errors nowhere.
+
+     The update dance. The worker no longer jumps the queue on install, so a
+     new one sits waiting and we can say so rather than swapping the app out
+     from under somebody mid-sentence. Tapping the bar tells it to take over;
+     that fires controllerchange, and we reload once. */
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      /* The waiting worker knows which version it is; ask it, so the notice
+         can name the number rather than saying "new". If it does not answer,
+         which is what a worker built before this change will do, the line
+         stays generic and the one underneath still names the version the
+         student is on, which is the number they compare with each other. */
+      function onVer(e){
+        var d = e.data, m = d && d.type === "VERSION" &&
+                String(d.version || "").match(/\d+/);
+        var h = $("nvhead");
+        if (m && h) h.textContent = "Version " + m[0] + " is ready";
+      }
+      function offer(){
+        var bar = $("newver");
+        if (!bar || !reg.waiting) return;
+        $("nvsub").textContent = "You are on v" + VER + ". Tap to update.";
+        try {
+          navigator.serviceWorker.addEventListener("message", onVer);
+          reg.waiting.postMessage({ type: "VERSION" });
+        } catch (err){}
+        bar.hidden = false;
+        bar.onclick = function(){
+          bar.hidden = true;
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        };
+      }
+      function watch(w){
+        if (!w) return;
+        w.addEventListener("statechange", function(){
+          // A worker reaching "installed" with one already in charge means an
+          // update. With nobody in charge it is simply the first install.
+          if (w.state === "installed" && navigator.serviceWorker.controller) offer();
+        });
+      }
+      if (reg.waiting && navigator.serviceWorker.controller) offer();
+      watch(reg.installing);
+      reg.addEventListener("updatefound", function(){ watch(reg.installing); });
+    }).catch(function(){});
+
+    var reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function(){
+      if (reloading) return;      // controllerchange can fire more than once
+      reloading = true;
+      location.reload();
+    });
+  }
+  /* Keyed to BUILD, not to a number typed here, so every release brings the
+     Save button back by itself. It was pinned at v14 through thirty-odd
+     releases, which meant a phone that saved once kept showing "Saved" and
+     never fetched the photos added since. */
+  var SAVED_KEY = "jtSaved-" + BUILD;
+  function allPhotos(){
+    var out = [];
+    PLACES.forEach(function(p){ p.sights.forEach(function(s){
+      [s].concat(s.spots).forEach(function(x){
+        if (x.photo){ out.push(x.photo); out.push(x.photo.replace(/\.webp$/, "-t.webp")); }
+        // A hero is never a tile, so it has no thumbnail, but it still has to
+        // come down with everything else or it is a hole on the plane.
+        if (x.hero) out.push(x.hero);
+      });
+    }); });
+    return out.filter(function(v,i,a){ return a.indexOf(v) === i; });
+  }
+  function markSaved(msg){
+    var box = $("save"); if (!box) return;
+    var b = $("saveBtn"); if (b) b.remove();
+    var d = box.querySelector(".done");
+    if (!d){ d = document.createElement("div"); d.className = "done"; box.appendChild(d); }
+    d.textContent = msg;
+  }
+  document.addEventListener("click", function(e){
+    if (!e.target.closest("#saveBtn")) return;
+    var btn = $("saveBtn");
+    if (location.protocol.indexOf("http") !== 0){
+      btn.disabled = true; btn.textContent = "Open this from its web address first"; return;
+    }
+    var list = allPhotos(), done = 0, failed = 0;
+    btn.disabled = true; btn.textContent = "Saving 0 of " + list.length;
+    Promise.all(list.map(function(u){
+      return fetch(u, { cache: "reload" })
+        .then(function(r){ if (!r.ok) failed++; }, function(){ failed++; })
+        .then(function(){ done++; btn.textContent = "Saving " + done + " of " + list.length; });
+    })).then(function(){
+      if (failed){
+        /* honest: a photo that did not arrive is not saved. Leave the button. */
+        btn.disabled = false;
+        btn.textContent = "Saved " + (list.length - failed) + " of " + list.length +
+          " photos. Try again on wifi.";
+        return;
+      }
+      try {
+        Object.keys(localStorage).forEach(function(k){
+          if (k.indexOf("jtSaved-") === 0 && k !== SAVED_KEY) localStorage.removeItem(k);
+        });
+        localStorage.setItem(SAVED_KEY, String(Date.now()));
+      } catch(err){}
+      markSaved("Saved. This app now works with no signal.");
+    });
+  });
+
+  renderHome(); renderPlaces(); renderPhrases(); renderManners(); renderInfo();
+  /* The date on the Today button's calendar. Restamped whenever the itinerary
+     is redrawn as well as here, so an app left open overnight is not still
+     showing yesterday when somebody picks the phone up in the morning. */
+  stampToday();
+  /* The key carries the app version, so after an update the button comes
+     back and the new photos get saved too. Keep in step with CACHE in sw.js. */
+  try { if (localStorage.getItem(SAVED_KEY)) markSaved("Saved. This app works with no signal."); }
+  catch(err){}
+  goTab("places");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>かんじこうじょう · Kanji Factory</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  /* ============================================================
+     KANJI FACTORY
+     ------------------------------------------------------------
+     Liam's mechanic, and it is the linguistically honest one: a
+     component does not HAVE a role, it has a role IN a character.
+     門 is the sound in 問 and 聞, and the meaning in 開 and 間.
+
+     So the bank is NEUTRAL. No colour anywhere until a character
+     exists. Assemble one and the pieces light up with the job
+     they do in THAT character. The same tile changing colour
+     between two characters is the whole lesson.
+
+     Position is named, never coloured (へん・つくり・かまえ):
+     it is real vocabulary Japanese students learn, and it is how
+     people describe kanji aloud, but it does not predict
+     function. 聞 wraps its SOUND part around the outside.
+     ============================================================ */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    --band:#f5f0e6; --amber:#8a6d1e;
+    /* THE THREE ROLE COLOURS. Liam's set, and the mnemonic is exact:
+       purple is blue and red mixed, and a "both" part is a meaning part
+       and a sound part at once. They appear ONLY on assembly.
+       Consequence, taken deliberately: red means SOUND in this app, so
+       nothing here uses red for "wrong". Correctness is green plus a
+       tick or a cross, never a colour that is already spoken for. */
+    --sense:#b5342a; --sense-bg:#fae7e4;   /* RED   — meaning */
+    --sound:#2f5d8f; --sound-bg:#e3ecf5;   /* BLUE  — sound */
+    --both:#6b4a9e;  --both-bg:#ece4f6;    /* PURPLE — both, and purple is the two mixed */
+    /* position labels are deliberately colourless */
+    --pos:#8d8577;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+       line-height:1.5;min-height:100vh;padding:16px}
+  .wrap{max-width:840px;margin:0 auto}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+  .btn{padding:10px 17px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover:not(:disabled){background:#8c2828}
+  .btn-primary:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+  .linkbtn:hover{text-decoration:underline}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+  .progress{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  .actions{display:flex;gap:9px;justify-content:flex-end;align-items:center;margin-top:16px;flex-wrap:wrap}
+
+  /* ---- home ---- */
+  .how{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--sense);
+       border-radius:10px;padding:13px 16px;font-size:13px;line-height:1.65;margin-bottom:16px}
+  .how b{font-family:var(--font)}
+  .fams{display:grid;gap:11px;grid-template-columns:repeat(auto-fill,minmax(238px,1fr))}
+  .fam{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:11px;
+       padding:14px 16px;cursor:pointer;display:flex;gap:13px;align-items:center}
+  .fam:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .fam .fc{font-family:var(--font);font-size:38px;line-height:1;color:var(--ink)}
+  .fam .ft{font-weight:700;font-size:14px;font-family:var(--font)}
+  .fam .fd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+  .fam .tag{margin-left:auto;font-size:9.5px;font-weight:800;color:var(--muted);
+       border:1px solid var(--line-soft);border-radius:9px;padding:2px 8px;white-space:nowrap}
+  .fam.done .tag{color:var(--correct);border-color:var(--correct)}
+
+  /* ---- the workbench ---- */
+  .prompt{text-align:center;font-size:15px;line-height:1.6;margin-bottom:4px}
+  .prompt b{font-family:var(--font);font-size:17px}
+  .promptread{text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+  .posname{text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.09em;
+       color:var(--pos);text-transform:uppercase;margin-bottom:7px}
+  /* the assembly frame: slots laid out by POSITION, in grey. */
+  /* padding-top leaves room for the role badges, which sit above the slots */
+  .frame{display:grid;gap:8px;justify-content:center;margin-bottom:6px;padding-top:12px}
+  .frame.lr{grid-template-columns:96px 96px}
+  .frame.kamae{grid-template-columns:150px;position:relative}
+  .frame.tb{grid-template-columns:110px}
+  .slot{height:96px;border:2px dashed var(--line);border-radius:12px;background:var(--bg);
+       display:grid;place-items:center;font-family:var(--font);font-size:44px;color:var(--ink);
+       position:relative;transition:border-color .15s,background .3s,color .3s}
+  /* the enclosing part's glyph sits high in the slot so the inner slot,
+     which is positioned on top of it, does not hide it */
+  .frame.kamae .slot.outer{height:150px;place-items:start center;padding-top:10px}
+  .frame.kamae .slot.outer .rolebadge{top:-9px}
+  .frame.kamae .slot.inner{position:absolute;left:50%;top:62px;transform:translateX(-50%);
+       width:78px;height:74px;font-size:34px;z-index:2;background:var(--paper)}
+  .slot.over{border-color:var(--accent);background:#faf5f0}
+  .slot .slotlab{position:absolute;bottom:4px;left:0;right:0;text-align:center;
+       font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--pos);text-transform:uppercase}
+  .slot.filled{border-style:solid;cursor:pointer}
+  /* THE LIGHT-UP: role colour arrives only when the character exists */
+  .slot.lit-sense{border-color:var(--sense);background:var(--sense-bg);color:var(--sense);animation:pop .45s ease-out}
+  .slot.lit-sound{border-color:var(--sound);background:var(--sound-bg);color:var(--sound);animation:pop .45s ease-out}
+  .slot.lit-both{border-color:var(--both);background:var(--both-bg);color:var(--both);animation:pop .45s ease-out}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
+  .frame.kamae .slot.inner.lit-sense,.frame.kamae .slot.inner.lit-sound,
+  .frame.kamae .slot.inner.lit-both{animation:popin .45s ease-out}
+  @keyframes popin{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.13)}100%{transform:translateX(-50%) scale(1)}}
+  .rolebadge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;
+       letter-spacing:.06em;padding:1px 8px;border-radius:9px;text-transform:uppercase;white-space:nowrap;
+       font-family:var(--font)}
+  .rb-sense{background:var(--sense);color:#fff}
+  .rb-sound{background:var(--sound);color:#fff}
+  /* the both badge is literally the two colours running together */
+  .rb-both{background:linear-gradient(90deg,var(--sound),var(--both) 50%,var(--sense));color:#fff}
+
+  .built{text-align:center;margin:14px 0 4px;min-height:0}
+  .built .bc{font-family:var(--font);font-size:80px;line-height:1.1;animation:formin .5s ease-out}
+  @keyframes formin{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+  .built .br{font-size:14px;color:var(--muted)}
+
+  /* ---- the bank: NEUTRAL. no role colour lives here. ---- */
+  .bankhead{font-size:10.5px;font-weight:800;letter-spacing:.09em;color:var(--muted);
+       text-transform:uppercase;text-align:center;margin:18px 0 8px}
+  .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .piece{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--paper);
+       border:1px solid var(--line);border-radius:10px;padding:7px 11px;cursor:grab;min-width:66px}
+  .piece:hover{border-color:var(--accent)}
+  .piece.used{opacity:.28;pointer-events:none}
+  .piece .pc{font-family:var(--font);font-size:29px;line-height:1.1}
+  .piece .pg{font-size:9.5px;color:var(--muted);font-weight:600}
+  .piece .pn{font-size:8.5px;color:var(--pos)}
+  .piece.dragging{opacity:.4}
+
+  /* ---- the sorting yard: a big bank, three bins by CAPACITY ---- */
+  .yard{margin-top:6px}
+  .yardbank{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;min-height:64px;
+       border:1px dashed var(--line);border-radius:11px;padding:10px;background:var(--bg)}
+  .bins.big{grid-template-columns:repeat(3,1fr);gap:11px;margin-top:14px}
+  .bins.big .bin{min-height:150px}
+  .bins.big .drop{gap:6px}
+  .binrule{font-size:11px;color:var(--muted);line-height:1.5;text-align:center;margin-top:4px}
+  .lawnote{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--sense);
+       border-radius:9px;padding:10px 13px;font-size:12.5px;line-height:1.6;margin-top:12px}
+  .partrow{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.55;
+       padding:7px 0;border-bottom:1px solid var(--line-soft)}
+  .partrow:last-child{border-bottom:0}
+  .partrow .pk{font-family:var(--font);font-size:24px;flex:none;width:34px;text-align:center}
+  .partrow.ok .pk{color:var(--correct)} .partrow.no .pk{color:var(--amber)}
+
+  /* ---- the three bins: where the sort round happens ---- */
+  .bins{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+  .bin{border:2px dashed var(--line);border-radius:11px;padding:9px 7px;min-height:96px;
+       display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg)}
+  .bin.over{border-style:solid}
+  .bin-sense{border-color:#e5b8b2} .bin-sense.over{border-color:var(--sense);background:var(--sense-bg)}
+  .bin-sound{border-color:#b9cbdf} .bin-sound.over{border-color:var(--sound);background:var(--sound-bg)}
+  .bin-both{border-color:#cbbde4}  .bin-both.over{border-color:var(--both);background:var(--both-bg)}
+  .bin .bh{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+  .bin-sense .bh{color:var(--sense)} .bin-sound .bh{color:var(--sound)} .bin-both .bh{color:var(--both)}
+  .bin .bh small{display:block;font-size:8.5px;font-weight:600;opacity:.8;letter-spacing:0}
+  .bin .drop{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+  .chip{font-family:var(--font);font-size:24px;border:1px solid var(--line);background:var(--paper);
+       border-radius:8px;padding:3px 10px;cursor:grab}
+  .chip.correct{border-color:var(--correct);background:var(--okbg)}
+  .chip.incorrect{border-color:var(--amber);background:#f6ecd9}
+  .sorthint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.55}
+  .tosort{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px;min-height:40px}
+
+  /* ---- predict round ---- */
+  .predict{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--amber);
+       border-radius:10px;padding:13px 16px;margin-top:14px}
+  .predict p{font-size:13.5px;margin-bottom:9px}
+  .predict p b{font-family:var(--font)}
+  .guesses{display:flex;gap:8px;flex-wrap:wrap}
+  .guess{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:8px 14px;
+       font-family:var(--font);font-size:22px;cursor:pointer}
+  .guess:hover:not(:disabled){border-color:var(--accent)}
+  .guess small{display:block;font-family:var(--font);font-size:9.5px;color:var(--muted)}
+  .guess.correct{border-color:var(--correct);background:var(--okbg)}
+  .guess.incorrect{border-color:var(--wrong);background:var(--badbg)}
+
+  .feedback{margin-top:14px;padding:12px 15px;border-radius:10px;font-size:13.5px;line-height:1.65;display:none}
+  .feedback.good{display:block;background:var(--okbg);border:1px solid var(--correct)}
+  .feedback.bad{display:block;background:var(--badbg);border:1px solid var(--wrong)}
+  .feedback.note{display:block;background:var(--band);border:1px solid var(--line-soft)}
+  .hook{background:var(--paper);border:1px solid var(--line-soft);border-radius:9px;
+       padding:10px 13px;font-size:12.5px;line-height:1.6;margin-top:9px}
+  .hook .lab{font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--muted);
+       text-transform:uppercase;display:block;margin-bottom:3px}
+  .warn{border-left:4px solid var(--amber)}
+
+  /* ---- the character list: the purple-lab word card, ported ----
+     Same shape as the English word builders' word list: the headword
+     large and serif, the meaning under it, then a dashed rule and the
+     parts as coloured monospace with their glosses, then the note.
+     The colour rule of this app still holds — a character you have not
+     built yet shows its parts in neutral grey, because a part has no
+     job until there is a character for it to do the job in. Build it
+     and the card lights up. */
+  .klegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;font-weight:700;margin:0 0 12px;
+       border:1px solid var(--line-soft);border-radius:8px;padding:10px 14px;background:var(--bg)}
+  .klegend .c-sense{color:var(--sense)} .klegend .c-sound{color:var(--sound)} .klegend .c-both{color:var(--both)}
+  .klegend .note{font-weight:400;color:var(--muted)}
+  .kcard{border:1px solid var(--line-soft);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--paper)}
+  .kcard.locked{opacity:.72}
+  .kcard .w{font-family:var(--font);font-size:38px;font-weight:700;line-height:1.15;vertical-align:middle}
+  .kcard .w .kglyph{vertical-align:middle;margin:-4px 0}
+  .kcard .rd{font-size:12px;color:var(--muted);font-style:italic;margin-left:8px}
+  .kcard .meaning{font-size:14px;margin:6px 0;line-height:1.5}
+  .kcard .comp{font-size:13.5px;color:var(--muted);line-height:1.8;border-top:1px dashed var(--line-soft);
+       padding-top:6px;margin-top:6px}
+  .kcard .comp b,.kcard .comp i{color:var(--ink)}
+  .kcard .comp code{font-family:var(--font);font-weight:700;font-size:21px;vertical-align:-1px}
+  .kcard .comp code.c-sense{color:var(--sense)} .kcard .comp code.c-sound{color:var(--sound)}
+  .kcard .comp code.c-both{color:var(--both)} .kcard .comp code.c-none{color:var(--muted)}
+  .kcard .rad{font-size:11px;font-weight:700;color:var(--muted)}
+  .kcard .kn{font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:5px}
+  .kcard .todo{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:5px}
+
+  /* ---- report ---- */
+  .bigstat{text-align:center;font-family:var(--font);font-size:42px;font-weight:700;color:var(--accent);margin:6px 0}
+  .bigstat small{display:block;font-size:12px;font-family:var(--font);color:var(--muted);font-weight:400}
+  .rrow{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line-soft);
+       border-radius:9px;padding:11px 14px;margin-bottom:7px;font-size:13.5px}
+  .rrow .sc{font-weight:800;font-family:var(--font)}
+  .rrow.full{border-color:var(--correct)} .rrow.full .sc{color:var(--correct)}
+  .rrow.part{border-color:var(--amber)}   .rrow.part .sc{color:var(--amber)}
+  .privacy{background:var(--bg);border:1px solid var(--line-soft);border-radius:9px;padding:10px 14px;
+       font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);
+       opacity:.45;pointer-events:none}
+  @media (max-width:560px){ .frame.lr{grid-template-columns:80px 80px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="container">
+
+  <section class="screen active" id="scr-home">
+    <h1 class="jt-tap" data-jt="title">かんじこうじょう</h1>
+    <p class="subtitle jt-tap" data-jt="subtitle">Build characters from their parts</p>
+    <span class="poc"><b>Proof of concept</b> for Andrew's review — component analysis, not etymology. Every split and every sound claim needs his check (Q5).</span>
+    <div class="how jt-tap" data-jt="how">Parts have no colour until you build with them.</div>
+    <div class="fams" id="fams"></div>
+  </section>
+
+  <section class="screen" id="scr-work">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← かぞく</button>
+      <span class="progress" id="work-prog"></span>
+      <span id="workLever" data-scope="#scr-work"></span>
+    </div>
+    <div id="work-area"></div>
+    <div class="feedback" id="work-fb"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="clearBtn" data-jt="clear" style="display:none">クリア</button>
+      <button class="btn btn-primary" id="checkBtn" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="nextBtn" data-jt="next" style="display:none">つぎへ</button>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-list">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← かぞく</button>
+      <span class="progress" data-jt="pList">かんじリスト</span>
+      <span id="listLever" data-scope="#scr-list"></span>
+    </div>
+    <h2 style="font-family:var(--font);font-size:19px;margin:4px 0 4px">The characters, part by part</h2>
+    <p style="color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:10px">Each character with the
+      parts that build it, and the job each part does <b>in that character</b>. A part stays grey until you have
+      built the character it sits in — the colour is the lesson, so it has to be earned.</p>
+    <div class="actions" style="justify-content:flex-start;margin:0 0 14px">
+      <button class="btn btn-ghost" id="revealBtn" type="button">Show every colour</button>
+    </div>
+    <div id="list-body"></div>
+    <p class="privacy" style="margin-top:16px">Characters are drawn from
+      <a href="https://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a> stroke data by Ulrich Apel,
+      used under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>,
+      so each part can be coloured separately. Which job a part does in a character is this app's own claim, not KanjiVG's.</p>
+  </section>
+
+  <section class="screen" id="scr-report">
+    <div class="topbar">
+      <button class="linkbtn" data-go="home" data-jt="back">← かぞく</button>
+      <span class="progress" data-jt="pReport">レポート</span>
+      <span id="repLever" data-scope="#scr-report"></span>
+    </div>
+    <div class="bigstat" id="rep-stat"></div>
+    <div id="rep-rows"></div>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn btn-ghost" id="copyBtn" data-jt="copy">コピー</button>
+      <button class="btn btn-primary" data-go="home" data-jt="back2">かぞくへ</button>
+    </div>
+    <div class="privacy" id="copynote">Your first try at each decision is what this records. Nothing is sent anywhere and nothing is saved when you close the tab.</div>
+  </section>
+
+</div>
+</div>
+<div class="build-tag">Factory PoC 2026-09-06</div>
+<script src="../kanji-strokes.js"></script>
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT
+   ------------------------------------------------------------
+   Three roles a part can play IN a character, which is Liam's
+   three bins:
+     sense  — carries the meaning
+     sound  — carries the reading
+     both   — carries meaning AND reading. A real category
+              (会意兼形声 / 亦声), and a contested one: scholars
+              split on individual characters, so it is used here
+              only for 忘, where the analysis is standard, and
+              the disagreement is stated on screen.
+   Characters with NO sound part at all (会意: 休, 明, 好) put
+   BOTH their parts in the meaning bin. That is how the app
+   teaches that the sound-part trick covers most kanji, not all.
+
+   Roles are per CHARACTER, never per part. 門 is sound in 問
+   and 聞, and meaning in 開 and 間. That flip is family A's
+   entire reason for existing.
+
+   mode: "watch" = build it and watch the roles light up.
+         "sort"  = build it, then say which bin each part goes
+                   in BEFORE the light-up. That guess is what
+                   the report scores.
+   ============================================================ */
+
+/* THE BANK. Every piece carries which bin it belongs in — not the job it
+   does in one character, but the job it can EVER do across the system.
+   Note the asymmetry, which the app states rather than hiding:
+     bin "sense" for a bound form (氵亻扌忄艹) is a HARD rule — those
+       shapes have no reading of their own, so they physically cannot be
+       the sound part;
+     bin "sound" and bin "both" are strong tendencies, not laws.
+   The "both" bin is deliberately tiny. Most parts do stick to one job,
+   and pretending otherwise would make the lesson feel arbitrary. */
+const PIECES = {
+  // ---- always meaning (red) ----
+  "氵":{g:"water",n:"さんずい",bin:"sense",bound:true,
+        why:"A squashed 水. It has no reading of its own, so it can never be the sound part. Water, every single time: 泳・清・海."},
+  "亻":{g:"person",n:"にんべん",bin:"sense",bound:true,
+        why:"A squashed 人, bound form, meaning only: 休・体・作."},
+  "扌":{g:"hand",n:"てへん",bin:"sense",bound:true,
+        why:"A squashed 手, bound form, meaning only: 持・押・投."},
+  "忄":{g:"heart",n:"りっしんべん",bin:"sense",bound:true,
+        why:"A squashed 心 standing on its side. Meaning only: 性・情・忙."},
+  "艹":{g:"grass, plant",n:"くさかんむり",bin:"sense",bound:true,
+        why:"Bound form, sits on top, meaning only: 花・茶・草."},
+  "口":{g:"mouth",n:"くち",bin:"sense",
+        why:"A free character, but as a part it carries mouth-and-speech meaning: 問・味・呼."},
+  "耳":{g:"ear",n:"みみ",bin:"sense",
+        why:"Hearing and ears: 聞・職. You will not meet it as a sound part."},
+  "日":{g:"sun, day",n:"ひ",bin:"sense",
+        why:"Sun, light and time: 時・明・晴・早. Meaning, every time you will meet it."},
+  // ---- usually sound (blue) ----
+  "寺":{g:"temple",n:"てら",bin:"sound",sound:"ジ",
+        why:"Heads a sound family: 時 ジ, 持 ジ, 詩 シ. When you see 寺 inside a character, bet on ジ."},
+  "青":{g:"blue, clear",n:"あお",bin:"sound",sound:"セイ",
+        why:"Heads a sound family: 晴 セイ, 清 セイ, 精 セイ."},
+  "永":{g:"long, eternal",n:"なが(い)",bin:"sound",sound:"エイ",
+        why:"Heads a sound family: 泳 エイ, 詠 エイ. You can hear it in 水泳 すいえい."},
+  "工":{g:"work, craft",n:"こう",bin:"sound",sound:"コウ",
+        why:"Heads a sound family: 江 コウ, 紅 コウ, 功 コウ."},
+  "白":{g:"white",n:"しろ",bin:"sound",sound:"ハク",
+        why:"Heads a sound family: 泊 ハク, 拍 ハク, 迫 ハク."},
+  // ---- does both (purple) ----
+  "門":{g:"gate",n:"もんがまえ",bin:"both",sound:"モン",
+        why:"The famous one. SOUND in 問 モン and 聞 ブン. MEANING in 開 and 間, where it is a real gate and nothing gives you the reading."},
+  "生":{g:"life, to be born",n:"せい・い(きる)",bin:"both",sound:"セイ",
+        why:"SOUND in 星 セイ and 性 セイ. MEANING in 産, where it is birth itself."},
+  // ---- build-bank extras (not sorted: too rare to ask about) ----
+  "开":{g:"two hands lifting",n:"",bin:null,
+        why:"Only turns up inside 開. Not one to sort."},
+};
+
+/* THE EIGHT. One session, one shared bank, eight characters. Ordered so
+   the 門 evidence lands in sequence: sound, sound, then meaning. */
+const BUILD8 = [
+  { ch:"問", gloss:"to ask", read:"と(う)・モン", pos:"kamae",
+    parts:[{p:"門",role:"sound",sound:"モン"},{p:"口",role:"sense"}],
+    hook:"The big outer part is the SOUND and the little one inside is the meaning. Where a part sits tells you nothing about its job." },
+  { ch:"聞", gloss:"to listen, to hear", read:"き(く)・ブン", pos:"kamae",
+    parts:[{p:"門",role:"sound",sound:"ブン"},{p:"耳",role:"sense"}],
+    hook:"Unit 10 vocabulary. Same frame as 問, same job for 門: the sound." },
+  { ch:"開", gloss:"to open", read:"ひら(く)・カイ", pos:"kamae",
+    parts:[{p:"門",role:"sense"},{p:"开",role:"sense"}], nosound:true,
+    hook:"門 just changed jobs. Here it is a real gate, and nothing in the character gives you カイ. This is why 門 went in the purple bin." },
+  { ch:"時", gloss:"time, hour", read:"とき・ジ", pos:"lr",
+    parts:[{p:"日",role:"sense"},{p:"寺",role:"sound",sound:"ジ"}],
+    hook:"Meaning on the left, sound on the right. The commonest shape in the writing system." },
+  { ch:"持", gloss:"to hold, to carry", read:"も(つ)・ジ", pos:"lr",
+    parts:[{p:"扌",role:"sense"},{p:"寺",role:"sound",sound:"ジ"}],
+    hook:"Different meaning part, same 寺 sound. That is a family working." },
+  { ch:"晴", gloss:"clear weather", read:"は(れる)・セイ", pos:"lr",
+    parts:[{p:"日",role:"sense"},{p:"青",role:"sound",sound:"セイ"}],
+    hook:"日 for the sun, 青 for the sound セイ." },
+  { ch:"清", gloss:"pure, clean", read:"きよ(い)・セイ", pos:"lr",
+    parts:[{p:"氵",role:"sense"},{p:"青",role:"sound",sound:"セイ"}],
+    hook:"さんずい never lies: water. And 青 gives セイ again." },
+  { ch:"泳", gloss:"to swim", read:"およ(ぐ)・エイ", pos:"lr",
+    parts:[{p:"氵",role:"sense"},{p:"永",role:"sound",sound:"エイ"}],
+    hook:"Unit 10 again. The エイ you can hear in 水泳 すいえい is sitting in 永." },
+];
+/* read these cold at the end, using nothing but the sound families */
+const PAYOFFS = [
+  { ch:"詩", gloss:"poem", parts:["言","寺"], answer:"シ", options:["シ","カン","トウ","リン"],
+    why:"詩 is シ. The 寺 family says ジ and this one unvoices to シ — the sound part put you in the right neighbourhood." },
+  { ch:"精", gloss:"refined, spirit", parts:["米","青"], answer:"セイ", options:["セイ","ハク","モン","ジ"],
+    why:"精 is セイ, as in 精神 せいしん. You have never studied it and you read it anyway." },
+  { ch:"詠", gloss:"to recite a poem", parts:["言","永"], answer:"エイ", options:["エイ","コウ","シ","カン"],
+    why:"詠 is エイ. Words, plus the エイ sound part." },
+];
+
+/* ============================================================
+   ENGINE
+   ------------------------------------------------------------
+   Assembly accepts BOTH drag and click. Drag because it is the
+   natural gesture and Liam asked for it; click because drag is
+   unreliable on a school tablet and with a keyboard, and no
+   student should be locked out of the mechanic by their device.
+   ============================================================ */
+const UI = {
+  title:    ["かんじこうじょう","かんじこうじょう","kanji kōjō","Kanji Factory"],
+  subtitle: ["ぶひんから 漢字を つくる","ぶひんから かんじを つくる","buhin kara kanji o tsukuru",
+             "build characters from their parts"],
+  how:      ["ぶひんは 組み立てるまで 色が つきません","ぶひんは くみたてるまで いろが つきません",
+             "buhin wa kumitateru made iro ga tsukimasen",
+             "Parts have no colour until you build with them. A part does not have a job on its own: it gets one from the character it lands in. 門 carries the SOUND in 問 and 聞, and the MEANING in 開. Build one and watch the pieces light up."],
+  back:     ["← かぞく","← かぞく","← kazoku","← families"],
+  back2:    ["かぞくへ","かぞくへ","kazoku e","Back to the families"],
+  check:    ["チェック","チェック","chekku","Check"],
+  next:     ["つぎへ","つぎへ","tsugi e","Next"],
+  clear:    ["クリア","クリア","kuria","Clear"],
+  copy:     ["コピー","コピー","kopī","Copy my report"],
+  pReport:  ["レポート","レポート","repōto","My report"],
+  pList:    ["かんじリスト","かんじリスト","kanji risuto","The character list"],
+};
+const UI_RUBY = { title:"かんじこうじょう", how:"ぶひんは <ruby>組<rt>く</rt></ruby>み<ruby>立<rt>た</rt></ruby>てるまで <ruby>色<rt>いろ</rt></ruby>が つきません" };
+
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const shuffle = (a) => { for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const ROLE_JP = { sense:"いみ", sound:"おと", both:"りょうほう" };
+  const ROLE_EN = { sense:"meaning", sound:"sound", both:"both" };
+
+  const S = { first:{}, done:{} };
+  const score = (pre) => {
+    const k = Object.keys(S.first).filter((x)=>x.indexOf(pre)===0);
+    return { got:k.filter((x)=>S.first[x]===true).length, of:k.length };
+  };
+  function go(name){
+    document.querySelectorAll(".screen").forEach((s)=>s.classList.remove("active"));
+    $("scr-"+name).classList.add("active");
+    window.scrollTo({top:0,behavior:"smooth"});
+    if (window.HubLever) window.HubLever.apply();
+  }
+  document.querySelectorAll("[data-go]").forEach((b)=>b.addEventListener("click",()=>{
+    const n=b.dataset.go; if(n==="home") drawHome(); go(n);
+  }));
+
+  const W = { i:0, placed:{}, graded:false };
+
+  /* --- assembly: drag OR click, order never graded --- */
+  function wireAssembly(c){
+    const frame=$("frame"), bank=$("bank");
+    const slots=[...frame.querySelectorAll(".slot")];
+    const firstEmpty=()=>slots.find((s)=>!s.dataset.piece);
+    function place(p,slot){
+      if(!slot||slot.dataset.piece) slot=firstEmpty();
+      if(!slot) return;
+      slot.dataset.piece=p;
+      slot.classList.add("filled");
+      slot.insertBefore(document.createTextNode(p),slot.firstChild);
+      const b=bank.querySelector('.piece[data-p="'+p+'"]:not(.used)');
+      if(b) b.classList.add("used");
+      W.placed[slot.dataset.slot]=p;
+      $("checkBtn").disabled=Object.keys(W.placed).length!==slots.length;
+      $("clearBtn").style.display=Object.keys(W.placed).length?"":"none";
+    }
+    function unplace(slot){
+      const p=slot.dataset.piece; if(!p||W.graded) return;
+      delete slot.dataset.piece;
+      slot.classList.remove("filled");
+      [...slot.childNodes].forEach((n)=>{ if(n.nodeType===3) n.remove(); });
+      const b=bank.querySelector('.piece[data-p="'+p+'"].used');
+      if(b) b.classList.remove("used");
+      delete W.placed[slot.dataset.slot];
+      $("checkBtn").disabled=true;
+      $("clearBtn").style.display=Object.keys(W.placed).length?"":"none";
+    }
+    bank.querySelectorAll(".piece").forEach((el)=>{
+      el.addEventListener("click",()=>{ if(!W.graded) place(el.dataset.p,null); });
+      el.addEventListener("dragstart",(e)=>{el.classList.add("dragging");e.dataTransfer.setData("text/plain",el.dataset.p);});
+      el.addEventListener("dragend",()=>el.classList.remove("dragging"));
+    });
+    slots.forEach((s)=>{
+      s.addEventListener("click",()=>unplace(s));
+      s.addEventListener("dragover",(e)=>{e.preventDefault();s.classList.add("over");});
+      s.addEventListener("dragleave",()=>s.classList.remove("over"));
+      s.addEventListener("drop",(e)=>{
+        e.preventDefault(); s.classList.remove("over");
+        const p=e.dataTransfer.getData("text/plain");
+        if(p&&!W.graded) place(p,s);
+      });
+    });
+    $("clearBtn").onclick=()=>{ slots.forEach(unplace); };
+  }
+
+  /* --- the light-up: role colour arrives with the character --- */
+  function lightUp(c){
+    const frame=$("frame");
+    [...frame.querySelectorAll(".slot")].forEach((s)=>{
+      const part=c.parts.find((x)=>x.p===s.dataset.piece);
+      if(!part) return;
+      s.classList.add("lit-"+part.role);
+      const b=document.createElement("span");
+      b.className="rolebadge rb-"+part.role;
+      b.textContent=ROLE_JP[part.role]+" · "+ROLE_EN[part.role]+(part.sound?" "+part.sound:"");
+      s.appendChild(b);
+    });
+    const built=document.createElement("div");
+    built.className="built";
+    built.innerHTML='<div class="bc">'+c.ch+'</div><div class="br">'+esc(c.read)+' — '+esc(c.gloss)+'</div>';
+    frame.after(built);
+  }
+
+  /* ---------------- HOME ---------------- */
+  const STAGES=[
+    { key:"sort",  n:1, t:"ぶひんを わける", d:"Sort the bank. Not what a part does in one character, but what it can EVER do: always meaning, usually sound, or both.", fn:()=>startSort() },
+    { key:"build", n:2, t:"漢字を つくる", d:"Eight characters from the same bank. Build each one and watch the parts light up with the job they do in it.", fn:()=>startBuild() },
+    { key:"read",  n:3, t:"よんでみる", d:"Three characters you have never studied. Read them using the sound families alone.", fn:()=>startRead() },
+  ];
+  function drawHome(){
+    const wrap=$("fams"); wrap.innerHTML="";
+    STAGES.forEach((st)=>{
+      const sc=score("s:"+st.key);
+      const b=document.createElement("button");
+      b.className="fam"+(S.done[st.key]?" done":"");
+      b.innerHTML='<span class="fc">'+st.n+'</span>'+
+        '<span><span class="ft">'+esc(st.t)+'</span><span class="fd">'+esc(st.d)+'</span></span>'+
+        '<span class="tag">'+(sc.of? sc.got+"/"+sc.of : "")+'</span>';
+      b.addEventListener("click",st.fn);
+      wrap.appendChild(b);
+    });
+    const l=document.createElement("button");
+    l.className="fam";
+    l.innerHTML='<span class="fc">漢</span><span><span class="ft">かんじリスト</span>'+
+      '<span class="fd">Every character with its parts and the job each one does. Grey until you build it.</span>'+
+      '</span><span class="tag">any time</span>';
+    l.addEventListener("click",()=>{drawList();go("list");});
+    wrap.appendChild(l);
+    const r=document.createElement("button");
+    r.className="fam";
+    r.innerHTML='<span class="fc">📋</span><span><span class="ft">レポート</span>'+
+      '<span class="fd">Your first try at every decision.</span></span><span class="tag">any time</span>';
+    r.addEventListener("click",()=>{drawReport();go("report");});
+    wrap.appendChild(r);
+  }
+
+  /* ---------------- THE CHARACTER LIST ----------------
+     Purple Lab's word card, ported to kanji. The English builders
+     colour a word's own spelling by the role of each morpheme; a kanji
+     cannot be coloured that way, because the parts are strokes inside
+     one glyph and CSS can only colour whole characters. So the parts
+     get their own line underneath — which is what the English cards do
+     with their morpheme line anyway, and it carries more here: the
+     radical's name (さんずい, もんがまえ) is real vocabulary students
+     are taught to say aloud. */
+  /* The student earns the colour by building. A teacher planning or
+     printing the lesson needs to see all of it cold, so the list has a
+     reveal — off by default, so the student view keeps the promise the
+     home screen makes. */
+  let listReveal=false;
+  /* The character itself, drawn stroke by stroke so each component takes
+     its own colour — the same move the English word list makes when it
+     colours "pan" and "sexual" inside Pansexual. Falls back to the plain
+     character where no stroke data is bundled. */
+  function glyph(c,lit){
+    if(window.KanjiGlyph && KanjiGlyph.has(c.ch)){
+      return KanjiGlyph.svg(c.ch, c.parts, { size:52, mono: lit?null:"var(--line)" });
+    }
+    return c.ch;
+  }
+  function compLine(c){
+    const built = listReveal || S.first["s:build:"+c.ch]!==undefined;
+    return c.parts.map((p)=>{
+      const info=PIECES[p.p]||{};
+      const role=built?p.role:"none";
+      const name=info.n?' <span class="rad">'+esc(info.n)+'</span>':"";
+      const snd=(built&&p.sound)?' <b>'+esc(p.sound)+'</b>':"";
+      return '<code class="c-'+role+'">'+esc(p.p)+'</code> <i>'+esc(info.g||"")+'</i>'+name+snd;
+    }).join(" + ");
+  }
+  function drawList(){
+    const wrap=$("list-body");
+    wrap.innerHTML='<div class="klegend"><span class="c-sense">いみ meaning</span>'+
+      '<span class="c-sound">おと sound</span><span class="c-both">りょうほう both</span>'+
+      '<span class="note">— the job a part does in <i>that</i> character, not everywhere</span></div>';
+    BUILD8.forEach((c)=>{
+      const built = listReveal || S.first["s:build:"+c.ch]!==undefined;
+      const d=document.createElement("div");
+      d.className="kcard"+(built?"":" locked");
+      d.innerHTML='<span class="w">'+glyph(c,built)+'</span><span class="rd">'+esc(c.read)+'</span>'+
+        '<div class="meaning">'+esc(c.gloss)+'</div>'+
+        '<div class="comp">'+compLine(c)+
+          (c.nosound?'<div class="kn">No part of '+c.ch+' gives you the reading. Some characters are like that, and it is worth knowing which.</div>':"")+
+          (built?'<div class="kn">'+esc(c.hook)+'</div>'
+                :'<div class="todo">Build this one and its parts take their colours.</div>')+
+        '</div>';
+      wrap.appendChild(d);
+    });
+  }
+  $("revealBtn").addEventListener("click",()=>{
+    listReveal=!listReveal;
+    $("revealBtn").textContent=listReveal?"Back to the earned view":"Show every colour";
+    drawList();
+  });
+
+  /* ---------------- STAGE 1 · SORT THE BANK ----------------
+     The question here is not "what job does this do in this character"
+     but "what job can this part ever do". Different question, and the
+     one that makes the build stage predictable. */
+  const SORTABLE=Object.keys(PIECES).filter((p)=>PIECES[p].bin);
+  const SORT={ picked:null, placed:{} };
+  function startSort(){
+    SORT.picked=null; SORT.placed={};
+    go("work");
+    $("work-prog").textContent="ステップ1 · ぶひんを わける";
+    $("work-fb").className="feedback"; $("work-fb").innerHTML="";
+    $("nextBtn").style.display="none"; $("clearBtn").style.display="";
+    $("checkBtn").style.display=""; $("checkBtn").disabled=true;
+    $("work-area").innerHTML=
+      '<p class="prompt">What can each part <b>ever</b> do?</p>'+
+      '<p class="promptread">Drag it into a bin, or tap the part then tap the bin.</p>'+
+      '<div class="yard">'+
+        '<div class="yardbank" id="yardbank">'+shuffle(SORTABLE.slice()).map((p)=>
+          '<button type="button" class="piece" data-p="'+p+'" draggable="true">'+
+            '<span class="pc">'+p+'</span><span class="pg">'+esc(PIECES[p].g)+'</span>'+
+            (PIECES[p].n?'<span class="pn">'+esc(PIECES[p].n)+'</span>':'')+
+          '</button>').join("")+'</div>'+
+        '<div class="bins big">'+
+          '<div class="bin bin-sense" data-bin="sense"><span class="bh">いつも いみ<small>always meaning</small></span><span class="drop"></span></div>'+
+          '<div class="bin bin-sound" data-bin="sound"><span class="bh">たいてい おと<small>usually sound</small></span><span class="drop"></span></div>'+
+          '<div class="bin bin-both"  data-bin="both"><span class="bh">どちらも<small>can do both</small></span><span class="drop"></span></div>'+
+        '</div>'+
+        '<p class="binrule">The purple bin is small on purpose. Most parts stick to one job.</p>'+
+      '</div>';
+    wireYard();
+  }
+  function wireYard(){
+    const bank=$("yardbank");
+    const pieces=[...document.querySelectorAll("#yardbank .piece, .bins.big .piece")];
+    const bins=[...document.querySelectorAll(".bins.big .bin")];
+    function drop(p,bin){
+      SORT.placed[p]=bin.dataset.bin;
+      bin.querySelector(".drop").appendChild(document.querySelector('.piece[data-p="'+p+'"]'));
+      SORT.picked=null;
+      document.querySelectorAll(".piece").forEach((x)=>x.style.outline="");
+      $("checkBtn").disabled=Object.keys(SORT.placed).length!==SORTABLE.length;
+    }
+    document.querySelectorAll(".piece").forEach((el)=>{
+      el.addEventListener("click",(e)=>{
+        if(W.graded) return;
+        if(el.parentElement.classList.contains("drop")){
+          if(SORT.picked) return;              // aiming at the bin, not this chip
+          e.stopPropagation();
+          delete SORT.placed[el.dataset.p];
+          bank.appendChild(el);
+          $("checkBtn").disabled=true;
+          return;
+        }
+        SORT.picked=el.dataset.p;
+        document.querySelectorAll(".piece").forEach((x)=>x.style.outline = x===el ? "2px solid var(--accent)":"");
+      });
+      el.addEventListener("dragstart",(e)=>e.dataTransfer.setData("text/plain",el.dataset.p));
+    });
+    bins.forEach((b)=>{
+      b.addEventListener("click",()=>{ if(SORT.picked&&!W.graded) drop(SORT.picked,b); });
+      b.addEventListener("dragover",(e)=>{e.preventDefault();b.classList.add("over");});
+      b.addEventListener("dragleave",()=>b.classList.remove("over"));
+      b.addEventListener("drop",(e)=>{
+        e.preventDefault(); b.classList.remove("over");
+        const p=e.dataTransfer.getData("text/plain");
+        if(p&&!W.graded) drop(p,b);
+      });
+    });
+    $("clearBtn").onclick=()=>{
+      Object.keys(SORT.placed).forEach((p)=>bank.appendChild(document.querySelector('.piece[data-p="'+p+'"]')));
+      SORT.placed={}; $("checkBtn").disabled=true;
+    };
+  }
+  function gradeSort(){
+    W.graded=true;
+    let right=0;
+    SORTABLE.forEach((p)=>{
+      const ok=SORT.placed[p]===PIECES[p].bin;
+      if(ok) right++;
+      const id="s:sort:"+p;
+      if(!(id in S.first)) S.first[id]=ok;
+      const el=document.querySelector('.piece[data-p="'+p+'"]');
+      el.style.outline = ok ? "2px solid var(--correct)" : "2px solid var(--amber)";
+      if(!ok){
+        const bin=document.querySelector('.bin[data-bin="'+PIECES[p].bin+'"] .drop');
+        if(bin) bin.appendChild(el);
+      }
+    });
+    S.done.sort=true;
+    const fb=$("work-fb");
+    fb.className="feedback "+(right===SORTABLE.length?"good":"bad");
+    fb.innerHTML=(right===SORTABLE.length?"✓ Every one right.":"You placed "+right+" of "+SORTABLE.length+
+      " correctly. The rest have moved to their bins.")+
+      '<div class="lawnote"><b>One of these bins is a law, the other two are bets.</b> '+
+      'The bound forms (氵 亻 扌 忄 艹) are squashed shapes with no reading of their own, so they '+
+      '<b>cannot</b> be a sound part. Ever. The blue and purple bins are strong tendencies instead: '+
+      'reliable enough to guess from, not strong enough to promise.</div>'+
+      '<div class="hook">'+SORTABLE.map((p)=>
+        '<div class="partrow '+(SORT.placed[p]===PIECES[p].bin?"ok":"no")+'"><span class="pk">'+p+'</span>'+
+        '<span>'+esc(PIECES[p].why)+'</span></div>').join("")+'</div>';
+    $("checkBtn").style.display="none"; $("clearBtn").style.display="none";
+    $("nextBtn").style.display=""; $("nextBtn").focus();
+    drawHome();
+  }
+
+  /* ---------------- STAGE 2 · BUILD THE EIGHT ---------------- */
+  function startBuild(){ W.i=0; go("work"); renderBuildRound(); }
+  function renderBuildRound(){
+    const c=BUILD8[W.i];
+    W.placed={}; W.graded=false;
+    $("work-fb").className="feedback"; $("work-fb").innerHTML="";
+    $("nextBtn").style.display="none"; $("clearBtn").style.display="none";
+    $("checkBtn").style.display=""; $("checkBtn").disabled=true;
+    if(!c){
+      S.done.build=true;
+      const sc=score("s:build");
+      $("work-area").innerHTML='<div class="feedback good" style="display:block"><b>八つ かんりょう · all eight built.</b><br>'+
+        'First try: '+sc.got+'/'+sc.of+'. 門 lit up two different colours and 氵 never changed once. That is the whole system in eight characters.</div>';
+      $("checkBtn").style.display="none";
+      $("work-prog").textContent="ステップ2 ✓";
+      drawHome(); return;
+    }
+    $("work-prog").textContent="ステップ2 · "+(W.i+1)+"/"+BUILD8.length;
+    const posName={lr:"へん · つくり  (left, right)",kamae:"かまえ  (enclosure, and what sits inside)",
+                   tb:"かんむり · あし  (top, bottom)"}[c.pos];
+    const slots=c.pos==="kamae"
+      ? '<div class="slot outer" data-slot="0"><span class="slotlab">かまえ</span></div><div class="slot inner" data-slot="1"></div>'
+      : '<div class="slot" data-slot="0"><span class="slotlab">へん</span></div><div class="slot" data-slot="1"><span class="slotlab">つくり</span></div>';
+    // the SAME big bank every round, exactly like the word builder
+    const bank=Object.keys(PIECES);
+    $("work-area").innerHTML=
+      '<p class="prompt">Build: <b>'+esc(c.gloss)+'</b></p>'+
+      '<p class="promptread">'+esc(c.read)+'</p>'+
+      '<p class="posname">'+esc(posName)+'</p>'+
+      '<div class="frame '+c.pos+'" id="frame">'+slots+'</div>'+
+      '<p class="bankhead">ぶひん · the bank (no colour until it is built)</p>'+
+      '<div class="bank" id="bank">'+bank.map((p)=>
+        '<button type="button" class="piece" data-p="'+p+'" draggable="true">'+
+          '<span class="pc">'+p+'</span><span class="pg">'+esc(PIECES[p].g)+'</span>'+
+          (PIECES[p].n?'<span class="pn">'+esc(PIECES[p].n)+'</span>':'')+
+        '</button>').join("")+'</div>';
+    wireAssembly(c);
+  }
+
+  /* ---------------- STAGE 3 · READ COLD ---------------- */
+  function startRead(){ W.i=0; go("work"); renderReadRound(); }
+  function renderReadRound(){
+    const p=PAYOFFS[W.i];
+    W.graded=false;
+    $("work-fb").className="feedback"; $("work-fb").innerHTML="";
+    $("nextBtn").style.display="none"; $("clearBtn").style.display="none";
+    $("checkBtn").style.display=""; $("checkBtn").disabled=true;
+    if(!p){
+      S.done.read=true;
+      const sc=score("s:read");
+      $("work-area").innerHTML='<div class="feedback good" style="display:block"><b>よめた.</b><br>'+
+        'First try: '+sc.got+'/'+sc.of+'. Three characters nobody taught you.</div>';
+      $("checkBtn").style.display="none";
+      $("work-prog").textContent="ステップ3 ✓";
+      drawHome(); return;
+    }
+    $("work-prog").textContent="ステップ3 · "+(W.i+1)+"/"+PAYOFFS.length;
+    $("work-area").innerHTML=
+      '<p class="prompt">You have never studied this one.</p>'+
+      '<div class="built"><div class="bc">'+p.ch+'</div><div class="br">'+esc(p.gloss)+'</div></div>'+
+      '<p class="promptread">'+p.parts.map((x)=>x+' <span style="color:var(--muted)">'+
+        esc(PIECES[x]?PIECES[x].g:(x==="言"?"words":"rice"))+'</span>').join(' ＋ ')+'</p>'+
+      '<div class="predict"><p>Using the sound part, what is <b>'+p.ch+'</b> read as?</p>'+
+      '<div class="guesses" id="guesses">'+shuffle(p.options.slice()).map((g)=>
+        '<button type="button" class="guess" data-v="'+esc(g)+'">'+esc(g)+'</button>').join("")+'</div></div>';
+    $("guesses").querySelectorAll(".guess").forEach((b)=>b.addEventListener("click",()=>{
+      if(W.graded) return;
+      $("guesses").querySelectorAll(".guess").forEach((x)=>x.dataset.sel="");
+      b.dataset.sel="1"; $("checkBtn").disabled=false;
+    }));
+  }
+
+  /* ---------------- grading ---------------- */
+  function stageOf(){
+    const t=$("work-prog").textContent;
+    if(t.indexOf("ステップ1")===0) return "sort";
+    if(t.indexOf("ステップ3")===0) return "read";
+    return "build";
+  }
+  $("checkBtn").addEventListener("click",()=>{
+    if(W.graded) return;
+    const st=stageOf();
+    if(st==="sort"){ gradeSort(); return; }
+    if(st==="read"){ gradeRead(); return; }
+    gradeBuild();
+  });
+  function gradeBuild(){
+    const c=BUILD8[W.i];
+    const want=c.parts.map((p)=>p.p).sort().join("");
+    const got=Object.values(W.placed).sort().join("");
+    if(want!==got){
+      $("work-fb").className="feedback bad";
+      $("work-fb").innerHTML="✗ Not those parts. The bank holds every piece in the set, so most of them are decoys for this character. Take them out and try again.";
+      return;
+    }
+    W.graded=true;
+    const id="s:build:"+c.ch;
+    if(!(id in S.first)) S.first[id]=true;
+    lightUp(c);
+    $("work-fb").className="feedback good";
+    $("work-fb").innerHTML="✓ Built. Watch the parts take their jobs."+
+      '<div class="hook"><span class="lab">なぜ · why</span>'+
+        c.parts.map((p)=>'<b>'+p.p+'</b> — '+ROLE_EN[p.role]+(p.sound?' ('+esc(p.sound)+')':'')+
+          ': '+esc(PIECES[p.p]?PIECES[p.p].g:"")).join("<br>")+'</div>'+
+      (c.nosound?'<div class="hook warn"><span class="lab">おと が ない · no sound part</span>'+
+        'Nothing in '+c.ch+' tells you the reading.</div>':'')+
+      '<div class="hook"><span class="lab">おぼえかた · memory hook, not history</span>'+esc(c.hook)+'</div>';
+    $("checkBtn").style.display="none";
+    $("nextBtn").style.display=""; $("nextBtn").focus();
+  }
+  function gradeRead(){
+    W.graded=true;
+    const p=PAYOFFS[W.i];
+    const sel=document.querySelector('.guess[data-sel="1"]');
+    const ok=!!sel && sel.dataset.v===p.answer;
+    const id="s:read:"+p.ch;
+    if(!(id in S.first)) S.first[id]=ok;
+    document.querySelectorAll(".guess").forEach((b)=>{
+      b.disabled=true;
+      if(b.dataset.v===p.answer) b.classList.add("correct");
+      else if(b.dataset.sel==="1") b.classList.add("incorrect");
+    });
+    $("work-fb").className="feedback "+(ok?"good":"bad");
+    $("work-fb").innerHTML=(ok?"✓ ":"")+esc(p.why);
+    $("checkBtn").style.display="none";
+    $("nextBtn").style.display="";
+  }
+  $("nextBtn").addEventListener("click",()=>{
+    const st=stageOf();
+    if(st==="sort"){ drawHome(); go("home"); return; }
+    W.i++;
+    if(st==="read") renderReadRound(); else renderBuildRound();
+  });
+
+  /* ---------------- REPORT ---------------- */
+  function drawReport(){
+    let got=0,of=0;
+    const rows=[
+      {k:"sort", t:"ステップ1 · ぶひんを わける", d:"what each part can ever do"},
+      {k:"build",t:"ステップ2 · 漢字を つくる",   d:"eight characters from one bank"},
+      {k:"read", t:"ステップ3 · よんでみる",       d:"read three you were never taught"},
+    ];
+    $("rep-rows").innerHTML=rows.map((r)=>{
+      const sc=score("s:"+r.k); got+=sc.got; of+=sc.of;
+      const cls=!sc.of?"":(sc.got===sc.of?"full":"part");
+      return '<div class="rrow '+cls+'"><span>'+esc(r.t)+' <span style="color:var(--muted);font-size:11.5px">'+esc(r.d)+'</span></span>'+
+        (sc.of?'<span class="sc">'+sc.got+"/"+sc.of+"</span>":'<span style="font-size:11px;color:var(--muted);font-style:italic">not started yet</span>')+'</div>';
+    }).join("");
+    $("rep-stat").innerHTML=(of?got+"/"+of:"—")+"<small>first try, across every decision</small>";
+  }
+  $("copyBtn").addEventListener("click",()=>{
+    let t="Kanji Factory\n"+new Date().toLocaleDateString("en-AU")+"\n\n";
+    [["sort","Sorting the bank"],["build","Building eight characters"],["read","Reading three cold"]]
+      .forEach((r)=>{ const sc=score("s:"+r[0]);
+        t+=r[1]+": "+(sc.of? sc.got+"/"+sc.of+" first try":"not started yet")+"\n"; });
+    t+="\nScores are the first attempt at each decision.\n";
+    navigator.clipboard.writeText(t).then(
+      ()=>{ $("copynote").textContent="Copied. Paste it wherever your teacher asks."; },
+      ()=>{ $("copynote").textContent="Could not copy automatically."; });
+  });
+
+  drawHome();
+  window.HubLever.init({ strings:UI, ruby:UI_RUBY });
+})();
+</script>
+</body>
+</html>

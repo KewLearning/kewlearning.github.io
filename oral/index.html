@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>話す練習 · Oral Practice</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --okbg:#eef5ee;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);
+       min-height:100vh;padding:16px;display:flex;justify-content:center;align-items:flex-start;color:var(--ink)}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       max-width:720px;width:100%;padding:26px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font)}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px}
+  .poc b{color:var(--accent)}
+  .honest{background:var(--bg);border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;
+       font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px}
+  .tier-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+  .tier-btn{border:1px solid var(--line-soft);background:var(--bg);color:var(--muted);font-size:12px;
+       font-weight:600;padding:6px 14px;border-radius:14px;cursor:pointer}
+  .tier-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .tier-note{text-align:center;font-size:12px;color:var(--muted);margin-bottom:12px}
+  .rand-row{text-align:center;margin-bottom:14px}
+  .btn{padding:9px 16px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink);font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .qlist{display:flex;flex-direction:column;gap:8px}
+  .qrow{display:flex;align-items:center;gap:12px;border:1px solid var(--line-soft);border-radius:10px;
+       background:var(--paper);padding:10px 14px}
+  .qrow.focus{border-color:var(--accent);background:#faf5f0}
+  .play{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);
+       font-size:15px;cursor:pointer;flex-shrink:0}
+  .play:hover{border-color:var(--accent);color:var(--accent)}
+  .qtext{font-size:16px;line-height:1.5;flex:1;font-family:var(--font)}
+  .qnum{font-size:10px;font-weight:700;color:var(--muted);min-width:22px}
+  .checks{display:flex;gap:8px;flex-shrink:0}
+  .chk{font-size:10px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+  .chk input{accent-color:var(--correct);cursor:pointer}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);opacity:.45;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="jt-tap" data-jt="title">話す練習</h1>
+  <p class="subtitle jt-tap" data-jt="subtitle">The 47 oral exam questions, with audio</p>
+  <span class="poc"><b>Proof of concept</b> for Andrew's review — his question set and TTS audio, three tiers.</span>
+  <div class="honest jt-tap" data-jt="honest">This app never judges your speaking.</div>
+
+  <div class="tier-row" id="tiers"></div>
+  <p class="tier-note" id="tierNote"></p>
+  <div class="rand-row"><button class="btn btn-primary" id="randBtn" data-jt="random">ランダム</button>
+    <span id="listLever" data-scope="#qlist" title="Pull down for more help with the question list. It lets go slowly."></span></div>
+  <div class="qlist" id="qlist"></div>
+</div>
+<div class="build-tag">Oral PoC 2026-09-06</div>
+
+<script src="lever.js"></script>
+<script>
+const QUESTIONS = ["なまえは何ですか。","今、何年生ですか。","かぞくは何人いますか。","おとうさんの仕事は何ですか。","おかあさんの仕事は何ですか。","きょうだいがいますか。","だれと一番なかがいいですか。どうしてですか。","どんな学校の行事がすきですか。","学校でどんな科目をべんきょうしていますか。","一番すきな科目は何ですか。どうしてですか。","一番にがてな科目は何ですか。どうしてですか。","学校生活で一番たいへんなことは何ですか。","友だちと何をするのがすきですか。","いい友だちとはどんな人だと思いますか。","しゅみは何ですか。","いつからそのしゅみを始めましたか。","どうしてそのしゅみがすきなのですか。","週末は何をしますか。","毎日どんな生活をしていますか。","アルバイトをしていますか。","アルバイトはどうですか。たいへんですか、たのしいですか。","将来のゆめは何ですか。","どうしてその仕事をえらびましたか。","大学で何をべんきょうしたいですか。","将来、日本とかんけいがある仕事をしたいですか。","十年後、どんな生活をしていると思いますか。","日本に行ったことがありますか。","日本のどこに行きたいですか。どうしてですか。","日本の文化について何をしっていますか。","日本と自分の国とどうちがいますか。","日本語をべんきょうするりゆうは何ですか。","日本語をべんきょうしていて、一番むずかしいことは何ですか。","これから日本語をどうやってつづけたいですか。","今の日本のわかものについてどう思いますか。","テクノロジーは生活をどうかえたと思いますか。","学生にとってスマホはひつようだと思いますか。どうしてですか。","かんきょうもんだいについてどう思いますか。","かんきょうをまもるために何ができると思いますか。","学校できゅう食（べんとう）を食べたほうがいいと思いますか。","オンライン学習についてどう思いますか。","今の教育せいどについてどう思いますか。何かかえたほうがいいですか。","社会でSNSはいいえいきょうをあたえると思いますか、それとも わるいえいきょうをあたえると思いますか。","もし十年前にもどれたら、何をしますか。","もし日本に一年間住めたら、何をしたいですか。","もしお金がたくさんあったら、何をしますか。","どんな大人になりたいですか。","人生で一番大切なことは何だと思いますか。どうしてですか。"];
+const TIERS = [
+  { name:"Tier 1 · 自己しょうかい", note:"Yourself, family and school. Every conversation starts here.", from:0, to:15 },
+  { name:"Tier 2 · しゅみと将来", note:"Hobbies, daily life and your future. Expect どうしてですか follow-ups.", from:15, to:30 },
+  { name:"Tier 3 · いけんを言う", note:"Opinions and hypotheticals. This is where the top marks live.", from:30, to:47 },
+];
+/* Japanese-led chrome, four forms each: [kanji, kana, romaji, English]. */
+const UI = {
+  title:    ["話す練習","はなすれんしゅう","hanasu renshū","Oral Practice"],
+  subtitle: ["口頭試験の47問、音声つき","こうとうしけんの47もん、おんせいつき","kōtō shiken no 47 mon, onsei tsuki",
+             "the 47 oral exam questions, with audio"],
+  honest:   ["このアプリは話し方を採点しません","このアプリははなしかたをさいてんしません",
+             "kono apuri wa hanashikata o saiten shimasen",
+             "This app never judges your speaking. A computer can't, honestly. Play the question, answer aloud, and tick your own boxes."],
+  random:   ["ランダム","ランダム","randamu","random question"],
+  got:      ["わかった","わかった","wakatta","understood"],
+  said:     ["こたえた","こたえた","kotaeta","answered aloud"],
+};
+const UI_RUBY = {
+  title: "<ruby>話<rt>はな</rt></ruby>す<ruby>練習<rt>れんしゅう</rt></ruby>",
+  subtitle: "<ruby>口頭試験<rt>こうとうしけん</rt></ruby>の47<ruby>問<rt>もん</rt></ruby>、<ruby>音声<rt>おんせい</rt></ruby>つき",
+  honest: "このアプリは<ruby>話<rt>はな</rt></ruby>し<ruby>方<rt>かた</rt></ruby>を<ruby>採点<rt>さいてん</rt></ruby>しません",
+};
+
+(function(){
+  const $=(id)=>document.getElementById(id);
+  let tier=0;
+  const audio=new Audio();
+  function pad(n){return String(n+1).padStart(2,"0");}
+  function build(){
+    const t=TIERS[tier];
+    $("tierNote").textContent=t.note;
+    document.querySelectorAll(".tier-btn").forEach((b,i)=>b.classList.toggle("active",i===tier));
+    const list=$("qlist");list.innerHTML="";
+    for(let i=t.from;i<t.to;i++){
+      const row=document.createElement("div");row.className="qrow";row.id="q"+i;
+      row.innerHTML=`<span class="qnum">${i+1}</span>
+        <button class="play" title="play the question">▶</button>
+        <span class="qtext">${QUESTIONS[i]}</span>
+        <span class="checks">
+          <label class="chk"><input type="checkbox"><span data-jt="got">わかった</span></label>
+          <label class="chk"><input type="checkbox"><span data-jt="said">こたえた</span></label>
+        </span>`;
+      row.querySelector(".play").addEventListener("click",()=>{
+        audio.src="audio/qa-"+pad(i)+".mp3";
+        audio.play().catch(()=>{ row.querySelector(".qtext").title="Audio not available"; });
+      });
+      list.appendChild(row);
+    }
+    if (window.HubLever) window.HubLever.apply(list);
+  }
+  TIERS.forEach((t,i)=>{
+    const b=document.createElement("button");b.className="tier-btn";b.textContent=t.name;
+    b.addEventListener("click",()=>{tier=i;build();});
+    $("tiers").appendChild(b);
+  });
+  $("randBtn").addEventListener("click",()=>{
+    const t=TIERS[tier];
+    const i=t.from+Math.floor(Math.random()*(t.to-t.from));
+    build();
+    const row=$("q"+i);
+    row.classList.add("focus");
+    row.scrollIntoView({behavior:"smooth",block:"center"});
+    row.querySelector(".play").click();
+  });
+  build();
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+})();
+</script>
+</body>
+</html>

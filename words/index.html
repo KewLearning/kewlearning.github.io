@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>ことばラボ · Word Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<style>
+  /* Same suite palette as the Grammar Hub. PROOF OF CONCEPT: the morpheme
+     matrix idea ported to kanji families, using one small word list from
+     Andrew's own 給食 unit. Three families, three tasks each. */
+  :root{
+    /* ---- typography: two scripts, two faces ----
+       Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
+       UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
+       handwriting models, which is why it is the classroom default rather
+       than a gothic. Both are already on the school machines, so nothing is
+       downloaded and nothing breaks offline.
+       One stack does both jobs because the browser falls back per character:
+       Latin resolves inside --font-en, kana and kanji fall straight through
+       to --font-jp. The Japanese list puts every textbook face it can ahead
+       of any gothic, so a machine without the UD family still gets kyokasho
+       stroke shapes. Never write a font name outside this block. */
+    --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font:var(--font-en),var(--font-jp),sans-serif;
+
+    --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
+    --line:#d8cfbb; --line-soft:#e8e0cd; --accent:#a83232;
+    --correct:#2f6a3e; --wrong:#a83232; --okbg:#eef5ee; --badbg:#f7ecec;
+    /* morpheme roles — the word builder's calmed palette, one hue per role */
+    /* MORPHEME ROLE, the same axis as the EAL word builder's
+       prefix / root / suffix. Japanese has real affixes at the WORD
+       level (お〜, 大〜, 〜手, 〜費, 〜的, 〜さ), so this transfers.
+       Inside a single character it does NOT: components split into
+       meaning-part and sound-part instead, which is the character
+       builder's own axis. Two levels, two systems, never mixed. */
+    --prefix:#7a5cad;    --prefix-bg:#ece4f6;
+    --root:#7a4a21;      --root-bg:#f3e7da;
+    --suffix:#1f6f78;    --suffix-bg:#dceef0;
+    --head:#7a4a21;      /* the family kanji (the shared root) */
+    --head-bg:#f3e7d8;
+    --part:#2f5d8f;      /* the other kanji in a compound */
+    --part-bg:#e3ecf5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);
+       min-height:100vh;padding:16px;display:flex;justify-content:center;align-items:flex-start;color:var(--ink)}
+  .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       max-width:720px;width:100%;padding:26px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
+  .subtitle{color:var(--muted);text-align:center;margin:6px 0 4px;font-size:13px}
+  .poc{display:block;text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px}
+  .poc b{color:var(--accent)}
+  .screen{display:none}.screen.active{display:block}
+  button{font-family:inherit}
+  .btn{padding:11px 18px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-weight:600;
+       cursor:pointer;background:var(--paper);color:var(--ink)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:var(--bg);color:var(--muted)}
+  .center{text-align:center}
+
+  /* ---- family cards ---- */
+  .fam-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}
+  .fam-card{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:16px;
+       cursor:pointer;text-align:center;transition:border-color .12s ease}
+  .fam-card:hover{border-color:var(--accent)}
+  .fam-kanji{font-size:44px;font-family:var(--font);color:var(--head)}
+  .fam-gloss{font-size:12px;color:var(--muted);margin-top:4px}
+  .fam-count{font-size:11px;font-weight:700;color:var(--accent);margin-top:6px}
+
+  /* ---- the family map (MEET) ---- */
+  .map-head{text-align:center;margin:10px 0 4px}
+  .map-head .fam-kanji{font-size:56px}
+  .map-note{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .words{display:flex;flex-direction:column;gap:8px;max-width:440px;margin:0 auto}
+  .word-row{display:flex;align-items:center;gap:12px;border:1px solid var(--line-soft);border-radius:10px;
+       background:var(--bg);padding:10px 14px}
+  .word-jp{font-size:24px;font-family:var(--font);min-width:150px;cursor:pointer}
+  .word-jp .h{color:var(--head)}
+  /* purple-lab move: colour the headword's own spelling by morpheme role,
+     not just the breakdown line underneath it */
+  .word-jp .w-prefix{color:var(--prefix);font-weight:700}
+  .word-jp .w-root{color:var(--root);font-weight:700}
+  .word-jp .w-suffix{color:var(--suffix);font-weight:700}
+  .word-jp .w-okuri{color:var(--muted)}
+  .word-jp rt{font-size:11px;color:var(--muted);font-weight:400}
+  .word-reveal{font-size:13px;color:var(--muted);flex:1}
+  .word-reveal code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;font-size:13px}
+  .word-reveal code.w-prefix{color:var(--prefix)}
+  .word-reveal code.w-root{color:var(--root)}
+  .word-reveal code.w-suffix{color:var(--suffix)}
+  .meet-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:11.5px;font-weight:700;
+       margin:0 auto 12px;max-width:440px;border:1px solid var(--line-soft);border-radius:8px;
+       padding:8px 12px;background:var(--paper)}
+  .meet-legend .w-prefix,.meet-legend .w-root,.meet-legend .w-suffix{font-weight:800}
+  .meet-legend .note{font-weight:400;color:var(--muted)}
+  .tap-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+
+  /* ---- build task ---- */
+  .task-prompt{font-family:var(--font);font-size:16px;text-align:center;margin:14px 0 6px}
+  .task-cue{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .slots,.bank{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+  .slots{min-height:56px;padding:10px;border:2px dashed var(--line);border-radius:10px;background:var(--bg)}
+  .slots.correct{border-style:solid;border-color:var(--correct);background:var(--okbg)}
+  .slots.incorrect{border-style:solid;border-color:var(--wrong);background:var(--badbg)}
+  .tile{font-size:26px;font-family:var(--font);padding:6px 14px;border:2px solid var(--part);
+       color:var(--part);background:var(--part-bg);border-radius:10px;cursor:pointer}
+  /* colour says the ROLE; the ring says this is the family's own kanji */
+  .tile.role-prefix{border-color:var(--prefix);color:var(--prefix);background:var(--prefix-bg)}
+  .tile.role-root{border-color:var(--root);color:var(--root);background:var(--root-bg)}
+  .tile.role-suffix{border-color:var(--suffix);color:var(--suffix);background:var(--suffix-bg)}
+  .tile.role-okuri{border-color:var(--line);color:var(--muted);background:var(--bg)}
+  .tile.head{box-shadow:0 0 0 3px var(--paper),0 0 0 5px currentColor}
+  .rolekey{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:10px 0 4px}
+  .rolekey span{font-size:10.5px;font-weight:800;letter-spacing:.03em;border-radius:9px;padding:2px 10px;border:1px solid}
+  .rk-prefix{color:var(--prefix);border-color:var(--prefix);background:var(--prefix-bg)}
+  .rk-root{color:var(--root);border-color:var(--root);background:var(--root-bg)}
+  .rk-suffix{color:var(--suffix);border-color:var(--suffix);background:var(--suffix-bg)}
+  .rolenote{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.55;margin-bottom:8px}
+  /* family membership is the RING only (see .tile.head above): if it also
+     repainted the tile it would overwrite the morpheme role, and one mark
+     would be carrying two meanings. */
+  .tile:disabled{opacity:.85;cursor:default}
+  .feedback{font-size:14px;line-height:1.5;margin-top:12px;padding:12px;border-radius:10px;min-height:20px;color:var(--muted);text-align:center}
+  .feedback.good{background:var(--okbg);color:#234e2c}
+  .feedback.bad{background:var(--badbg);color:#7a2020}
+
+  /* ---- meaning task ---- */
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:520px;margin:0 auto}
+  .option{font-size:14px;font-weight:600;text-align:left;padding:12px 14px;border-radius:10px;
+       border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+  .option.correct{background:var(--okbg);border-color:var(--correct);color:var(--correct)}
+  .option.incorrect{background:var(--badbg);border-color:var(--wrong);color:var(--wrong)}
+  @media(max-width:480px){.options{grid-template-columns:1fr}}
+  .actions{display:flex;justify-content:center;gap:10px;margin-top:16px}
+  .big-stat{font-family:var(--font);font-size:40px;font-weight:700;color:var(--accent);text-align:center}
+  .stat-label{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .back{background:none;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:8px}
+  .build-tag{position:fixed;left:6px;bottom:5px;font-family:monospace;font-size:9px;color:var(--muted);opacity:.45;pointer-events:none}
+  .modes{text-align:center;margin:-2px 0 12px}
+  .modebtn{font-size:11px;font-weight:700;letter-spacing:.3px;border:1px solid var(--line);border-radius:14px;padding:4px 12px;
+       background:var(--bg);color:var(--muted);cursor:pointer}
+  .modebtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  body.noen .en{display:none!important}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="jt-tap" data-jt="title">ことばラボ</h1>
+  <p class="subtitle jt-tap" data-jt="subtitle">Kanji families: one shared kanji, many words</p>
+  <p class="modes"><button type="button" class="modebtn" id="noenBtn" title="For students who already read the kanji: English meanings are hidden and the quiz asks for the reading instead">中文 · no English</button></p>
+  <span class="poc"><b>Proof of concept</b> for Andrew's review — four kanji families, three from the 給食 unit plus the 〜手 suffix family. The mechanic is Liam's morpheme word-builder, ported to kanji compounds.</span>
+
+  <section class="screen active" id="pick">
+    <div class="fam-grid" id="famGrid"></div>
+    <p class="tap-hint">Pick a family. You will meet the words, build them from their parts, then work out meanings from the parts alone.</p>
+  </section>
+
+  <section class="screen" id="meet">
+    <button class="back" id="backBtn" data-jt="back">← かぞく</button>
+    <div class="map-head"><span class="fam-kanji" id="meetKanji"></span></div>
+    <p class="map-note" id="meetNote"></p>
+    <div class="meet-legend"><span class="w-prefix">prefix</span><span class="w-root">root</span><span class="w-suffix">suffix</span>
+      <span class="note">— the same colours mark each word's parts below</span></div>
+    <div class="words" id="meetWords"></div>
+    <p class="tap-hint">Tap a word: reading first, then meaning. It fades back to kanji by itself — like the lever in the Grammar Hub.</p>
+    <div class="actions" id="meetActions"><button class="btn btn-primary" id="toBuild" data-jt="toBuild">つぎへ</button>
+      <span id="meetLever" data-scope="#meet" title="Pull down for more help with this family. It lets go slowly."></span></div>
+  </section>
+
+  <section class="screen" id="task">
+    <button class="back" id="backBtn2" data-jt="back">← かぞく</button>
+    <div id="taskArea"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="checkBtn" data-jt="check" disabled>チェック</button>
+      <button class="btn btn-primary" id="nextBtn" data-jt="next" style="display:none">つぎへ</button>
+      <span id="taskLever" data-scope="#task" title="Pull down for more help with this task. It lets go slowly."></span>
+    </div>
+  </section>
+
+  <section class="screen" id="report">
+    <div class="big-stat" id="stat"></div>
+    <div class="stat-label">correct first try · every word was mastered</div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="againBtn" data-jt="again">もう一度</button>
+      <button class="btn btn-primary" id="homeBtn" data-jt="home">かぞくへ</button>
+    </div>
+  </section>
+</div>
+<div class="build-tag">WordLab PoC 2026-09-06</div>
+
+<script src="lever.js"></script>
+<script>
+/* ============================================================
+   CONTENT — three kanji families from the 給食 unit vocabulary
+   (all words already in the Grammar Hub's topic-vocab bank, so
+   the readings and glosses match what students have met).
+   head = the shared kanji. parts = per-kanji breakdown, in order.
+   ============================================================ */
+const FAMILIES = [
+  { head:"食", headRead:"ショク・た(べる)", headGloss:"eat, food",
+    note:"Every word below contains 食. Spot it, and half the meaning is already yours.",
+    words:[
+      { jp:"給食", read:"きゅうしょく", gloss:"school lunch",
+        parts:[["給","provide","root"],["食","food","root"]], why:"provide + food = the lunch the school provides" },
+      { jp:"食べ残し", read:"たべのこし", gloss:"leftover food",
+        parts:[["食","eat","root"],["べ","","okuri"],["残","remain","root"],["し","","okuri"]], why:"eat + remain = food left uneaten" },
+      { jp:"食器", read:"しょっき", gloss:"tableware",
+        parts:[["食","food","root"],["器","vessel","root"]], why:"food + vessel = the dishes food is served in" },
+    ]},
+  { head:"費", headRead:"ヒ", headGloss:"cost, expense",
+    note:"費 sits at the END of words, like English -cost / -fee. What comes before it says what the cost is for.",
+    words:[
+      { jp:"給食費", read:"きゅうしょくひ", gloss:"school-lunch fee",
+        parts:[["給食","school lunch","root"],["費","fee","suffix"]], why:"school lunch + fee" },
+      { jp:"人件費", read:"じんけんひ", gloss:"personnel costs",
+        parts:[["人","person","root"],["件","matter","root"],["費","cost","suffix"]], why:"person-matters + cost = the cost of paying people" },
+      { jp:"費用", read:"ひよう", gloss:"expense (general)",
+        parts:[["費","cost","root"],["用","use","root"]], why:"cost + use = money used; the general word for expense" },
+    ]},
+  { head:"手", headRead:"シュ・て", headGloss:"hand; and as a suffix, the person who does it",
+    note:"手 on the END of a word is Japanese doing what English does with -er. A singer is a song-hand, a driver is a driving-hand. Learn the suffix once and you can read words nobody taught you.",
+    words:[
+      { jp:"歌手", read:"かしゅ", gloss:"singer",
+        parts:[["歌","song","root"],["手","-er (person who does it)","suffix"]], why:"song + -er = singer" },
+      { jp:"選手", read:"せんしゅ", gloss:"player, athlete",
+        parts:[["選","choose","root"],["手","-er (person who does it)","suffix"]], why:"chosen + -er = the one picked for the team" },
+      { jp:"運転手", read:"うんてんしゅ", gloss:"driver",
+        parts:[["運転","driving","root"],["手","-er (person who does it)","suffix"]], why:"driving + -er = driver" },
+    ]},
+  { head:"調", headRead:"チョウ・しら(べる)", headGloss:"tune, arrange, condition",
+    note:"調 is about adjusting and checking. It shows up in cooking, health and fine-tuning.",
+    words:[
+      { jp:"調理場", read:"ちょうりじょう", gloss:"kitchen (cooking facility)",
+        parts:[["調","arrange","root"],["理","handle","root"],["場","place","suffix"]], why:"arrange + handle + place = where food is prepared" },
+      { jp:"体調", read:"たいちょう", gloss:"physical condition",
+        parts:[["体","body","root"],["調","condition","root"]], why:"body + condition = how your body is doing" },
+      { jp:"調整", read:"ちょうせい", gloss:"adjustment",
+        parts:[["調","tune","root"],["整","arrange","root"]], why:"tune + arrange = adjusting something to fit" },
+    ]},
+];
+
+/* ============================================================
+   ENGINE — pick family -> meet -> build each word -> meaning quiz
+   -> report. First-try scoring, wrong items come back (mastery).
+   ============================================================ */
+/* Japanese-led chrome. Task prompts stay English for now (J11). */
+const UI = {
+  title:    ["ことばラボ","ことばラボ","kotoba rabo","Word Lab"],
+  subtitle: ["漢字のかぞく：一つの漢字、たくさんのことば","かんじのかぞく：ひとつのかんじ、たくさんのことば",
+             "kanji no kazoku: hitotsu no kanji, takusan no kotoba",
+             "kanji families: one shared kanji, many words"],
+  back:     ["← かぞく","← かぞく","← kazoku","← families"],
+  toBuild:  ["つぎへ","つぎへ","tsugi e","Build the words"],
+  check:    ["チェック","チェック","chekku","Check"],
+  next:     ["つぎへ","つぎへ","tsugi e","Next"],
+  again:    ["もう一度","もういちど","mō ichido","Run again"],
+  home:     ["かぞくへ","かぞくへ","kazoku e","families"],
+};
+const UI_RUBY = {
+  subtitle: "<ruby>漢字<rt>かんじ</rt></ruby>のかぞく：<ruby>一<rt>ひと</rt></ruby>つの<ruby>漢字<rt>かんじ</rt></ruby>、たくさんのことば",
+  again: "もう<ruby>一度<rt>いちど</rt></ruby>",
+};
+
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const screens={pick:$("pick"),meet:$("meet"),task:$("task"),report:$("report")};
+  const show=(n)=>{Object.values(screens).forEach(s=>s.classList.remove("active"));screens[n].classList.add("active");};
+  const esc=(s)=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const shuffle=(a)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  let fam=null, queue=[], idx=0, first={}, attempts=0, graded=false;
+
+  /* 中文 mode: students with a Chinese-reading background do not need the
+     English meanings, so the glosses are hidden and the meaning quiz
+     becomes a reading quiz. Remembered on this device only. */
+  const noEn=()=>document.body.classList.contains("noen");
+  const setNoEn=(on)=>{ document.body.classList.toggle("noen",on); $("noenBtn").classList.toggle("on",on);
+    try{ localStorage.setItem("jh_noen",on?"1":""); }catch(e){} };
+  try{ setNoEn(localStorage.getItem("jh_noen")==="1"); }catch(e){}
+  $("noenBtn").addEventListener("click",()=>{ setNoEn(!noEn()); if(screens.task.classList.contains("active"))render(); });
+
+  /* family picker */
+  FAMILIES.forEach((f,i)=>{
+    const c=document.createElement("div");
+    c.className="fam-card";
+    c.innerHTML=`<span class="fam-kanji">${f.head}</span><div class="fam-gloss">${esc(f.headRead)}<span class="en"> · ${esc(f.headGloss)}</span></div><div class="fam-count">${f.words.length} words</div>`;
+    c.addEventListener("click",()=>{fam=f;meet();});
+    $("famGrid").appendChild(c);
+  });
+
+  /* MEET: tap a word -> reading -> meaning, elastic decay back to kanji */
+  function colourWord(w){
+    // walk the parts (which may be multi-character, e.g. "給食") and wrap
+    // each one's own letters in the span for its role — purple-lab's
+    // colourWord(), ported from morphemes to kanji compounds.
+    let out="", rest=w.jp;
+    w.parts.forEach(p=>{
+      const [txt,,role]=p;
+      const idx=rest.indexOf(txt);
+      if(idx===-1){ out+=esc(rest); rest=""; return; }
+      out+=esc(rest.slice(0,idx))+`<span class="w-${role}">${esc(txt)}</span>`;
+      rest=rest.slice(idx+txt.length);
+    });
+    return out+esc(rest);
+  }
+  function wordHtml(w,stage){
+    const jp=colourWord(w);
+    if(stage===0)return jp;
+    if(stage===1)return `${jp} <small style="color:var(--muted)">${esc(w.read)}</small>`;
+    return `${jp} <small style="color:var(--muted)">${esc(w.read)}<span class="en"> · ${esc(w.gloss)}</span></small>`;
+  }
+  function meet(){
+    $("meetKanji").textContent=fam.head;
+    $("meetNote").textContent=fam.note;
+    const suffixy=fam.words.filter(w=>w.parts.some(p=>p[0]===fam.head&&p[2]==="suffix")).length;
+    if(suffixy>=2){
+      const tag=document.createElement("p");
+      tag.className="rolenote";
+      tag.style.marginTop="6px";
+      tag.innerHTML=`In ${suffixy} of these words <b>${fam.head}</b> is a <b>suffix</b>, the same job English gives -er or -fee. Meet it once, read it everywhere.`;
+      $("meetNote").after(tag);
+    }
+    const wrap=$("meetWords");wrap.innerHTML="";
+    fam.words.forEach(w=>{
+      const row=document.createElement("div");row.className="word-row";
+      const jp=document.createElement("div");jp.className="word-jp";jp.innerHTML=wordHtml(w,0);
+      const why=document.createElement("div");why.className="word-reveal";
+      why.innerHTML=w.parts.filter(p=>p[1]).map(p=>`<code class="w-${p[2]}">${esc(p[0])}</code> <i>${esc(p[1])}</i>`).join("  +  ");
+      let stage=0,timer=null;
+      jp.addEventListener("click",()=>{
+        stage=Math.min(2,stage+1);jp.innerHTML=wordHtml(w,stage);
+        clearTimeout(timer);
+        const decay=()=>{if(stage<=0)return;stage--;jp.innerHTML=wordHtml(w,stage);timer=setTimeout(decay,1667);};
+        timer=setTimeout(decay,1667);
+      });
+      row.appendChild(jp);row.appendChild(why);wrap.appendChild(row);
+    });
+    show("meet");
+  }
+  $("toBuild").addEventListener("click",startTasks);
+  $("backBtn").addEventListener("click",()=>show("pick"));
+  $("backBtn2").addEventListener("click",()=>show("pick"));
+
+  /* tasks: for each word, a BUILD (first — you always assemble a new word
+     from its parts before anything else, the word-builder's rule), then a
+     MEANING item. Missed items come back until correct. */
+  function startTasks(){
+    queue=[];
+    fam.words.forEach(w=>{queue.push({type:"build",w});});
+    fam.words.forEach(w=>{queue.push({type:"meaning",w});});
+    shuffleMeaningOnly();
+    idx=0;first={};attempts=0;
+    show("task");render();
+  }
+  function shuffleMeaningOnly(){
+    const builds=queue.filter(q=>q.type==="build");
+    const means=shuffle(queue.filter(q=>q.type==="meaning"));
+    queue=builds.concat(means);
+  }
+  function key(q){return q.type+"|"+q.w.jp;}
+
+  function render(){
+    graded=false;
+    const q=queue[idx];const area=$("taskArea");
+    $("feedback").className="feedback";$("feedback").textContent="";
+    $("checkBtn").style.display="";$("checkBtn").disabled=true;$("nextBtn").style.display="none";
+    if(q.type==="build"){
+      const tiles=q.w.parts.map(p=>p[0]);
+      const roleOf={}; q.w.parts.forEach(p=>{roleOf[p[0]]=p[2]||"root";});
+      const decoys=[];
+      FAMILIES.forEach(f=>{if(f!==fam)f.words.forEach(w2=>w2.parts.forEach(p=>{
+        if(p[0].length===1&&!tiles.includes(p[0])&&decoys.length<2&&!decoys.includes(p[0]))decoys.push(p[0]);}));});
+      const bank=shuffle(tiles.concat(decoys));
+      area.innerHTML=(noEn()
+          ? `<div class="task-prompt">Build the word: <b>${esc(q.w.read)}</b></div>`
+          : `<div class="task-prompt">Build the word: <b>${esc(q.w.gloss)}</b></div><div class="task-cue">${esc(q.w.read)}</div>`)+`
+        <div class="slots" id="slots" data-need="${tiles.length}"></div>
+        <div class="rolekey"><span class="rk-prefix">せっとうじ prefix</span><span class="rk-root">こん root</span><span class="rk-suffix">せつびじ suffix</span></div>
+        <p class="rolenote">The ring marks this family's own kanji. Colour is the job it does in <i>this</i> word: 費 is a suffix in 給食費 but the root of 費用.</p>
+        <div class="bank" id="bank">${bank.map(t=>`<button type="button" class="tile role-${roleOf[t]||"root"}${fam.head.includes(t)?" head":""}">${t}</button>`).join("")}</div>`;
+      const slots=$("slots"),bankEl=$("bank");
+      area.querySelectorAll(".tile").forEach(t=>t.addEventListener("click",()=>{
+        (t.parentElement===bankEl?slots:bankEl).appendChild(t);
+        $("checkBtn").disabled=slots.children.length!==tiles.length;
+      }));
+    }else{
+      /* no-English mode asks for the READING instead of the meaning */
+      const f=noEn()?(w2)=>w2.read:(w2)=>w2.gloss;
+      const others=shuffle(fam.words.filter(w2=>w2!==q.w)).slice(0,2).map(f);
+      const distract=shuffle(others.concat(f(FAMILIES.filter(x=>x!==fam)[0].words[0]))).slice(0,3);
+      const opts=shuffle([f(q.w)].concat(distract));
+      area.innerHTML=`<div class="task-prompt">${noEn()
+          ? `<b>${esc(q.w.jp)}</b> reads?`
+          : `${q.w.parts.filter(p=>p[1]).map(p=>`${p[0]} (${esc(p[1])})`).join(" + ")} → <b>${esc(q.w.jp)}</b> means?`}</div>
+        <div class="options">${opts.map(o=>`<button type="button" class="option" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`;
+      area.querySelectorAll(".option").forEach(b=>b.addEventListener("click",()=>{
+        area.querySelectorAll(".option").forEach(x=>x.dataset.sel="");b.dataset.sel="1";$("checkBtn").disabled=false;
+      }));
+    }
+  }
+  $("checkBtn").addEventListener("click",()=>{
+    if(graded)return;graded=true;attempts++;
+    const q=queue[idx];let ok,expected;
+    if(q.type==="build"){
+      const got=[...$("slots").children].map(t=>t.textContent).join("");
+      ok=got===q.w.jp.split("").filter(ch=>true).join("")||got===q.w.parts.map(p=>p[0]).join("");
+      expected=q.w.jp;
+      $("slots").classList.add(ok?"correct":"incorrect");
+      document.querySelectorAll(".tile").forEach(t=>t.disabled=true);
+    }else{
+      const sel=document.querySelector('.option[data-sel="1"]');
+      const want=noEn()?q.w.read:q.w.gloss;
+      ok=sel&&sel.dataset.v===want;expected=want;
+      document.querySelectorAll(".option").forEach(b=>{
+        b.disabled=true;
+        if(b.dataset.v===want)b.classList.add("correct");
+        else if(b.dataset.sel==="1")b.classList.add("incorrect");
+      });
+    }
+    const k=key(q);
+    if(!(k in first))first[k]=ok;
+    if(!ok)queue.push(q); // mastery: it comes back around
+    const fb=$("feedback");
+    fb.className="feedback "+(ok?"good":"bad");
+    fb.innerHTML=(ok?"✓ ":"✗ ")+esc(q.w.why)+(ok?"":` — the answer was <b>${esc(expected)}</b>. This one will come back around.`);
+    $("checkBtn").style.display="none";$("nextBtn").style.display="";$("nextBtn").focus();
+  });
+  $("nextBtn").addEventListener("click",()=>{
+    idx++;
+    if(idx>=queue.length){
+      const total=Object.keys(first).length;
+      const right=Object.values(first).filter(Boolean).length;
+      $("stat").textContent=`${right}/${total}`;
+      show("report");
+    } else render();
+  });
+  window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+  $("againBtn").addEventListener("click",startTasks);
+  $("homeBtn").addEventListener("click",()=>show("pick"));
+})();
+</script>
+</body>
+</html>

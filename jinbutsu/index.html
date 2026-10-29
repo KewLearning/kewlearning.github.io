@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>れきしの人 · Unit 12 historical figures</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23f4efe6'/%3E%3Cpath d='M14 50V16h10l8 20 8-20h10v34h-8V30l-8 20h-4l-8-20v20z' fill='%2316375e'/%3E%3C/svg%3E">
+<style>
+  /* Built to a school laptop first: one rung fills the screen, the page
+     itself never scrolls, and exactly one region inside each rung takes
+     up the slack. Same palette and the same font stack as the rest of
+     the suite, so this reads as one thing with ひと and the hub. */
+  :root{
+    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
+    --gram:#7a4a86;        /* grammar, the same purple ひと uses for な */
+    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
+       overflow:hidden}
+
+  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       background:var(--paper);border-bottom:1px solid var(--line);
+       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
+  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
+  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
+       font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .bar .sp{flex:1}
+  .tool{min-height:38px;padding:0 11px;border:2px solid var(--deep);
+        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
+        font-family:var(--font);font-size:13px;font-weight:700}
+  .tool.off{border-color:var(--line);color:var(--muted)}
+  /* The score is a readout, not a button: it only ever goes down, and it
+     goes down because the student asked for something. */
+  .pts{min-height:38px;display:flex;align-items:center;gap:5px;padding:0 11px;
+       border:2px solid var(--warm);border-radius:9px;background:#fffbe9;
+       color:var(--warm);font-size:13px;font-weight:700}
+  .pts b{font-size:17px;color:var(--ink)}
+
+  .steps{flex:none;display:flex;background:var(--paper);
+         border-bottom:1px solid var(--line);overflow-x:auto}
+  .steps button{flex:1;min-width:88px;border:0;background:none;cursor:pointer;
+       padding:7px 6px 6px;font-family:var(--font);color:var(--muted);
+       border-bottom:3px solid transparent;text-align:center}
+  .steps b{display:block;font-family:var(--jp);font-size:15px;color:var(--ink);
+       font-weight:700;line-height:1.2}
+  .steps i{display:block;font-style:normal;font-size:10.5px;
+       letter-spacing:.05em;text-transform:uppercase}
+  .steps .done{color:var(--ok);font-weight:700}
+  /* the bar is in two halves: five rungs about the person chosen below,
+     three about the unit. The label is what says which is which. */
+  .steps .grp{flex:none;align-self:stretch;display:flex;flex-direction:column;
+       justify-content:center;padding:0 9px;border-left:1px solid var(--line);
+       font-family:var(--jp);font-size:11px;font-weight:700;color:var(--muted);
+       line-height:1.25;white-space:nowrap}
+  .steps .grp:first-child{border-left:0;padding-left:4px}
+  .steps .grp em{font-family:var(--font);font-style:normal;font-size:9px;
+       letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+       color:var(--line)}
+  @media (max-width:760px){ .steps .grp em{display:none} }
+  .steps button[aria-current]{border-bottom-color:var(--deep)}
+  .steps button[aria-current] i{color:var(--deep)}
+
+  /* who the rung is about, so a student never loses the thread */
+  .whobar{flex:none;display:flex;gap:7px;align-items:center;overflow-x:auto;
+       background:var(--paper);border-bottom:1px solid var(--line);padding:5px 14px}
+  .whobar button{flex:none;border:2px solid var(--line);border-radius:999px;
+       background:#fff;color:var(--muted);cursor:pointer;padding:3px 11px;
+       font-family:var(--jp);font-size:14px;min-height:32px}
+  .whobar button[aria-current]{border-color:var(--deep);color:var(--deep);
+       background:#eef3f9;font-weight:700}
+
+  main{flex:1;min-height:0;display:flex;flex-direction:column;
+       padding:10px 14px 12px;max-width:1180px;width:100%;margin:0 auto}
+  .rule{flex:none;background:#fffbe9;border:1px solid #e0cf9a;border-radius:9px;
+        padding:8px 11px;margin-bottom:9px;font-size:14px;line-height:1.45}
+  .rule b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+        color:#7a6320;display:block;margin-bottom:2px}
+  /* the how-to box folds away ten seconds in and leaves this chip */
+  .rule{transition:opacity .4s}
+  .rule.fading{opacity:0}
+  main.folded > .rule{display:none}
+  .howto{flex:none;align-self:flex-start;margin-bottom:9px;min-height:26px;
+        padding:0 11px;border:1px solid #e0cf9a;background:#fffbe9;color:#7a6320;
+        border-radius:999px;font:700 11px/1 var(--font);letter-spacing:.09em;
+        text-transform:uppercase;cursor:pointer}
+  .howto:hover{background:#fff6d8}
+  /* Which build is on screen. Without it there is no way to tell a
+     change that did not work from a change that never arrived. */
+  .build{position:fixed;right:4px;bottom:2px;z-index:70;pointer-events:none;
+     font-family:var(--font);font-size:9px;letter-spacing:.04em;
+     color:var(--line);user-select:none}
+  @media (prefers-reduced-motion:reduce){ .rule{transition:none} }
+  .work{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+  .work.fit{flex:0 1 auto}
+  .foot{flex:none;display:flex;align-items:center;gap:10px;margin-top:9px;
+        font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .foot .sp{flex:1}
+  .btn{border:2px solid var(--deep);background:var(--deep);color:#fff;
+       border-radius:9px;min-height:42px;padding:0 15px;cursor:pointer;
+       font-family:var(--font);font-size:15px;font-weight:700}
+  .btn.ghost{background:#fff;color:var(--deep)}
+  .btn.sm{min-height:36px;font-size:13.5px;padding:0 11px}
+  .btn[disabled]{opacity:.4;cursor:default}
+
+  /* ---- the article ----
+     A narrow column on purpose. A long line is the thing that makes a
+     weak reader lose their place, and a narrow one gives the pacer
+     something to travel down. */
+  .col{max-width:34em;margin:0 auto}
+  .para{font-family:var(--jp);font-size:20px;line-height:2.05;margin:0 0 14px;
+        text-align:justify}
+  body.big .para{font-size:24px;line-height:2.15}
+  /* What a span looks like says what a tap will get you, so that a
+     student never taps hoping. An underline means there is a meaning
+     behind it; a dotted underline in the grammar colour means one of
+     Andrew's own rules is behind it; a particle is dimmed, because it
+     has a job rather than a meaning; plain text has nothing and is not
+     dressed up as though it had. */
+  .w{cursor:pointer;border-radius:3px;padding:0 1px}
+  .w:hover,.w.lit{background:#fdf3c9}
+  .w.known{box-shadow:inset 0 -2px 0 #d8cfbb}
+  .w.gram{box-shadow:inset 0 -2px 0 var(--gram);text-decoration:underline;
+          text-decoration-style:dotted;text-decoration-color:var(--gram);
+          text-underline-offset:3px}
+  .w.part{color:var(--muted)}
+  .w.part:hover,.w.part.lit{background:#eef1f5}
+  .pt{color:var(--muted)}
+  /* an underlined span is a span the paper asks them to translate */
+  .ul{border-bottom:2px solid var(--deep)}
+  ruby rt{font-size:.46em;font-weight:400;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+  body.noen .en{display:none}
+
+  /* the pacer: a line that travels down the column at the speed of the
+     student's own best run, the way the world-record line does */
+  .pacer{position:absolute;left:0;right:0;height:0;
+         border-top:3px solid rgba(168,50,50,.55);pointer-events:none;z-index:5}
+  .pacer:after{content:"your record";position:absolute;right:2px;top:-16px;
+         font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--accent);font-family:var(--font)}
+  .readwrap{position:relative}
+
+  /* ---- the kana chart ----
+     A student who cannot read a kana looks it up here. There is no
+     romaji anywhere in this app: finding it in the grid is the thing
+     that breaks the dependency, and being told is not. */
+  .sheet{position:fixed;inset:0;z-index:70;background:rgba(10,14,20,.45);
+         display:flex;align-items:flex-end;justify-content:center}
+  .sheet .card{background:var(--paper);border-radius:14px 14px 0 0;
+         width:min(560px,100%);max-height:86vh;overflow:auto;padding:14px 14px 20px}
+  @media (min-width:620px){ .sheet{align-items:center}
+    .sheet .card{border-radius:14px} }
+  .kgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;direction:rtl}
+  .kgrid button{direction:ltr;min-height:44px;border:1px solid var(--line-soft);
+        border-radius:7px;background:#fff;font-family:var(--jp);font-size:19px;
+        cursor:pointer;color:inherit}
+  .kgrid button.hit{border-color:var(--accent);background:#fdf2f2;font-weight:700}
+  .kgrid button:disabled{opacity:.22;cursor:default}
+  .sheet h3{font-family:var(--jp);font-size:19px;margin-bottom:3px}
+  .sheet p{font-size:13px;color:var(--muted);margin-bottom:9px}
+
+  /* ---- the gapfill ----
+     Dragged with a pointer, or tapped twice. A school iPad does not do
+     HTML5 drag-and-drop at all and a mouse is clumsy at tapping, so the
+     same handler takes both gestures and they do the same thing. */
+  /* the sentence line: a drop target the width of the column, so a tile
+     let go anywhere near it lands, and the sentence reads as a line
+     rather than as a row of buttons */
+  /* にゅうりょく: a numbered walk-through, wide enough to read and narrow
+     enough that the steps stay in order on a phone. */
+  .howto{max-width:760px}
+  .hstep{display:flex;gap:11px;margin-bottom:14px}
+  .hnum{flex:none;width:28px;height:28px;border-radius:999px;background:var(--deep);
+       color:#fff;font-weight:700;display:flex;align-items:center;
+       justify-content:center;font-size:14px}
+  .hbody{flex:1;min-width:0}
+  .hbody h4{font-size:15.5px;margin-bottom:4px}
+  .hbody ol{margin:0 0 0 18px;font-size:14.5px;line-height:1.6}
+  .hkeys{margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .hkeys span{color:var(--muted);font-size:12px}
+  kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:3px;
+      border-radius:6px;background:#fff;padding:2px 8px;font-family:var(--font);
+      font-size:13px;font-weight:700;color:var(--ink)}
+  .hnote{margin-top:6px;font-size:13.5px;color:var(--muted);
+       border-left:3px solid var(--line);padding-left:9px}
+  #nin{margin-top:7px}
+  .sline{min-height:52px;border:2.5px dashed var(--deep);border-radius:10px;
+       background:#fbfdff;padding:7px 9px;margin:9px 0;display:flex;
+       flex-wrap:wrap;gap:6px;align-items:center}
+  .sline.over{background:#eef6ff;border-style:solid}
+  .sline .hint{font-size:13px}
+  .tiles{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .tile{border:2px solid var(--deep);background:#fff;color:var(--deep);
+        border-radius:9px;min-height:40px;padding:5px 12px;cursor:grab;
+        font-family:var(--jp);font-size:18px;line-height:1.6;max-width:100%;
+        white-space:normal;text-align:left;
+        touch-action:none;-webkit-user-select:none;user-select:none}
+  .tile.armed{background:var(--deep);color:#fff}
+  .tile.spent{opacity:.3;cursor:default}
+  .gap{display:inline-block;min-width:5.5em;border-bottom:2.5px dashed var(--deep);
+       text-align:center;padding:0 6px;cursor:pointer}
+  .gap.over{background:#fdf3c9}
+  .gap.ok{border-bottom-style:solid;border-bottom-color:var(--ok)}
+  .gap.bad{border-bottom-color:var(--accent);background:#fdf2f2}
+  /* the grammar index: one chip a pattern, ticked when its practice is done.
+     Thirteen chips wrapped onto four lines ate 300px of a phone screen and
+     left the exercise itself in a keyhole, so on a narrow screen they stay
+     on one line and scroll sideways, the way the rung bar does. */
+  .gidx{flex-wrap:wrap;margin-bottom:9px;overflow-x:auto;
+       overscroll-behavior-x:contain}
+  .gidx button{flex:none;border:2px solid var(--line);border-radius:999px;background:#fff;
+       color:var(--muted);cursor:pointer;padding:3px 10px;min-height:32px;
+       font-family:var(--jp);font-size:14px}
+  .gidx button[aria-current]{border-color:var(--deep);color:var(--deep);
+       background:#eef3f9;font-weight:700}
+  .gidx button.done{border-color:var(--ok);color:var(--ok)}
+  .vid{display:block;margin:7px 0;font-size:15px}
+  h3.sub{font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--muted);margin:16px 0 4px}
+
+  /* ---- the ninja and the かさおばけ ----
+     Andrew asked for these in the brief for this unit and the first build
+     did not have them. A right answer sends a ninja across the screen in
+     0.7s: acknowledged, then out of the way, because being right is the
+     thing you want to be unremarkable and repeatable. A wrong one floats
+     a かさおばけ up past the answer over 1.6s, long enough to be funny and
+     short enough not to be a telling-off. One eye, one leg, one tongue:
+     the friendliest yokai there is, and Year 9 know it on sight.
+
+     Neither is load-bearing. The marking says everything they say. */
+  /* ---- the portraits ----
+     Block colour with some shading, so they stay legible small and stay
+     light on a school connection. The wide one heads the article; the
+     thumbnail sits in the くらべる table. Both have a fixed aspect so the
+     page does not jump while they load. */
+  .art{margin:0 0 10px;line-height:0}
+  .art img{display:block;width:100%;height:auto;border-radius:11px;
+       background:var(--line-soft);box-shadow:0 2px 8px rgba(20,25,32,.12)}
+  .art.wide{max-width:340px;margin:0 auto 12px;aspect-ratio:3/4}
+  .art.wide img{aspect-ratio:3/4;object-fit:cover}
+  .art figcaption{font-size:11.5px;color:var(--muted);line-height:1.35;
+       text-align:center;margin-top:5px}
+  .art.thumb{width:54px;margin:0 0 5px;aspect-ratio:1/1}
+  .art.thumb img{aspect-ratio:1/1;object-fit:cover;border-radius:8px;
+       box-shadow:none}
+  @media (max-width:760px){ .art.wide{max-width:220px} }
+  @media (max-height:700px){ .art.wide{max-width:190px} }
+
+  /* ---- the drum, lifted with the module from ひと ---- */
+  .rwin{position:relative;flex:1;min-width:0;height:192px;overflow:hidden;
+        background:var(--paper);border:1px solid var(--line);border-radius:9px;
+        touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none;
+        -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 24%,
+                           #000 76%,transparent 100%);
+        mask-image:linear-gradient(to bottom,transparent 0,#000 24%,
+                   #000 76%,transparent 100%)}
+  .reel.spinning .rwin{cursor:default}
+  .rwin:active{cursor:grabbing}
+  .rstrip{will-change:transform}
+  .ritem{height:64px;display:flex;flex-direction:column;align-items:center;
+         justify-content:center;gap:1px;text-align:center;padding:0 10px}
+  .ritem b{font-size:clamp(16px,5vw,21px);font-weight:600;line-height:1.15;
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+           max-width:100%}
+  .ritem i{font-style:normal;font-size:12px;color:var(--muted);
+           letter-spacing:.04em}
+  .rmark{position:absolute;left:0;right:0;top:64px;height:64px;
+         pointer-events:none;border-top:2px solid var(--deep);
+         border-bottom:2px solid var(--deep);background:rgba(0,0,0,.035)}
+  .reel{display:flex;align-items:center;gap:9px;margin:2px 0 10px}
+  .rspin{flex:none;width:44px;height:44px;border-radius:50%;cursor:pointer;
+         padding:0;border:2px solid var(--line);background:var(--paper);
+         color:var(--deep);display:flex;align-items:center;
+         justify-content:center;opacity:.78;transition:opacity .13s}
+  .rspin:hover,.rspin:focus{opacity:1;border-color:var(--deep);outline:none}
+  .rspin svg{width:21px;height:21px}
+  .reel.spinning .rspin{opacity:.3;pointer-events:none}
+  .yoka,.ninj{position:fixed;z-index:60;pointer-events:none}
+  .ninj{transform:translate(-50%,-50%);
+        animation:ndash .7s cubic-bezier(.2,.8,.3,1) forwards}
+  .ninj svg{display:block;filter:drop-shadow(0 2px 5px rgba(20,25,32,.3))}
+  @keyframes ndash{
+    0%{opacity:0;transform:translate(-190%,-50%) scale(.9)}
+    22%{opacity:1}
+    70%{opacity:1;transform:translate(-20%,-54%) scale(1)}
+    100%{opacity:0;transform:translate(120%,-58%) scale(.96)}
+  }
+  .yoka{transform:translate(-50%,0);animation:yfloat 1.6s ease-out forwards}
+  .yoka svg{display:block;filter:drop-shadow(0 2px 6px rgba(20,25,32,.25))}
+  @keyframes yfloat{
+    0%{opacity:0;transform:translate(-50%,10px) scale(.84) rotate(-5deg)}
+    18%{opacity:.95}
+    55%{transform:translate(-44%,-72px) scale(1) rotate(6deg)}
+    100%{opacity:0;transform:translate(-56%,-152px) scale(1.02) rotate(-4deg)}
+  }
+  /* ---- reduced motion ----
+     Not hidden. Hiding them was the whole reason Andrew could not see
+     either one. What that setting is for is movement across the screen,
+     so under it the pair simply fade in where they are and fade out
+     again, and the feedback survives. */
+  @media (prefers-reduced-motion:reduce){
+    .ninj,.yoka{animation-name:cfade;animation-duration:1.1s;
+      animation-timing-function:ease-out}
+    @keyframes cfade{
+      0%{opacity:0} 18%{opacity:1} 70%{opacity:1} 100%{opacity:0}
+    }
+  }
+
+  .mark{border-left:4px solid var(--line);padding:5px 10px;margin:6px 0;font-size:14px}
+  .mark.yes{border-color:var(--ok)} .mark.no{border-color:var(--accent)}
+  .mark.hm{border-color:#b8860b}
+  .mark b{display:block;font-size:11px;letter-spacing:.08em;
+        text-transform:uppercase;color:var(--muted)}
+  .mark .jp{font-family:var(--jp);font-size:18px}
+  /* ことばキャッチ: the canvas is 320 by 200 whatever size it is drawn at,
+     and the browser is told not to smooth it, so every pixel arrives as a
+     square. The coarseness is the point, not a filter over it.
+
+     Landscape, because several words have to be in the air at once and a
+     portrait screen only fits one. The question sits above the screen in
+     ordinary page text, not in the pixels: it is the one thing here that
+     is not meant to be a game. */
+  .arcadewrap{display:flex;flex-direction:column;align-items:center;
+       justify-content:center;gap:8px;padding:4px 0;min-height:0}
+  /* The question. It is pinned to the top of the scrolling area, so no
+     amount of scrolling can put it off the screen, and it carries a word
+     from the moment the rung opens rather than a dash until somebody
+     presses Start. */
+  .prompt{position:sticky;top:0;z-index:4;align-self:stretch;
+       display:flex;align-items:baseline;justify-content:center;gap:12px;
+       padding:7px 18px;border:2px solid #8a6d1f;border-radius:10px;
+       background:#fffbe9}
+  .prompt .lab{font-size:11px;font-weight:700;letter-spacing:.14em;
+       color:#8a6d1f}
+  .prompt b{font-size:27px;line-height:1.2;color:var(--ink)}
+  @media (max-width:700px){ .prompt b{font-size:21px} }
+  .arcade{display:block;height:auto;width:min(100%,900px);
+       aspect-ratio:320/200;background:#000;border:3px solid #2f8f2f;
+       border-radius:6px;cursor:none;touch-action:none;
+       image-rendering:pixelated;image-rendering:crisp-edges}
+  .arcade:focus{outline:2px solid #6cf06c;outline-offset:2px}
+  @media (max-width:700px){
+    .prompt b{font-size:19px} .arcade{width:100%}
+  }
+  /* On the game step the page scrolls, which it does nowhere else here.
+     Andrew: "The explanation of the game in the yellow box is getting in
+     the way on a laptop browser. Let it scroll out of view to maximise
+     the view of game play."
+
+     So main becomes the scroller, the game is given a whole screenful of
+     its own below the explanation, and the footer is pinned to the
+     bottom so Start and the score stay reachable wherever you have
+     scrolled to. Pressing Start scrolls the screen up for you, because
+     the first thing a student does is press Start and the next thing
+     they need is all of the screen. */
+  body.gamefull main{overflow-y:auto;overscroll-behavior:contain}
+  body.gamefull .arcadewrap{flex:none;overflow:visible}
+  body.gamefull .foot{position:sticky;bottom:0;z-index:3;margin-top:0;
+       padding:7px 0 2px;background:var(--bg)}
+  .score{font-size:13px;color:var(--muted)}
+  .score b{color:var(--ink);font-size:16px}
+  .hint{font-size:12.5px;color:var(--muted)}
+  input.ans,textarea.ans{width:100%;font-family:var(--jp);font-size:19px;
+       border:2px solid var(--line);border-radius:9px;padding:8px 11px;
+       background:var(--paper);color:inherit;resize:none}
+  input.ans:focus,textarea.ans:focus{border-color:var(--deep);outline:none}
+  input.ans.en,textarea.ans.en{font-family:var(--font);font-size:16px}
+  .qrow{margin-bottom:12px}
+  .qrow .q{font-family:var(--jp);font-size:19px;margin-bottom:5px}
+  .qrow .q.en{font-family:var(--font);font-size:16px}
+  .row{display:flex;gap:8px;align-items:center}
+  table.cmp{width:100%;border-collapse:collapse;font-size:14px}
+  table.cmp th,table.cmp td{border:1px solid var(--line-soft);padding:6px 8px;
+       text-align:left;vertical-align:top}
+  table.cmp th{background:var(--paper);font-size:12px;letter-spacing:.04em;
+       text-transform:uppercase;color:var(--muted)}
+  table.cmp .jp{font-family:var(--jp);font-size:16px}
+  /* On a short screen the yellow rule box and the chip row between them
+     left the exercise with no height at all, so both are held down. */
+  @media (max-height:640px){
+    .rule{font-size:13px;line-height:1.4;max-height:5.4em;overflow:auto}
+    .para{font-size:18px;line-height:1.95}
+    /* a gap and its tiles have to be on screen together, or the tile is
+       dragged from under the footer, which on a 568px screen it was */
+    .tile{font-size:16px;min-height:34px;padding:3px 9px;line-height:1.5}
+    .qrow{margin-bottom:9px}
+  }
+  /* Six tools and a score will not sit on one line of a 320px phone, and
+     at full size they took four rows and a quarter of the screen with
+     them. Smaller here: the bar is the least interesting thing on the
+     page and should take the least room. */
+  @media (max-width:420px){
+    .bar{gap:6px;padding:5px 9px}
+    .bar h1{font-size:17px}
+    .tool{min-height:32px;padding:0 7px;font-size:11.5px}
+    .pts{min-height:32px;padding:0 8px;font-size:11.5px}
+    .pts b{font-size:15px}
+  }
+  @media (max-width:760px){
+    .gidx{flex-wrap:nowrap}
+    .bar{padding:6px 10px} .tool{padding:0 8px;font-size:12px}
+    .steps button{min-width:76px} .steps b{font-size:13.5px}
+    .para{font-size:19px;line-height:2}
+  }
+</style>
+</head>
+<body class="">
+<div class="bar">
+  <h1>れきしの人<span>Unit 12 · historical figures</span></h1>
+  <div class="sp"></div>
+  <div class="pts" id="pts" title="Every support you use costs a point"><b id="ptsn">0</b> pts</div>
+  <button class="tool" id="furiBtn">ふりがな</button>
+  <button class="tool" id="enBtn">EN</button>
+  <button class="tool" id="rateBtn" title="How fast the voice speaks"><span id="rateLabel">×1</span></button>
+  <button class="tool" id="sfxBtn" title="The ninja and the yokai">にん者</button>
+  <button class="tool" id="saveBtn" title="Save your score to show someone">Save</button>
+  <button class="tool" id="resetBtn">Reset</button>
+</div>
+<nav class="steps" id="steps"></nav>
+<div class="whobar" id="whobar"></div>
+<main id="main"></main>
+<script src="data/kiji.js?v=20261024c"></script>
+<script src="data/audio.js?v=20261024c"></script>
+<script src="app.js?v=20261024c"></script>
+<div class="build" aria-hidden="true">build 2026-10-24c</div>
+</body>
+</html>
