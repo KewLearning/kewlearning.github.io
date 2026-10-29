@@ -1725,11 +1725,19 @@
      students ... I'm not saying to get rid of the pure writing tab.
      Keep that but have an easier option." つくる builds the
      paragraph out of a bank of phrases; じぶんで asks for it from
-     nothing. にゅうりょく sits in front of both, because that is
-     where a student first has to type Japanese. */
+     nothing. にゅうりょく sits in front of じぶんで, because that
+     is where a student first has to type Japanese.
+
+     つくる sits at the front beside the game rather than next to
+     じぶんで. Andrew: "put 'Build it' near the first tab because it
+     is quite good." The two rungs a student meets first are now the
+     two that ask nothing of them beforehand: one is a game, and the
+     other hands them the Japanese and asks only for the order. */
   var STEPS = [
     { id:"katch", ja:"ことばキャッチ", en:"Catch it", whole:true,
-      grp:{ ja:"ウォームアップ", en:"warm up" } },
+      grp:{ ja:"はじめに", en:"start here" } },
+    { id:"tsukuru", ja:"つくる", en:"Build it", whole:true,
+      grp:{ ja:"はじめに", en:"start here" } },
     { id:"kotoba", ja:"ことば",   en:"The words" },
     { id:"yomu",   ja:"よむ",     en:"Read it" },
     { id:"toi",    ja:"しつもん", en:"Questions" },
@@ -1737,8 +1745,8 @@
     { id:"hayaku", ja:"はやく",   en:"Read it again" },
     { id:"bunpou", ja:"ぶんぽう", en:"Grammar", whole:true },
     { id:"roulette", ja:"ルーレット", en:"Spin a pattern", whole:true },
+    { id:"dare", ja:"だれ", en:"Who said it?", whole:true },
     { id:"nyuu", ja:"にゅうりょく", en:"Japanese keyboard", whole:true },
-    { id:"tsukuru", ja:"つくる", en:"Build it", whole:true },
     { id:"jibun",  ja:"じぶんで", en:"Write your own", whole:true },
     { id:"kuraberu", ja:"くらべる", en:"All six", whole:true }
   ];
@@ -2736,9 +2744,16 @@
      the paragraph does. */
   function fslot(i){ return (K.frame || [])[i]; }
   /* the slot credits a person, and an id is not a name */
+  /* The surname is the short way to name five of the six, and the
+     sixth is not a person: "The inventors of the blue LED" was coming
+     out as "The", because the rule was simply "the first word". A
+     two-word name is Surname Given and shortens; anything else is a
+     label and is used whole. */
   function whoName(id){
     var p = (K.people || []).filter(function(x){ return x.id === id; })[0];
-    return p ? p.name_en.split(" ")[0] : id;
+    if (!p) return id;
+    var bits = String(p.name_en).trim().split(/\s+/);
+    return bits.length === 2 ? bits[0] : p.name_en;
   }
   function fkey(i){ return "f:" + (fslot(i) || {}).id; }
   /* a need group is satisfied by any one of its spellings: 好きです and
@@ -3091,6 +3106,132 @@
             + '</span>.</div>';
         }
       };
+    }
+  };
+
+  /* ================= だれ, who said it =================
+     Play a line from one of the six articles; say who said it. The
+     only rung here that is listening alone: nothing is written on
+     screen until the answer is in, so the ear does the work.
+
+     A line can only be asked if exactly one of the six says it.
+     Four of them open with みなさん、おはようございます。 and
+     five close with よろしくおねがいします。; a question built on
+     one of those has no right answer. Of the 96 sentences in the six
+     articles, 88 belong to one person, which is plenty.
+
+     The answer shows the line written out and the person's portrait,
+     because the point of getting it wrong is finding out whose it
+     was, not being told no. */
+  function dareBank(){
+    var owners = {}, order = [];
+    (K.people || []).forEach(function(p){
+      (p.paras || []).forEach(function(para){
+        String(para).split(/(?<=。)/).forEach(function(line){
+          var t = line.trim();
+          if (!t) return;
+          var key = plain(t);
+          if (key.length < 4) return;
+          if (!owners[key]){ owners[key] = { who: p.id, n: 0, ja: t }; order.push(key); }
+          if (owners[key].who !== p.id) owners[key].who = null;
+          owners[key].n++;
+        });
+      });
+    });
+    return order.filter(function(k){
+      return owners[k].who && CLIPS[speakable(k)];
+    }).map(function(k){ return owners[k]; });
+  }
+  var dAt = null, dShown = false, dRun = 0;
+  DRAW.dare = function(){
+    var bank = dareBank();
+    if (!bank.length){
+      $("main").innerHTML = '<div class="rule">No line belongs to one person alone.</div>';
+      return;
+    }
+    if (dAt === null || dAt >= bank.length) dAt = Math.floor(Math.random() * bank.length);
+    var q = bank[dAt];
+    var done = Object.keys(S.done).filter(function(k){ return k.indexOf("dare:") === 0; }).length;
+
+    $("main").innerHTML =
+        '<div class="rule"><b>Who said it?</b>Listen to the line, then tap the '
+      + 'person who said it. Nothing is written down until you answer. '
+      + 'Play it as many times as you like.</div>'
+      + '<div class="work"><div class="col" style="text-align:center">'
+      + '<div class="dplay"><button class="btn big" id="dplay">\u25b6 '
+      + '<span class="en">Play the line</span></button>'
+      + '<span class="dstreak" id="dstreak"></span></div>'
+      + '<div class="dsix" id="dsix"></div>'
+      + '<div id="dfb" class="fbslot"></div>'
+      + '</div></div>'
+      + foot('<span class="score" id="dsc"><b>' + done + '</b> of ' + bank.length
+          + ' lines heard</span>'
+        + '<span class="sp"></span>'
+        + '<button class="btn ghost sm" id="dnext">Another line</button>');
+
+    $("dplay").onclick = function(){ say(q.ja); };
+    $("dnext").onclick = function(){
+      dAt = Math.floor(Math.random() * bank.length); dShown = false; draw();
+    };
+    paintStreak();
+    $("dsix").innerHTML = (K.people || []).map(function(p){
+      var a = p.art || {};
+      return '<button class="dface" data-who="' + esc(p.id) + '">'
+        + (a.ready && a.thumb
+            ? '<img src="art/' + esc(a.thumb) + '" alt="" loading="lazy">'
+            : '<span class="dnoimg" aria-hidden="true">人</span>')
+        + '<b>' + esc(plain(p.name_ja)) + '</b></button>';
+    }).join("");
+    each($("dsix"), "[data-who]", function(b){
+      b.onclick = function(){ answer(b.dataset.who, b); };
+    });
+    /* the line is heard, not read: it must not be anywhere on screen
+       until the student has answered */
+    window.KIJI_DARE = {
+      line: function(){ return q.ja; },
+      who:  function(){ return q.who; },
+      shown: function(){ return dShown; },
+      bank: function(){ return bank.length; },
+      run:  function(){ return dRun; }
+    };
+    if (!dShown) say(q.ja);
+
+    function paintStreak(){
+      $("dstreak").textContent = dRun > 1 ? dRun + " in a row" : "";
+    }
+    function answer(id, btn){
+      if (dShown) return;
+      dShown = true;
+      var right = id === q.who;
+      var them = null;
+      (K.people || []).forEach(function(p){ if (p.id === q.who) them = p; });
+      if (right){
+        dRun++;
+        if (!S.done["dare:" + dAt]){ S.done["dare:" + dAt] = 1; award(1); save(); }
+        btn.classList.add("got");
+        ninja($("dfb"));
+      } else {
+        dRun = 0;
+        btn.classList.add("miss");
+        each($("dsix"), "[data-who]", function(x){
+          if (x.dataset.who === q.who) x.classList.add("got");
+        });
+      }
+      paintStreak();
+      /* The name sits on its own line rather than inside a sentence:
+         five of the six are one person and the sixth is three, so
+         "that was X" cannot agree with all of them. */
+      $("dfb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '"><b>'
+        + (right ? "Yes" : "No") + '</b>'
+        + '<span class="dwho">' + esc(whoName(q.who)) + '</span>'
+        + '<span class="jp">' + ruby(q.ja) + '</span> ' + saybtn(q.ja)
+        + (them && them.what_en ? '<p>' + esc(them.what_en) + '</p>' : '')
+        + '</div>';
+      wireSay();
+      $("dsc").innerHTML = '<b>'
+        + Object.keys(S.done).filter(function(k){ return k.indexOf("dare:") === 0; }).length
+        + '</b> of ' + bank.length + ' lines heard';
+      if (dRun >= 6 && !S.done["dare"]){ S.done["dare"] = 1; award(5); save(); paintSteps(); }
     }
   };
 
