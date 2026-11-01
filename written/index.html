@@ -215,6 +215,68 @@
     .pts b{font-size:15px}
     .stem{font-size:19px} .opts button{font-size:19px;min-height:46px;min-width:62px}
   }
+
+  /* ---- きろく: entering a practice exam, question by question ----
+     A marking table, so it reads as rows rather than as a form. Two
+     mark boxes per question, because a student who cannot score their
+     own answer has said something useful by saying so. */
+  .krow{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:0 0 16px}
+  .krow label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;
+       color:var(--muted)}
+  .krow input{font:inherit;font-size:14px;padding:6px 9px;border:1.5px solid var(--line);
+       border-radius:8px;background:var(--paper);color:var(--ink)}
+  .krow .sp{flex:1}
+  .ksec{margin:0 0 20px;border:1.5px solid var(--line-soft);border-radius:12px;
+       padding:12px 14px 14px;background:var(--paper)}
+  .ksec h3{margin:0 0 9px;font-size:15px;display:flex;align-items:baseline;
+       gap:9px;flex-wrap:wrap}
+  .ksec h3 small{font-weight:400;color:var(--muted);font-size:12.5px}
+  .ksec .ktot{margin-left:auto;font-size:13px;color:var(--deep);font-weight:700}
+  .qlist{display:flex;flex-direction:column;gap:7px;margin:0 0 9px}
+  .qrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+       padding:7px 8px;border-radius:9px;background:var(--bg)}
+  .qrow input{font:inherit;font-size:14px;padding:5px 7px;border:1.5px solid var(--line);
+       border-radius:7px;background:var(--paper);color:var(--ink);width:52px;text-align:center}
+  .qrow .qn{width:66px;text-align:left}
+  .qrow span{font-size:12px;color:var(--muted)}
+  .qrow select{font:inherit;font-size:13px;padding:5px 7px;border:1.5px solid var(--line);
+       border-radius:7px;background:var(--paper);color:var(--ink);max-width:230px}
+  .qrow .x{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;
+       line-height:1;padding:2px 6px;margin-left:auto}
+  .qrow .x:hover{color:var(--accent)}
+  .errs{display:flex;gap:5px;flex-wrap:wrap;flex-basis:100%;margin-top:2px}
+  .echip{font:inherit;font-size:11.5px;padding:3px 9px;border-radius:999px;
+       border:1.5px solid var(--line);background:var(--paper);color:var(--muted);
+       cursor:pointer}
+  .echip.on{border-color:var(--accent);color:var(--ink);background:#fdf2f2}
+  /* ---- the reading ---- */
+  .kh{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+       margin:22px 0 8px}
+  .ksum{font-size:22px;margin:0 0 12px}
+  .kbars{display:flex;flex-direction:column;gap:5px;margin:0 0 12px;max-width:520px}
+  .kbar{display:flex;align-items:center;gap:9px;font-size:12.5px}
+  .kbn{width:34px;color:var(--muted)}
+  .ktrack{flex:1;height:9px;border-radius:999px;background:var(--line-soft);overflow:hidden}
+  .ktrack i{display:block;height:100%;background:var(--deep)}
+  .kbv{width:38px;text-align:right;color:var(--muted)}
+  .knote{font-size:14px;line-height:1.5;margin:0 0 8px}
+  .klist{margin:0 0 8px;padding-left:18px;font-size:14px;line-height:1.5}
+  .klist span{display:block;color:var(--muted);font-size:12.5px}
+  .kskill{border-left:3px solid var(--deep);padding:2px 0 2px 12px;margin:0 0 14px}
+  .kskill b{font-size:15px}
+  .kskill .kq{display:block;font-size:12px;color:var(--muted);margin:1px 0 6px}
+  .kasks{margin:0 0 5px;font-size:14px;line-height:1.5}
+  .khigh{margin:0 0 5px;font-size:14px;line-height:1.5;color:var(--ink)}
+  .kcrit{margin:0;font-size:12px;color:var(--muted);font-style:italic}
+  .kruns{display:flex;flex-direction:column;gap:6px;max-width:460px}
+  .krun{text-align:left;font:inherit;padding:8px 11px;border-radius:9px;
+       border:1.5px solid var(--line);background:var(--paper);cursor:pointer;color:var(--ink)}
+  .krun.on{border-color:var(--deep);background:#eef4fb}
+  .krun span{display:block;font-size:12px;color:var(--muted)}
+  @media (max-width:560px){
+    .qrow select{max-width:100%;flex-basis:100%}
+    .qrow .qn{width:54px}
+  }
 </style>
 </head>
 <body class="">
@@ -230,13 +292,14 @@
 <nav class="steps" id="steps"></nav>
 <div class="pick" id="pick"></div>
 <main id="main"></main>
-<script src="data/exam.js?v=20261024a"></script>
-<script src="data/drills.js?v=20261024a"></script>
-<script src="data/texts.js?v=20261024a"></script>
-<script src="data/writing.js?v=20261024a"></script>
-<script src="data/readings.js?v=20261024a"></script>
-<script src="data/audio.js?v=20261024a"></script>
-<script src="app.js?v=20261024a"></script>
-<div class="build" aria-hidden="true">build 2026-10-24a</div>
+<script src="data/exam.js?v=20261101a"></script>
+<script src="data/papers.js?v=20261101a"></script>
+<script src="data/drills.js?v=20261101a"></script>
+<script src="data/texts.js?v=20261101a"></script>
+<script src="data/writing.js?v=20261101a"></script>
+<script src="data/readings.js?v=20261101a"></script>
+<script src="data/audio.js?v=20261101a"></script>
+<script src="app.js?v=20261101a"></script>
+<div class="build" aria-hidden="true">build 2026-11-01a</div>
 </body>
 </html>

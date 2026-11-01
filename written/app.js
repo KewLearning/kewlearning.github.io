@@ -153,15 +153,31 @@
   /* ---- what the page remembers ---- */
   var KEY = "hikki-v1";
   var S = { furi:true, rate:1, step:"bunpou", pick:{}, right:0, tried:0,
-            got:{}, wrote:{}, script:{}, howto:{} };
+            got:{}, wrote:{}, script:{}, howto:{}, runs:[], run:null };
   try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){}
-  var saveT = null;
+  if (!S.runs) S.runs = [];
+  /* ---- a throttle, not a debounce ----
+     It was a 250ms debounce, which never fires at all while somebody
+     types steadily: every keystroke pushed it back, so everything
+     since the last pause lived in memory only. Fine when the most
+     that could be lost was a half-typed answer; not fine for きろく,
+     where a student enters a whole marked exam question by question
+     and would be furious to type it twice. pagehide covers a tidy
+     close. It does not cover a crash.
+
+     So a change now guarantees a write within 400ms, whatever else
+     is happening. The first change schedules it; changes during the
+     window are free, because the write stringifies the state as it
+     is when it fires, not as it was when it was asked for. */
+  var saveT = null, lastWrite = 0;
   function save(){
-    clearTimeout(saveT);
-    saveT = setTimeout(saveNow, 250);
+    if (saveT) return;
+    saveT = setTimeout(saveNow, Math.max(0, 400 - (Date.now() - lastWrite)));
   }
   function saveNow(){
     clearTimeout(saveT);
+    saveT = null;
+    lastWrite = Date.now();
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
   }
   window.addEventListener("pagehide", saveNow);
@@ -188,7 +204,7 @@
   $("resetBtn").onclick = function(){
     if (!confirm("Clear your score and everything typed on this device?")) return;
     S = { furi:true, rate:1, step:"bunpou", pick:{}, right:0, tried:0,
-          got:{}, wrote:{}, script:{}, howto:{} };
+          got:{}, wrote:{}, script:{}, howto:{}, runs:[], run:null };
     try { localStorage.removeItem(KEY); } catch(e){}
     draw();
   };
@@ -251,7 +267,8 @@
     { id:"kikitori",ja:"ききとり",  en:"listening" },
     { id:"dokkai",  ja:"どっかい",  en:"reading" },
     { id:"sakubun", ja:"さくぶん",  en:"writing" },
-    { id:"sakusen", ja:"さくせん",  en:"strategy" }
+    { id:"sakusen", ja:"さくせん",  en:"strategy" },
+    { id:"kiroku",  ja:"きろく",    en:"your practice exams" }
   ];
 
   function chips(items, chosen, onPick, label){
@@ -762,7 +779,341 @@
 
   /* ---------------------------------------------------------------- draw */
   var DRAW = { bunpou:drawBunpou, machigai:drawMachigai, kikitori:drawKikitori,
-               dokkai:drawDokkai, sakubun:drawSakubun, sakusen:drawSakusen };
+               dokkai:drawDokkai, sakubun:drawSakubun, sakusen:drawSakusen,
+               kiroku:drawKiroku };
+
+  /* ================= きろく, your practice exams =================
+     Andrew: "a tool into which students can enter practice exam data and
+     receive curated feedback ... Data entry should be question by question
+     for granularity ... As we don't know exactly how VCAA assessors will
+     grade a paper, the entry format should allow a range of marks ... We
+     can work with a 'conservative' score and a 'best case scenario' score.
+     But I think the main feedback should include an analysis of what the
+     question was asking the student to do and how they could score highly."
+
+     Two marks per question, then. A low and a high, and the gap between
+     them is not noise: a question a student cannot score themselves is a
+     question they half answered, which is a different problem from one
+     they got wrong, and the reading says so.
+
+     What it gives back comes in three layers:
+       the question   what it asked you to do, and what a good answer does
+       the pattern    which kinds of mark keep going missing
+       the paper      receptive against productive, which is where the
+                      hours should go
+
+     The first layer needs the real papers and their examiner's reports.
+     Until those are in the repo, a question carries a skill the student
+     picks and the advice comes off the skill. Nothing here paraphrases an
+     examiner's report, because there is no report in the repo to
+     paraphrase.
+
+     Nothing is sent anywhere. The marks sit in this browser, the same as
+     everything else this app remembers, and Reset clears them. */
+  var PAP = window.HIKKI_PAPERS || { errors: [], skills: [], papers: [] };
+  var SEC = (window.HIKKI_EXAM || {}).sections || [];
+  /* Which sections are a test of understanding. Section 1 is listening
+     in both its parts and Section 2 Part A is reading plus listening;
+     2B and 3 are what the student produces. Part B answers in Japanese
+     and so is marked on language too, but what it tests first is
+     whether the text was understood, and grouping it with the writing
+     sections hides exactly the pattern this tool exists to show.
+     Andrew's own reading of the sample paper: "Priority should be
+     listening/comprehension, precise detail extraction, and turning
+     understood information into accurate answers." */
+  var RECEPTIVE = { s1a: 1, s1b: 1, s2a: 1 };
+
+  var SHORT = { s1a: "S1A", s1b: "S1B", s2a: "S2A", s2b: "S2B", s3: "S3" };
+  function secOf(id){
+    var out = null;
+    SEC.forEach(function(x){ if (x.id === id) out = x; });
+    return out;
+  }
+  function blankRun(){
+    return { when: new Date().toISOString().slice(0, 10), paper: "", rows: [] };
+  }
+  function curRun(){
+    if (S.run === null || !S.runs[S.run]){
+      S.runs.push(blankRun());
+      S.run = S.runs.length - 1;
+    }
+    return S.runs[S.run];
+  }
+  function runTotals(run){
+    var t = { low: 0, high: 0, max: 0, bySec: {} };
+    SEC.forEach(function(x){ t.bySec[x.id] = { low: 0, high: 0, max: 0, n: 0 }; });
+    (run.rows || []).forEach(function(r){
+      var b = t.bySec[r.sec];
+      if (!b) return;
+      b.low += (+r.low || 0); b.high += (+r.high || 0); b.max += (+r.max || 0); b.n++;
+      t.low += (+r.low || 0); t.high += (+r.high || 0); t.max += (+r.max || 0);
+    });
+    return t;
+  }
+  function pc(n, d){ return d ? Math.round((n / d) * 100) : 0; }
+
+  function drawKiroku(){
+    /* this rung has no focus chips, and the row is shared, so the
+       previous rung's chips would otherwise stay on screen */
+    chips([], null, null, "");
+    var run = curRun(), T = runTotals(run);
+    var papers = PAP.papers || [];
+    $("main").innerHTML =
+        '<div class="rule"><b>Your practice exams</b>'
+      + 'Enter each question as you mark it. Put the mark you are sure of '
+      + 'in the first box and the best you think it could get in the second. '
+      + 'If you know the mark exactly, put the same number in both. '
+      + 'Everything stays in this browser.</div>'
+      + '<div class="krow khead">'
+      + '<label>Paper <input id="kpaper" value="' + esc(run.paper || "")
+      + '" placeholder="2024 VCAA, or school trial" autocomplete="off"></label>'
+      + '<label>Date <input id="kwhen" type="date" value="' + esc(run.when || "") + '"></label>'
+      + '<span class="sp"></span>'
+      + '<button class="btn ghost sm" id="kruns">' + S.runs.length + ' saved</button>'
+      + '<button class="btn ghost sm" id="knew">Start another</button>'
+      + '</div>'
+      + '<div id="ksecs"></div>'
+      + '<div id="kread"></div>';
+
+    $("kpaper").oninput = function(){ run.paper = this.value; save(); };
+    $("kwhen").oninput  = function(){ run.when  = this.value; save(); };
+    $("knew").onclick = function(){
+      S.runs.push(blankRun()); S.run = S.runs.length - 1; save(); draw();
+    };
+    $("kruns").onclick = function(){ listRuns(); };
+
+    $("ksecs").innerHTML = SEC.map(function(sc){
+      var b = T.bySec[sc.id] || { low:0, high:0, max:0, n:0 };
+      return '<section class="ksec" data-sec="' + esc(sc.id) + '">'
+        + '<h3>' + esc(sc.name) + ' <small>' + esc(sc.what) + '</small>'
+        + '<span class="ktot">' + b.low + (b.high !== b.low ? "\u2013" + b.high : "")
+        + ' of ' + sc.marks + '</span></h3>'
+        + '<div class="qlist" data-list="' + esc(sc.id) + '"></div>'
+        + '<button class="btn ghost sm" data-add="' + esc(sc.id) + '">Add a question</button>'
+        + '</section>';
+    }).join("");
+
+    SEC.forEach(function(sc){ paintRows(sc.id); });
+    each($("ksecs"), "[data-add]", function(b){
+      b.onclick = function(){
+        var sec = b.dataset.add;
+        var n = (run.rows || []).filter(function(r){ return r.sec === sec; }).length + 1;
+        run.rows.push({ sec: sec, q: String(n), max: "", low: "", high: "",
+                        skill: "", errs: [] });
+        save(); drawKiroku();
+      };
+    });
+    reading();
+
+    function paintRows(sec){
+      var list = $("main").querySelector('[data-list="' + sec + '"]');
+      var rows = [];
+      (run.rows || []).forEach(function(r, i){ if (r.sec === sec) rows.push([r, i]); });
+      if (!rows.length){
+        list.innerHTML = '<p class="hint">No questions yet.</p>';
+        return;
+      }
+      var skills = (PAP.skills || []).filter(function(k){
+        return k.sections.indexOf(sec) >= 0;
+      });
+      list.innerHTML = rows.map(function(pair){
+        var r = pair[0], i = pair[1];
+        return '<div class="qrow" data-i="' + i + '">'
+          + '<input class="qn" value="' + esc(r.q) + '" aria-label="Question number">'
+          + '<span class="of">out of</span>'
+          + '<input class="qm" inputmode="numeric" value="' + esc(r.max) + '" aria-label="Marks available">'
+          + '<span class="got">got</span>'
+          + '<input class="ql" inputmode="numeric" value="' + esc(r.low) + '" aria-label="The mark you are sure of">'
+          + '<span class="to">to</span>'
+          + '<input class="qh" inputmode="numeric" value="' + esc(r.high) + '" aria-label="The best it could get">'
+          + '<select class="qs" aria-label="What the question asked you to do">'
+          + '<option value="">What did it ask for?</option>'
+          + skills.map(function(k){
+              return '<option value="' + esc(k.id) + '"'
+                + (r.skill === k.id ? " selected" : "") + '>' + esc(k.en) + '</option>';
+            }).join("")
+          + '</select>'
+          + '<button class="x" aria-label="Remove this question">\u00d7</button>'
+          + '<div class="errs">' + (PAP.errors || []).map(function(e){
+              return '<button class="echip' + (r.errs.indexOf(e.id) >= 0 ? " on" : "")
+                + '" data-e="' + esc(e.id) + '" title="' + esc(e.note) + '">'
+                + esc(e.en) + '</button>';
+            }).join("") + '</div>'
+          + '</div>';
+      }).join("");
+      each(list, ".qrow", function(el){
+        var r = run.rows[+el.dataset.i];
+        function bind(sel, key, num){
+          var inp = el.querySelector(sel);
+          inp.oninput = function(){
+            var v = this.value;
+            if (num){
+              v = v.replace(/[^0-9.]/g, "");
+              this.value = v;
+            }
+            r[key] = v;
+            /* the high mark is never below the low one: a student who
+               types the sure mark and moves on has said both */
+            if (key === "low" && (r.high === "" || +r.high < +v)) {
+              r.high = v;
+              el.querySelector(".qh").value = v;
+            }
+            save(); totals(); reading();
+          };
+        }
+        bind(".qn", "q", false);
+        bind(".qm", "max", true);
+        bind(".ql", "low", true);
+        bind(".qh", "high", true);
+        el.querySelector(".qs").onchange = function(){
+          r.skill = this.value; save(); reading();
+        };
+        el.querySelector(".x").onclick = function(){
+          run.rows.splice(+el.dataset.i, 1); save(); drawKiroku();
+        };
+        each(el, "[data-e]", function(b){
+          b.onclick = function(){
+            var id = b.dataset.e, at = r.errs.indexOf(id);
+            if (at >= 0) r.errs.splice(at, 1); else r.errs.push(id);
+            b.classList.toggle("on", at < 0);
+            save(); reading();
+          };
+        });
+      });
+    }
+    function totals(){
+      var t = runTotals(run);
+      each($("ksecs"), ".ksec", function(el){
+        var sc = secOf(el.dataset.sec), b = t.bySec[el.dataset.sec];
+        el.querySelector(".ktot").textContent =
+          b.low + (b.high !== b.low ? "\u2013" + b.high : "") + " of " + sc.marks;
+      });
+    }
+    function reading(){
+      var t = runTotals(run);
+      var any = (run.rows || []).some(function(r){ return r.low !== "" || r.high !== ""; });
+      if (!any){
+        $("kread").innerHTML = '<p class="hint">Add a question and a mark, '
+          + 'and the reading appears here.</p>';
+        return;
+      }
+      /* ---- the paper ---- */
+      var secs = SEC.map(function(sc){
+        var b = t.bySec[sc.id];
+        return { sc: sc, b: b, mid: b.max ? (b.low + b.high) / 2 / sc.marks : null };
+      }).filter(function(x){ return x.b.n; });
+      var weakest = secs.slice().sort(function(a, b){ return a.mid - b.mid; })[0];
+      var rec = secs.filter(function(x){ return RECEPTIVE[x.sc.id]; });
+      var pro = secs.filter(function(x){ return !RECEPTIVE[x.sc.id]; });
+      function avg(list){
+        if (!list.length) return null;
+        var n = 0; list.forEach(function(x){ n += x.mid; });
+        return n / list.length;
+      }
+      var ra = avg(rec), pa = avg(pro);
+
+      /* ---- the pattern ---- */
+      var tally = {};
+      (run.rows || []).forEach(function(r){
+        (r.errs || []).forEach(function(e){ tally[e] = (tally[e] || 0) + 1; });
+      });
+      var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; });
+
+      /* ---- the questions ---- */
+      var lost = (run.rows || []).filter(function(r){
+        return r.max !== "" && r.skill && (+r.high < +r.max);
+      });
+      var bySkill = {};
+      lost.forEach(function(r){
+        var k = r.skill;
+        bySkill[k] = bySkill[k] || { n: 0, marks: 0, qs: [] };
+        bySkill[k].n++;
+        bySkill[k].marks += (+r.max - (+r.low || 0));
+        bySkill[k].qs.push(r.q);
+      });
+      var skillOrder = Object.keys(bySkill).sort(function(a, b){
+        return bySkill[b].marks - bySkill[a].marks;
+      });
+      var wide = (run.rows || []).filter(function(r){
+        return r.high !== "" && r.low !== "" && (+r.high - +r.low) >= 2;
+      });
+
+      $("kread").innerHTML =
+          '<h3 class="kh">The paper</h3>'
+        + '<p class="ksum"><b>' + t.low + (t.high !== t.low ? "\u2013" + t.high : "")
+        + ' of ' + t.max + '</b>'
+        + (t.max ? ' \u00b7 ' + pc(t.low, t.max) + '\u2013' + pc(t.high, t.max) + '%' : '')
+        + '</p>'
+        + '<div class="kbars">' + secs.map(function(x){
+            return '<div class="kbar"><span class="kbn">' + esc(SHORT[x.sc.id] || x.sc.id)
+              + '</span><span class="ktrack"><i style="width:'
+              + Math.round(x.mid * 100) + '%"></i></span><span class="kbv">'
+              + Math.round(x.mid * 100) + '%</span></div>';
+          }).join("") + '</div>'
+        + (ra !== null && pa !== null
+            ? '<p class="knote">' + (Math.abs(ra - pa) < 0.1
+                ? 'Understanding and writing are running level.'
+                : (ra < pa
+                   ? 'Understanding the texts is behind producing them. Work on Section 1 and Section 2 Part A before you work on your writing.'
+                   : 'Producing Japanese is behind understanding it. Work on Section 2 Part B and Section 3.')) + '</p>'
+            : '')
+        + (weakest ? '<p class="knote">Weakest section: <b>' + esc(weakest.sc.name)
+            + '</b> at ' + Math.round(weakest.mid * 100) + '%.</p>' : '')
+        + (wide.length
+            ? '<h3 class="kh">Borderline</h3><p class="knote">'
+              + wide.length + ' question' + (wide.length === 1 ? "" : "s")
+              + ' you could not score yourself (' + wide.map(function(r){ return esc(r.q); }).join(", ")
+              + '). A mark you cannot call is usually a half answer: the idea arrived '
+              + 'and something the marker needed did not. Go back to those first, '
+              + 'and work out what was missing rather than whether it was right.</p>'
+            : '')
+        + (top.length
+            ? '<h3 class="kh">What keeps happening</h3><ul class="klist">'
+              + top.slice(0, 3).map(function(id){
+                  var e = null;
+                  (PAP.errors || []).forEach(function(x){ if (x.id === id) e = x; });
+                  return e ? '<li><b>' + esc(e.en) + '</b> \u00d7 ' + tally[id]
+                    + '<span>' + esc(e.note) + '</span></li>' : '';
+                }).join("") + '</ul>'
+            : '')
+        + (skillOrder.length
+            ? '<h3 class="kh">What those questions were asking for</h3>'
+              + skillOrder.slice(0, 4).map(function(id){
+                  var k = null;
+                  (PAP.skills || []).forEach(function(x){ if (x.id === id) k = x; });
+                  if (!k) return "";
+                  var b = bySkill[id];
+                  return '<div class="kskill"><b>' + esc(k.en) + '</b>'
+                    + '<span class="kq">Q' + b.qs.join(", Q") + ' \u00b7 '
+                    + b.marks + ' mark' + (b.marks === 1 ? "" : "s") + ' lost</span>'
+                    + '<p class="kasks">' + esc(k.asks) + '</p>'
+                    + '<p class="khigh">' + esc(k.high) + '</p>'
+                    + '<p class="kcrit">Marked on: ' + esc(k.criterion) + '</p></div>';
+                }).join("")
+            : '<p class="hint">Tag a question with what it asked for, and the '
+              + 'advice for that kind of question appears here.</p>');
+    }
+    function listRuns(){
+      $("kread").innerHTML = '<h3 class="kh">Saved papers</h3>'
+        + '<div class="kruns">' + S.runs.map(function(r, i){
+            var t = runTotals(r);
+            return '<button class="krun' + (i === S.run ? " on" : "") + '" data-r="' + i + '">'
+              + '<b>' + esc(r.paper || "Untitled") + '</b>'
+              + '<span>' + esc(r.when || "") + ' \u00b7 ' + t.low
+              + (t.high !== t.low ? "\u2013" + t.high : "") + ' of ' + t.max + '</span>'
+              + '</button>';
+          }).join("") + '</div>';
+      each($("kread"), "[data-r]", function(b){
+        b.onclick = function(){ S.run = +b.dataset.r; save(); drawKiroku(); };
+      });
+    }
+    /* a seam for the browser check */
+    window.HIKKI_KIROKU = {
+      run:    function(){ return curRun(); },
+      totals: function(){ return runTotals(curRun()); },
+      reading: function(){ return $("kread").innerText; }
+    };
+  }
 
   /* ---- the how-to box gets out of the way ----
      Andrew: "the yellow speech bubble containing the instructions for
