@@ -18,13 +18,21 @@
             lines underneath are written for this app and are NOT quotations
             from any examiner's report.
 
-   papers   One entry per real paper, with its questions. EMPTY until the
-            VCAA papers and examiner's reports 2020-2025 are in the repo.
-            Nothing here is invented: a question's "asks" and "high" lines
-            have to come off the paper and its report, so until those arrive
-            the app runs in the mode where the student types the question
-            numbers in themselves and the advice comes from the skill level
-            rather than the question level.
+   papers   One entry per real paper, with its questions.
+
+            Every question carries its number and its marks, both read off
+            the paper itself; a one-line paraphrase of what it asked, in
+            this app's words; a line on how to score it, drawn from the
+            examination report; and a short quotation from that report,
+            which is the only part written by the assessors.
+
+            The papers and reports are VCAA copyright. Nothing here
+            reproduces an examination text, a full expected answer or a
+            sample response: the quotations are short, attributed, and
+            about what students did rather than about what the paper said.
+
+            A paper is added only when its paper and its report are both
+            in the repo. Nothing here is invented.
 
    Pure JSON after the single window. line.
    ========================================================================== */
@@ -121,5 +129,182 @@ window.HIKKI_PAPERS = {
       "high": "Vary your sentence patterns and your connectives. Then write the kanji you know: kana where the kanji is expected gives away marks for nothing." }
   ],
 
-  "papers": []
+  "papers": [
+    {
+      "year": 2025,
+      "name": "2025 VCAA",
+      "note": "Section 3 is one question of four. Add only the one you answered.",
+      "source": "VCE Japanese Second Language written examination 2025 and its examination report, VCAA.",
+      "choice": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "questions": [
+        {
+          "sec": "s1a",
+          "q": "1a",
+          "marks": 2,
+          "skill": "detail",
+          "asks": "Say when the walking group meets.",
+          "high": "Give the whole time expression. A 'when' answer can need a general time and a specific one, and half of it scores half.",
+          "report": "Some students omitted the reference to 'during the summer'. Although the meaning was generally understood, some may not have recognised that 'when' can relate to both specific and general time expressions."
+        },
+        {
+          "sec": "s1a",
+          "q": "1b",
+          "marks": 2,
+          "skill": "detail",
+          "asks": "Say why walking at that time of day is better.",
+          "high": "Carry the small words across. A missing 'very' changes the claim, and two kanji that look alike are not the same word.",
+          "report": "Some students omitted the word 'very' in their responses. A number of students also confused 道 (streets) with 町 (town)."
+        },
+        {
+          "sec": "s1a",
+          "q": "1c",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Outline the benefits of joining the group.",
+          "high": "Three marks means three benefits. Name each one fully rather than gesturing at it.",
+          "report": "Most students handled this question well. However, some did not fully convey the idea of 'places you have never been before'."
+        },
+        {
+          "sec": "s1a",
+          "q": "1d",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Say what advice is given to participants.",
+          "high": "Translate the advice, do not generalise it. 'Comfortable shoes' is not what 歩きやすいくつ says.",
+          "report": "Some students provided general responses such as 'comfortable shoes' or 'walking shoes' rather than directly conveying the meaning of 歩きやすいくつ."
+        },
+        {
+          "sec": "s1b",
+          "q": "2a",
+          "marks": 3,
+          "skill": "convey_ja",
+          "asks": "Explain, in Japanese, why Hiroshi recommends the amusement park.",
+          "high": "Write the kanji the course expects. The reasons are joined with し, so use it rather than listing three separate sentences.",
+          "report": "Students are reminded to use the expected kanji in Japanese responses."
+        },
+        {
+          "sec": "s1b",
+          "q": "2b",
+          "marks": 2,
+          "skill": "convey_ja",
+          "asks": "Say in Japanese why the cycle monorail was fun.",
+          "high": "Listen for the word, not the shape of it. はじめて and はじめに are one kana apart and mean different things.",
+          "report": "A common error was confusing はじめて (for the first time) with はじめに (first), which led to inaccurate responses."
+        },
+        {
+          "sec": "s1b",
+          "q": "2c",
+          "marks": 3,
+          "skill": "convey_ja",
+          "asks": "Describe in Japanese the safety measures on the cycle monorail.",
+          "high": "Get the verb forms right. A rule needs なければなりません, and the spelling has to hold up.",
+          "report": "A noticeable number had difficulty with the conjugated form of はしる (to run/move) and しなければならない (must wear), and spelling errors were common."
+        },
+        {
+          "sec": "s1b",
+          "q": "2d",
+          "marks": 2,
+          "skill": "convey_ja",
+          "asks": "Say in Japanese what else became a good memory for Hiroshi.",
+          "high": "Keep the particle that carries the meaning. 友だちと is 'with a friend'; another particle makes it someone else's memory.",
+          "report": "友だちと (with my friend) was often overlooked or an incorrect particle was used, which changed the intended meaning."
+        },
+        {
+          "sec": "s2a",
+          "q": "3a",
+          "marks": 4,
+          "skill": "gather",
+          "asks": "Explain how living arrangements for elderly people have changed over fifty years.",
+          "high": "A question about change needs both halves and the time markers that separate them. Say what it was, say what it is now.",
+          "report": "A number of responses did not include the required time markers, which made the contrast unclear."
+        },
+        {
+          "sec": "s2a",
+          "q": "3b",
+          "marks": 4,
+          "skill": "detail",
+          "asks": "Explain the problems elderly people face living alone.",
+          "high": "Four marks, four problems. Read the kanji carefully: several here differ by one character.",
+          "report": "Some students misread key terms such as 病気 (illness) or overlooked けが (injury), and some confused うんてん (driving) with うん動 (exercise)."
+        },
+        {
+          "sec": "s2a",
+          "q": "3c",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Say why Miku decided to move into Take-san's house.",
+          "high": "Name the thing precisely. The room is cheap, not 'it' is cheap.",
+          "report": "There were responses that simply stated that 'it is cheap' without specifying へや (room)."
+        },
+        {
+          "sec": "s2a",
+          "q": "3d",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Outline the difficulties Miku has living with an elderly person.",
+          "high": "Give the whole condition. Both halves of a contrast count, and a dropped 'at night' loses the mark.",
+          "report": "Many responses lacked the level of detail required. Some students did not convey that both the waking and sleeping times were different, and 'at night' was omitted."
+        },
+        {
+          "sec": "s2a",
+          "q": "3e",
+          "marks": 6,
+          "skill": "gather",
+          "asks": "Say what each generation has learnt from the other, using the article and the interview.",
+          "high": "Two sources and two lists. Sort each point into the right column before you write: the marks go on who learnt what from whom.",
+          "report": "Some responses showed confusion about who learnt what from whom, with certain details placed under the wrong section."
+        },
+        {
+          "sec": "s2b",
+          "q": "4",
+          "marks": 15,
+          "skill": "texttype",
+          "asks": "Write a persuasive email to your teacher arguing for the wagashi workshop, using the blog post and the photograph.",
+          "high": "Persuade, do not report. Use the picture as well as the text, and put it in your own words rather than copying the stimulus.",
+          "report": "Low-scoring responses tended to be more informative than persuasive ... showed limited understanding of the required content and often overlooked the image entirely ... included significant portions copied from the reading text without any modifications."
+        },
+        {
+          "sec": "s3",
+          "q": "5",
+          "marks": 20,
+          "skill": "relevance",
+          "asks": "Write the script of an informative speech on how you used social media to promote your sports club.",
+          "high": "Answer the task, not the topic. Say what you actually did to promote the club, with specific examples.",
+          "report": "Many responses tended to be general descriptions of social media ... High-scoring responses addressed the task directly, explaining what the media coordinator had actually done."
+        },
+        {
+          "sec": "s3",
+          "q": "6",
+          "marks": 20,
+          "skill": "depth",
+          "asks": "Write a journal entry on the skills you learnt in a part-time job and how they will help you.",
+          "high": "Reflect, do not describe. Name a skill, give an example of it, and say where it will be useful next.",
+          "report": "Some responses described the workplace or the job itself ... High-scoring responses identified skills gained from part-time work, supported by relevant examples ... explained how these skills would be transferable."
+        },
+        {
+          "sec": "s3",
+          "q": "7",
+          "marks": 20,
+          "skill": "depth",
+          "asks": "Write a report evaluating the good and bad points of an airline's first flight.",
+          "high": "Evaluate a few things properly rather than listing many. Keep the viewpoint the task gave you.",
+          "report": "High-scoring responses developed a balanced and well-reasoned assessment, selecting a few key aspects and exploring them in sufficient depth rather than listing multiple superficial ideas."
+        },
+        {
+          "sec": "s3",
+          "q": "8",
+          "marks": 20,
+          "skill": "texttype",
+          "asks": "Write an imaginative story for children about the surprise you had.",
+          "high": "Tell a story. A children's story needs a setting, something that happens and an ending, not a sequence of actions.",
+          "report": "Responses often read more as an explanatory sequence of actions than as an engaging children's story."
+        }
+      ]
+    }
+  ]
 };

@@ -830,7 +830,29 @@
     return out;
   }
   function blankRun(){
-    return { when: new Date().toISOString().slice(0, 10), paper: "", rows: [] };
+    return { when: new Date().toISOString().slice(0, 10), paper: "", pid: "", rows: [] };
+  }
+  function paperOf(id){
+    var out = null;
+    (PAP.papers || []).forEach(function(x){ if (String(x.year) === String(id)) out = x; });
+    return out;
+  }
+  function qOf(run, sec, q){
+    var pp = paperOf(run.pid);
+    if (!pp) return null;
+    var out = null;
+    pp.questions.forEach(function(x){ if (x.sec === sec && x.q === q) out = x; });
+    return out;
+  }
+  /* Laying a real paper out: every question except the Section 3 four,
+     which are alternatives. The student adds the one they answered. */
+  function layOut(run, pp){
+    run.rows = [];
+    pp.questions.forEach(function(x){
+      if ((pp.choice || []).indexOf(x.q) >= 0) return;
+      run.rows.push({ sec: x.sec, q: x.q, max: String(x.marks), low: "", high: "",
+                      skill: x.skill, errs: [] });
+    });
   }
   function curRun(){
     if (S.run === null || !S.runs[S.run]){
@@ -865,8 +887,16 @@
       + 'If you know the mark exactly, put the same number in both. '
       + 'Everything stays in this browser.</div>'
       + '<div class="krow khead">'
-      + '<label>Paper <input id="kpaper" value="' + esc(run.paper || "")
-      + '" placeholder="2024 VCAA, or school trial" autocomplete="off"></label>'
+      + '<label>Paper <select id="kpick">'
+      + '<option value="">School practice exam</option>'
+      + (PAP.papers || []).map(function(x){
+          return '<option value="' + esc(x.year) + '"'
+            + (String(run.pid) === String(x.year) ? " selected" : "") + '>'
+            + esc(x.name) + '</option>';
+        }).join("")
+      + '</select></label>'
+      + (run.pid ? '' : '<label>Name <input id="kpaper" value="' + esc(run.paper || "")
+          + '" placeholder="School trial" autocomplete="off"></label>')
       + '<label>Date <input id="kwhen" type="date" value="' + esc(run.when || "") + '"></label>'
       + '<span class="sp"></span>'
       + '<button class="btn ghost sm" id="kruns">' + S.runs.length + ' saved</button>'
@@ -875,7 +905,19 @@
       + '<div id="ksecs"></div>'
       + '<div id="kread"></div>';
 
-    $("kpaper").oninput = function(){ run.paper = this.value; save(); };
+    if ($("kpaper")) $("kpaper").oninput = function(){ run.paper = this.value; save(); };
+    $("kpick").onchange = function(){
+      var id = this.value;
+      var used = (run.rows || []).some(function(r){ return r.low !== "" || r.high !== ""; });
+      if (used && !confirm("Change the paper and clear the marks you have entered?")){
+        this.value = run.pid || ""; return;
+      }
+      run.pid = id;
+      var pp = paperOf(id);
+      if (pp){ run.paper = pp.name; layOut(run, pp); }
+      else { run.paper = ""; run.rows = []; }
+      save(); drawKiroku();
+    };
     $("kwhen").oninput  = function(){ run.when  = this.value; save(); };
     $("knew").onclick = function(){
       S.runs.push(blankRun()); S.run = S.runs.length - 1; save(); draw();
@@ -889,11 +931,37 @@
         + '<span class="ktot">' + b.low + (b.high !== b.low ? "\u2013" + b.high : "")
         + ' of ' + sc.marks + '</span></h3>'
         + '<div class="qlist" data-list="' + esc(sc.id) + '"></div>'
-        + '<button class="btn ghost sm" data-add="' + esc(sc.id) + '">Add a question</button>'
+        + addFor(sc)
         + '</section>';
     }).join("");
 
+    function addFor(sc){
+      var pp = paperOf(run.pid);
+      var choice = pp && sc.id === "s3" ? (pp.choice || []) : null;
+      if (pp && !choice) return '';     /* a real paper's questions are fixed */
+      if (!choice || !choice.length)
+        return '<button class="btn ghost sm" data-add="' + esc(sc.id) + '">Add a question</button>';
+      var taken = {};
+      (run.rows || []).forEach(function(r){ if (r.sec === "s3") taken[r.q] = 1; });
+      /* one of four, so the four are offered and the chosen one sticks */
+      return '<span class="hint">Which did you answer? </span>'
+        + choice.map(function(q){
+            return '<button class="btn ghost sm" data-pick3="' + esc(q) + '"'
+              + (taken[q] ? " disabled" : "") + '>Q' + esc(q) + '</button>';
+          }).join("");
+    }
     SEC.forEach(function(sc){ paintRows(sc.id); });
+    each($("ksecs"), "[data-pick3]", function(b){
+      b.onclick = function(){
+        var pp = paperOf(run.pid), q = b.dataset.pick3, src = null;
+        (pp.questions || []).forEach(function(x){ if (x.q === q) src = x; });
+        if (!src) return;
+        run.rows = (run.rows || []).filter(function(r){ return r.sec !== "s3"; });
+        run.rows.push({ sec: "s3", q: src.q, max: String(src.marks), low: "", high: "",
+                        skill: src.skill, errs: [] });
+        save(); drawKiroku();
+      };
+    });
     each($("ksecs"), "[data-add]", function(b){
       b.onclick = function(){
         var sec = b.dataset.add;
@@ -905,6 +973,11 @@
     });
     reading();
 
+    function lostOn(r){
+      if ((r.errs || []).length) return true;
+      if (r.max === "" || r.low === "") return false;
+      return +r.low < +r.max;
+    }
     function paintRows(sec){
       var list = $("main").querySelector('[data-list="' + sec + '"]');
       var rows = [];
@@ -917,28 +990,37 @@
         return k.sections.indexOf(sec) >= 0;
       });
       list.innerHTML = rows.map(function(pair){
-        var r = pair[0], i = pair[1];
-        return '<div class="qrow" data-i="' + i + '">'
-          + '<input class="qn" value="' + esc(r.q) + '" aria-label="Question number">'
+        var r = pair[0], i = pair[1], src = qOf(run, r.sec, r.q);
+        return '<div class="qrow' + (src ? " fixed" : "") + '" data-i="' + i + '">'
+          + (src
+             ? '<span class="qfix">Q' + esc(r.q) + '</span>'
+             : '<input class="qn" value="' + esc(r.q) + '" aria-label="Question number">')
           + '<span class="of">out of</span>'
           + '<input class="qm" inputmode="numeric" value="' + esc(r.max) + '" aria-label="Marks available">'
           + '<span class="got">got</span>'
           + '<input class="ql" inputmode="numeric" value="' + esc(r.low) + '" aria-label="The mark you are sure of">'
           + '<span class="to">to</span>'
           + '<input class="qh" inputmode="numeric" value="' + esc(r.high) + '" aria-label="The best it could get">'
-          + '<select class="qs" aria-label="What the question asked you to do">'
-          + '<option value="">What did it ask for?</option>'
-          + skills.map(function(k){
-              return '<option value="' + esc(k.id) + '"'
-                + (r.skill === k.id ? " selected" : "") + '>' + esc(k.en) + '</option>';
-            }).join("")
-          + '</select>'
-          + '<button class="x" aria-label="Remove this question">\u00d7</button>'
-          + '<div class="errs">' + (PAP.errors || []).map(function(e){
-              return '<button class="echip' + (r.errs.indexOf(e.id) >= 0 ? " on" : "")
-                + '" data-e="' + esc(e.id) + '" title="' + esc(e.note) + '">'
-                + esc(e.en) + '</button>';
-            }).join("") + '</div>'
+          + (src ? ''
+             : '<select class="qs" aria-label="What the question asked you to do">'
+               + '<option value="">What did it ask for?</option>'
+               + skills.map(function(k){
+                   return '<option value="' + esc(k.id) + '"'
+                     + (r.skill === k.id ? " selected" : "") + '>' + esc(k.en) + '</option>';
+                 }).join("")
+               + '</select>')
+          + (src ? '' : '<button class="x" aria-label="Remove this question">\u00d7</button>')
+          + (src ? '<p class="qasks">' + esc(src.asks) + '</p>' : '')
+          /* Six chips on every row is ninety chips on a full paper, and
+             they only mean anything where a mark went missing. They
+             appear when one does, and stay while any is ticked. */
+          + (lostOn(r)
+             ? '<div class="errs">' + (PAP.errors || []).map(function(e){
+                 return '<button class="echip' + (r.errs.indexOf(e.id) >= 0 ? " on" : "")
+                   + '" data-e="' + esc(e.id) + '" title="' + esc(e.note) + '">'
+                   + esc(e.en) + '</button>';
+               }).join("") + '</div>'
+             : '')
           + '</div>';
       }).join("");
       each(list, ".qrow", function(el){
@@ -951,6 +1033,7 @@
               v = v.replace(/[^0-9.]/g, "");
               this.value = v;
             }
+            var had = lostOn(r);
             r[key] = v;
             /* the high mark is never below the low one: a student who
                types the sure mark and moves on has said both */
@@ -959,16 +1042,19 @@
               el.querySelector(".qh").value = v;
             }
             save(); totals(); reading();
+            /* the chips arrive, or leave, the moment the mark says so */
+            if (lostOn(r) !== had) paintRows(r.sec);
           };
         }
-        bind(".qn", "q", false);
+        if (el.querySelector(".qn")) bind(".qn", "q", false);
         bind(".qm", "max", true);
         bind(".ql", "low", true);
         bind(".qh", "high", true);
-        el.querySelector(".qs").onchange = function(){
-          r.skill = this.value; save(); reading();
-        };
-        el.querySelector(".x").onclick = function(){
+        if (el.querySelector(".qs"))
+          el.querySelector(".qs").onchange = function(){
+            r.skill = this.value; save(); reading();
+          };
+        if (el.querySelector(".x")) el.querySelector(".x").onclick = function(){
           run.rows.splice(+el.dataset.i, 1); save(); drawKiroku();
         };
         each(el, "[data-e]", function(b){
@@ -1020,16 +1106,23 @@
       var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; });
 
       /* ---- the questions ---- */
+      /* Advise on anything that did not certainly score full marks,
+         which means reading the low mark and not the high one. A
+         question marked 0 to 2 out of 2 is not safe: it is a question
+         the student could not score, and the advice for it is exactly
+         what they need. It shows up under Borderline as well, because
+         it is both things at once. */
       var lost = (run.rows || []).filter(function(r){
-        return r.max !== "" && r.skill && (+r.high < +r.max);
+        return r.max !== "" && r.low !== "" && r.skill && (+r.low < +r.max);
       });
       var bySkill = {};
       lost.forEach(function(r){
         var k = r.skill;
-        bySkill[k] = bySkill[k] || { n: 0, marks: 0, qs: [] };
+        bySkill[k] = bySkill[k] || { n: 0, marks: 0, qs: [], sec: {} };
         bySkill[k].n++;
         bySkill[k].marks += (+r.max - (+r.low || 0));
         bySkill[k].qs.push(r.q);
+        bySkill[k].sec[r.q] = r.sec;
       });
       var skillOrder = Object.keys(bySkill).sort(function(a, b){
         return bySkill[b].marks - bySkill[a].marks;
@@ -1083,11 +1176,32 @@
                   (PAP.skills || []).forEach(function(x){ if (x.id === id) k = x; });
                   if (!k) return "";
                   var b = bySkill[id];
+                  /* A question off a real paper has advice of its own,
+                     written against that question and quoting its
+                     examination report. Where there is none, the skill
+                     advice stands in. */
+                  var own = b.qs.map(function(qq){ return qOf(run, b.sec[qq], qq); })
+                             .filter(Boolean);
                   return '<div class="kskill"><b>' + esc(k.en) + '</b>'
                     + '<span class="kq">Q' + b.qs.join(", Q") + ' \u00b7 '
                     + b.marks + ' mark' + (b.marks === 1 ? "" : "s") + ' lost</span>'
-                    + '<p class="kasks">' + esc(k.asks) + '</p>'
-                    + '<p class="khigh">' + esc(k.high) + '</p>'
+                    + (own.length
+                       /* Every question a mark was lost on, because that
+                          is the feedback. The quotation folds away so the
+                          page stays something a student can scan: seven
+                          questions times three paragraphs is a wall, and a
+                          wall does not get read. */
+                       ? own.map(function(o){
+                           return '<div class="kq1"><p class="kasks"><b>Q' + esc(o.q)
+                             + '</b> ' + esc(o.asks) + '</p>'
+                             + '<p class="khigh">' + esc(o.high) + '</p>'
+                             + '<details class="krep"><summary>What the assessors said</summary>'
+                             + '<p class="kquote">\u201c' + esc(o.report) + '\u201d'
+                             + '<span class="ksrc">VCAA examination report</span></p>'
+                             + '</details></div>';
+                         }).join("")
+                       : '<p class="kasks">' + esc(k.asks) + '</p>'
+                         + '<p class="khigh">' + esc(k.high) + '</p>')
                     + '<p class="kcrit">Marked on: ' + esc(k.criterion) + '</p></div>';
                 }).join("")
             : '<p class="hint">Tag a question with what it asked for, and the '

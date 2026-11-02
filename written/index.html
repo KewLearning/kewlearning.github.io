@@ -273,6 +273,26 @@
        border:1.5px solid var(--line);background:var(--paper);cursor:pointer;color:var(--ink)}
   .krun.on{border-color:var(--deep);background:#eef4fb}
   .krun span{display:block;font-size:12px;color:var(--muted)}
+  .krow select{font:inherit;font-size:14px;padding:6px 9px;border:1.5px solid var(--line);
+       border-radius:8px;background:var(--paper);color:var(--ink)}
+  /* a question off a real paper: the number and the task are fixed, so
+     they are printed rather than offered as fields to edit */
+  .qrow.fixed{align-items:flex-start}
+  .qfix{font-weight:700;font-size:13.5px;color:var(--deep);min-width:38px;padding-top:6px}
+  .qasks{flex-basis:100%;margin:3px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .kquote{margin:0 0 5px;font-size:13.5px;line-height:1.5;color:var(--ink);
+       border-left:3px solid var(--line);padding-left:10px;font-style:italic}
+  .ksrc{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .kskill .kasks{margin:0 0 3px;font-size:14px;color:var(--ink)}
+  .kq1{margin:0 0 11px}
+  .kq1:last-child{margin-bottom:0}
+  .krep summary{font-size:12.5px;color:var(--muted);cursor:pointer;
+       list-style:none;display:inline-block;padding:1px 0}
+  .krep summary::-webkit-details-marker{display:none}
+  .krep summary::before{content:"\25b8 ";font-size:10px}
+  .krep[open] summary::before{content:"\25be "}
+  .krep summary:hover{color:var(--deep)}
+  .krep .kquote{margin-top:5px}
   @media (max-width:560px){
     .qrow select{max-width:100%;flex-basis:100%}
     .qrow .qn{width:54px}
@@ -292,14 +312,14 @@
 <nav class="steps" id="steps"></nav>
 <div class="pick" id="pick"></div>
 <main id="main"></main>
-<script src="data/exam.js?v=20261101a"></script>
-<script src="data/papers.js?v=20261101a"></script>
-<script src="data/drills.js?v=20261101a"></script>
-<script src="data/texts.js?v=20261101a"></script>
-<script src="data/writing.js?v=20261101a"></script>
-<script src="data/readings.js?v=20261101a"></script>
-<script src="data/audio.js?v=20261101a"></script>
-<script src="app.js?v=20261101a"></script>
-<div class="build" aria-hidden="true">build 2026-11-01a</div>
+<script src="data/exam.js?v=20261102a"></script>
+<script src="data/papers.js?v=20261102a"></script>
+<script src="data/drills.js?v=20261102a"></script>
+<script src="data/texts.js?v=20261102a"></script>
+<script src="data/writing.js?v=20261102a"></script>
+<script src="data/readings.js?v=20261102a"></script>
+<script src="data/audio.js?v=20261102a"></script>
+<script src="app.js?v=20261102a"></script>
+<div class="build" aria-hidden="true">build 2026-11-02a</div>
 </body>
 </html>
