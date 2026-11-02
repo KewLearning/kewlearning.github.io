@@ -220,6 +220,11 @@
      A marking table, so it reads as rows rather than as a form. Two
      mark boxes per question, because a student who cannot score their
      own answer has said something useful by saying so. */
+  /* this rung scrolls inside .work like every other one; without it
+     the body's overflow:hidden leaves the bottom of a long paper
+     unreachable */
+  .kwork{padding-right:4px}
+  .kwork>*:last-child{padding-bottom:28px}
   .krow{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:0 0 16px}
   .krow label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;
        color:var(--muted)}
@@ -318,14 +323,14 @@
 <nav class="steps" id="steps"></nav>
 <div class="pick" id="pick"></div>
 <main id="main"></main>
-<script src="data/exam.js?v=20261102b"></script>
-<script src="data/papers.js?v=20261102b"></script>
-<script src="data/drills.js?v=20261102b"></script>
-<script src="data/texts.js?v=20261102b"></script>
-<script src="data/writing.js?v=20261102b"></script>
-<script src="data/readings.js?v=20261102b"></script>
-<script src="data/audio.js?v=20261102b"></script>
-<script src="app.js?v=20261102b"></script>
-<div class="build" aria-hidden="true">build 2026-11-02b</div>
+<script src="data/exam.js?v=20261102c"></script>
+<script src="data/papers.js?v=20261102c"></script>
+<script src="data/drills.js?v=20261102c"></script>
+<script src="data/texts.js?v=20261102c"></script>
+<script src="data/writing.js?v=20261102c"></script>
+<script src="data/readings.js?v=20261102c"></script>
+<script src="data/audio.js?v=20261102c"></script>
+<script src="app.js?v=20261102c"></script>
+<div class="build" aria-hidden="true">build 2026-11-02c</div>
 </body>
 </html>

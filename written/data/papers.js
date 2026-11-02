@@ -49,8 +49,8 @@ window.HIKKI_PAPERS = {
       "note": "Nothing stated it; the answer had to be reasoned." },
     { "id": "misread","ja": "しつもん",   "en": "I misread what the question wanted",
       "note": "A good answer to a question nobody asked." },
-    { "id": "ja",     "ja": "にほんご",   "en": "I understood it, my Japanese lost the mark",
-      "note": "Particles, endings, kanji, spelling." },
+    { "id": "expr",   "ja": "ひょうげん", "en": "I understood it but my expression was wrong",
+      "note": "The idea was right and the way it was put was not. Japanese or English." },
     { "id": "blank",  "ja": "じかん",     "en": "I ran out of time or left it blank",
       "note": "A mark that was never attempted." }
   ],

@@ -156,6 +156,17 @@
             got:{}, wrote:{}, script:{}, howto:{}, runs:[], run:null };
   try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){}
   if (!S.runs) S.runs = [];
+  /* The Japanese-only error option became one that covers both
+     languages, since a student answering Section 1 Part A in English
+     had nothing to tick. A tick already saved under the old name is
+     moved across rather than left pointing at an option that no
+     longer exists. */
+  S.runs.forEach(function(r){
+    (r.rows || []).forEach(function(q){
+      var at = (q.errs || []).indexOf("ja");
+      if (at >= 0) q.errs[at] = "expr";
+    });
+  });
   /* ---- a throttle, not a debounce ----
      It was a 250ms debounce, which never fires at all while somebody
      types steadily: every keystroke pushed it back, so everything
@@ -891,6 +902,13 @@
       + 'Put the same number in both if you already know the mark. '
       + 'The gap between them is useful, so do not guess it away. '
       + 'Everything stays in this browser and is never sent anywhere.</div>'
+      /* Andrew: "sometimes scrolling becomes disabled and you can't
+         click into fields that are half appearing from the bottom of
+         the screen." The body is overflow:hidden and the scrolling
+         region in this app is .work; this rung was writing straight
+         into main and so had no scroller at all. Everything below the
+         how-to now sits in one. */
+      + '<div class="work kwork">'
       + '<div class="krow khead">'
       + '<label>Paper <select id="kpick">'
       + '<option value="">School practice exam</option>'
@@ -908,7 +926,8 @@
       + '<button class="btn ghost sm" id="knew">Start another</button>'
       + '</div>'
       + '<div id="ksecs"></div>'
-      + '<div id="kread"></div>';
+      + '<div id="kread"></div>'
+      + '</div>';
 
     if ($("kpaper")) $("kpaper").oninput = function(){ run.paper = this.value; save(); };
     $("kpick").onchange = function(){
@@ -974,10 +993,45 @@
         run.rows.push({ sec: sec, q: String(n), max: "", low: "", high: "",
                         skill: "", errs: [] });
         save(); drawKiroku();
+        /* and land in it, rather than leaving a half-visible row at
+           the bottom of the screen for somebody to go hunting for */
+        var fresh = $("main").querySelectorAll('[data-list="' + sec + '"] .qrow');
+        var last = fresh[fresh.length - 1];
+        if (last){
+          last.scrollIntoView({ block: "center", behavior: "smooth" });
+          var first = last.querySelector(".qn") || last.querySelector(".qm");
+          if (first) first.focus();
+        }
       };
     });
     reading();
 
+    /* the error chips, put in or taken out without touching the rest
+       of the row */
+    function chipsFor(el, r){
+      var have = el.querySelector(".errs");
+      if (!lostOn(r)){ if (have) have.remove(); return; }
+      if (have) return;
+      var box = document.createElement("div");
+      box.className = "errs";
+      box.innerHTML = (PAP.errors || []).map(function(e){
+        return '<button class="echip' + (r.errs.indexOf(e.id) >= 0 ? " on" : "")
+          + '" data-e="' + esc(e.id) + '" title="' + esc(e.note) + '">'
+          + esc(e.en) + '</button>';
+      }).join("");
+      el.appendChild(box);
+      wireChips(el, r);
+    }
+    function wireChips(el, r){
+      each(el, "[data-e]", function(b){
+        b.onclick = function(){
+          var id = b.dataset.e, at = r.errs.indexOf(id);
+          if (at >= 0) r.errs.splice(at, 1); else r.errs.push(id);
+          b.classList.toggle("on", at < 0);
+          save(); reading();
+        };
+      });
+    }
     function lostOn(r){
       if ((r.errs || []).length) return true;
       if (r.max === "" || r.low === "") return false;
@@ -1054,14 +1108,27 @@
               el.querySelector(".qh").value = v;
             }
             save(); totals(); reading();
-            /* the chips arrive, or leave, the moment the mark says so */
-            if (lostOn(r) !== had) paintRows(r.sec);
+            /* ---- do not rebuild the row under the cursor ----
+               Andrew: "when you enter data in the Sure of field, the
+               form ... skips to comment selection or add question."
+               It did. Crossing below full marks flipped the chips on,
+               which repainted the whole section, which threw away the
+               input the student was typing in and left focus on the
+               body. The chips are added and removed in place now and
+               nothing else moves. */
+            if (lostOn(r) !== had) chipsFor(el, r);
           };
         }
         if (el.querySelector(".qn")) bind(".qn", "q", false);
         bind(".qm", "max", true);
         bind(".ql", "low", true);
         bind(".qh", "high", true);
+        /* At best is filled in from Sure of, so tabbing into it has to
+           let the student type straight over the top rather than
+           having to clear it first */
+        each(el, "input[inputmode=numeric]", function(inp){
+          inp.onfocus = function(){ try { inp.select(); } catch (e){} };
+        });
         if (el.querySelector(".qs"))
           el.querySelector(".qs").onchange = function(){
             r.skill = this.value; save(); reading();
@@ -1069,14 +1136,7 @@
         if (el.querySelector(".x")) el.querySelector(".x").onclick = function(){
           run.rows.splice(+el.dataset.i, 1); save(); drawKiroku();
         };
-        each(el, "[data-e]", function(b){
-          b.onclick = function(){
-            var id = b.dataset.e, at = r.errs.indexOf(id);
-            if (at >= 0) r.errs.splice(at, 1); else r.errs.push(id);
-            b.classList.toggle("on", at < 0);
-            save(); reading();
-          };
-        });
+        wireChips(el, r);
       });
     }
     function totals(){
