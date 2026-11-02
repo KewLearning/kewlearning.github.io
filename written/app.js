@@ -882,10 +882,15 @@
     var papers = PAP.papers || [];
     $("main").innerHTML =
         '<div class="rule"><b>Your practice exams</b>'
-      + 'Enter each question as you mark it. Put the mark you are sure of '
-      + 'in the first box and the best you think it could get in the second. '
-      + 'If you know the mark exactly, put the same number in both. '
-      + 'Everything stays in this browser.</div>'
+      + 'Pick a paper, or add your own questions one at a time. '
+      /* not <b>: in this box a b is the heading and is set on its own
+         line, which cuts the sentence into pieces */
+      + 'For each question enter <i>Worth</i>, the marks it was out of; '
+      + '<i>Sure of</i>, the mark you are confident a marker would give you; '
+      + 'and <i>At best</i>, the most you think it could get. '
+      + 'Put the same number in both if you already know the mark. '
+      + 'The gap between them is useful, so do not guess it away. '
+      + 'Everything stays in this browser and is never sent anywhere.</div>'
       + '<div class="krow khead">'
       + '<label>Paper <select id="kpick">'
       + '<option value="">School practice exam</option>'
@@ -992,15 +997,22 @@
       list.innerHTML = rows.map(function(pair){
         var r = pair[0], i = pair[1], src = qOf(run, r.sec, r.q);
         return '<div class="qrow' + (src ? " fixed" : "") + '" data-i="' + i + '">'
+          /* Andrew: "I don't know what the third and fourth boxes are
+             asking for." Each box now says what it wants above
+             itself, rather than relying on the words between them. */
           + (src
              ? '<span class="qfix">Q' + esc(r.q) + '</span>'
-             : '<input class="qn" value="' + esc(r.q) + '" aria-label="Question number">')
-          + '<span class="of">out of</span>'
-          + '<input class="qm" inputmode="numeric" value="' + esc(r.max) + '" aria-label="Marks available">'
-          + '<span class="got">got</span>'
-          + '<input class="ql" inputmode="numeric" value="' + esc(r.low) + '" aria-label="The mark you are sure of">'
-          + '<span class="to">to</span>'
-          + '<input class="qh" inputmode="numeric" value="' + esc(r.high) + '" aria-label="The best it could get">'
+             : '<label class="fld"><span>Question</span>'
+               + '<input class="qn" value="' + esc(r.q) + '" aria-label="Question number"></label>')
+          + '<label class="fld"><span>Worth</span>'
+          + '<input class="qm" inputmode="numeric" value="' + esc(r.max)
+          + '" aria-label="Marks available for this question"></label>'
+          + '<label class="fld"><span>Sure of</span>'
+          + '<input class="ql" inputmode="numeric" value="' + esc(r.low)
+          + '" aria-label="The mark you are sure you would get"></label>'
+          + '<label class="fld"><span>At best</span>'
+          + '<input class="qh" inputmode="numeric" value="' + esc(r.high)
+          + '" aria-label="The best mark this answer could get"></label>'
           + (src ? ''
              : '<select class="qs" aria-label="What the question asked you to do">'
                + '<option value="">What did it ask for?</option>'
