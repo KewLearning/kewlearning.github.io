@@ -124,9 +124,73 @@
   body.noen .en{display:none}
   .build{flex:none;font-size:10.5px;color:var(--muted);text-align:right;
        padding:0 14px 4px}
+  /* ---- a phone, and a phone turned sideways ----
+     Andrew found this in じょし: the drill needed scrolling before you
+     could answer. This app shares that shell, so it shared the fault,
+     and worse, because an option here is a whole reading rather than one
+     particle. It failed in portrait too.
+
+     The options were one column, which is what made them long. Two fit:
+     にじゅうよっか is seven characters and half of 360px is plenty for it.
+     The rest is paddings, type sizes, and the navs giving up a few
+     pixels each.
+
+     The second query keys on height, because the first one keys on
+     width and so never fires when a phone is sideways: 844 by 390 was
+     getting the desktop layout on a 390px screen. */
   @media (max-width:560px){
-    .opts{grid-template-columns:1fr}
-    .ask .q{font-size:28px}
+    main{padding:9px 10px 14px}
+    nav.panels button{padding:6px 11px 5px;font-size:15px}
+    nav.modes{padding:6px 10px;gap:6px}
+    nav.modes .lede{display:none}
+    .step{margin-bottom:6px}
+    .ask{padding:11px 10px;margin-bottom:9px}
+    .ask .q{font-size:26px}
+    .ask .en{font-size:13.5px}
+    .ask .fr{font-size:19px;line-height:1.55;margin-top:4px}
+    .opts{grid-template-columns:1fr 1fr;gap:7px}
+    .opt{font-size:17px;min-height:48px;padding:8px 6px}
+    .why{margin-top:8px;padding:8px 10px;font-size:13.5px}
+    .nextrow{margin-top:8px}
+  }
+  @media (max-height:620px){
+    main{padding:7px 10px 10px}
+    nav.panels button{padding:4px 10px 4px;font-size:14.5px}
+    nav.panels button i{font-size:9.5px}
+    nav.modes{padding:5px 10px;gap:6px}
+    nav.modes button{padding:3px 11px}
+    nav.modes .lede{display:none}
+    .bar{padding:4px 12px}
+    .bar h1{font-size:17px}
+    .bar h1 span{display:none}
+    .tool{min-height:32px;font-size:12px}
+    .step{margin-bottom:5px;font-size:11.5px}
+    .ask{padding:8px 10px;margin-bottom:7px}
+    .ask .q{font-size:25px}
+    .ask .en{font-size:13px}
+    .ask .fr{font-size:19px;line-height:1.45;margin-top:3px}
+    .opts{gap:6px}
+    .opt{min-height:44px;padding:6px 5px;font-size:17px}
+    .why{margin-top:7px;padding:7px 10px;font-size:13px}
+    .why b{font-size:15px}
+    .nextrow{margin-top:7px}
+    .btn{min-height:36px;font-size:14px}
+    .build{display:none}
+  }
+  @media (max-height:620px) and (min-width:600px){
+    .opts{grid-template-columns:repeat(4,1fr)}
+    .opt{font-size:16px}
+    .round{max-width:none}
+  }
+  @media (max-height:430px){
+    .step{display:none}
+    .ask{padding:6px 9px;margin-bottom:5px}
+    .ask .q{font-size:23px}
+    .ask .fr{font-size:18px;line-height:1.4}
+    .why{margin-top:5px;padding:6px 9px;font-size:12.5px}
+    .why b{font-size:14px}
+    .nextrow{margin-top:5px}
+    .btn{min-height:32px;font-size:13.5px;padding:0 13px}
   }
 </style>
 </head>
@@ -141,8 +205,8 @@
 <nav class="panels" id="panels"></nav>
 <nav class="modes" id="modes"></nav>
 <main id="main"></main>
-<script src="data/kihon.js?v=20261104b"></script>
-<script src="app.js?v=20261104b"></script>
-<div class="build" aria-hidden="true">build 2026-11-04b</div>
+<script src="data/kihon.js?v=20261104c"></script>
+<script src="app.js?v=20261104c"></script>
+<div class="build" aria-hidden="true">build 2026-11-04c</div>
 </body>
 </html>

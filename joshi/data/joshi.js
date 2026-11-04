@@ -63,13 +63,23 @@ window.JOSHI = {
         { "s": ["日本語[にほんご]", "本[ほん]を買[か]いました。"], "a": "の", "wrong": ["を", "で", "に"], "en": "I bought a Japanese book.", "why": "日本語の本 is one thing." },
         { "s": ["これはだれ", "かばんですか。"], "a": "の", "wrong": ["が", "は", "を"], "en": "Whose bag is this?", "why": "だれの asks whose." },
         { "s": ["父[ちち]", "車[くるま]で行[い]きます。"], "a": "の", "wrong": ["で", "に", "を"], "en": "We go in my father's car.", "why": "父の車 is one thing, then で." },
-        { "s": ["わたし", "学校[がっこう]は大[おお]きいです。"], "a": "の", "wrong": ["は", "が", "を"], "en": "My school is big.", "why": "わたしの学校 is the topic." }
+        { "s": ["わたし", "学校[がっこう]は大[おお]きいです。"], "a": "の", "wrong": ["は", "が", "を"], "en": "My school is big.", "why": "わたしの学校 is the topic." },
+        { "s": ["わたし", "学生[がくせい]です。"], "a": "は", "wrong": ["の", "が", "を"], "en": "I am a student.", "why": "は sets the topic. わたしの学生 is not a thing." },
+        { "s": ["本[ほん]", "読[よ]みます。"], "a": "を", "wrong": ["の", "は", "に"], "en": "I read a book.", "why": "を marks what the verb acts on." },
+        { "s": ["ねこ", "います。"], "a": "が", "wrong": ["の", "は", "を"], "en": "There is a cat.", "why": "が introduces something new." },
+        { "s": ["学校[がっこう]", "行[い]きます。"], "a": "へ", "wrong": ["の", "を", "も"], "en": "I go to school.", "why": "へ marks the direction." },
+        { "s": ["友[とも]だち", "行[い]きます。"], "a": "と", "wrong": ["の", "を", "に"], "en": "I go with a friend.", "why": "と marks who you are with." },
+        { "s": ["日本語[にほんご]", "好[す]きです。"], "a": "が", "wrong": ["の", "を", "に"], "en": "I like Japanese.", "why": "好き takes が." },
+        { "s": ["七時[しちじ]", "おきます。"], "a": "に", "wrong": ["の", "を", "へ"], "en": "I get up at 7.", "why": "A clock time takes に." }
       ],
       "fix": [
         { "s": "わたしはかばんです。", "a": "の", "wrong": ["このままでいい", "が", "を"], "en": "It is my bag.", "why": "わたしのかばん. は makes you the bag." },
         { "s": "そのかばんはわたしのです。", "a": "このままでいい", "wrong": ["の", "が", "を"], "en": "That bag is mine.", "why": "のです stands in for かばん." },
         { "s": "日本語[にほんご]が先生[せんせい]です。", "a": "の", "wrong": ["このままでいい", "は", "を"], "en": "He is the Japanese teacher.", "why": "日本語の先生 is one thing." },
-        { "s": "これはだれがかばんですか。", "a": "の", "wrong": ["このままでいい", "は", "を"], "en": "Whose bag is this?", "why": "だれの asks whose." }
+        { "s": "これはだれがかばんですか。", "a": "の", "wrong": ["このままでいい", "は", "を"], "en": "Whose bag is this?", "why": "だれの asks whose." },
+        { "s": "わたしの学生[がくせい]です。", "a": "は", "wrong": ["このままでいい", "が", "を"], "en": "I am a student.", "why": "わたしは学生です. の does not join those two." },
+        { "s": "本[ほん]の読[よ]みます。", "a": "を", "wrong": ["このままでいい", "は", "が"], "en": "I read a book.", "why": "を marks what you read." },
+        { "s": "父[ちち]の車[くるま]で行[い]きます。", "a": "このままでいい", "wrong": ["は", "が", "を"], "en": "We go in my father's car.", "why": "父の車 is one thing, then で." }
       ]
     },
     {
@@ -129,7 +139,11 @@ window.JOSHI = {
         { "s": ["図書館[としょかん]", "本[ほん]を読[よ]みます。"], "a": "で", "wrong": ["に", "を", "へ"], "en": "I read books at the library.", "why": "読む is an action, so で." },
         { "s": ["つくえの上[うえ]", "本[ほん]があります。"], "a": "に", "wrong": ["で", "を", "へ"], "en": "There is a book on the desk.", "why": "ある is existence, so に." },
         { "s": ["はし", "食[た]べます。"], "a": "で", "wrong": ["に", "を", "が"], "en": "I eat with chopsticks.", "why": "で marks the tool." },
-        { "s": ["バス", "学校[がっこう]へ行[い]きます。"], "a": "で", "wrong": ["に", "を", "へ"], "en": "I go to school by bus.", "why": "で marks how you travel." }
+        { "s": ["バス", "学校[がっこう]へ行[い]きます。"], "a": "で", "wrong": ["に", "を", "へ"], "en": "I go to school by bus.", "why": "で marks how you travel." },
+        { "s": ["日本[にほん]", "住[す]んでいます。"], "a": "に", "wrong": ["で", "を", "へ"], "en": "I live in Japan.", "why": "住む takes に." },
+        { "s": ["いす", "すわります。"], "a": "に", "wrong": ["で", "を", "へ"], "en": "I sit on the chair.", "why": "すわる takes に." },
+        { "s": ["へやの中[なか]", "ねこがいます。"], "a": "に", "wrong": ["で", "を", "へ"], "en": "There is a cat in the room.", "why": "いる is existence, so に." },
+        { "s": ["えんぴつ", "書[か]きます。"], "a": "で", "wrong": ["に", "を", "へ"], "en": "I write with a pencil.", "why": "で marks the tool." }
       ],
       "fix": [
         { "s": "公園[こうえん]にあそびます。", "a": "で", "wrong": ["このままでいい", "を", "へ"], "en": "We play in the park.", "why": "あそぶ is an action, so で." },
@@ -193,7 +207,10 @@ window.JOSHI = {
         { "s": ["九時[くじ]", "五時[ごじ]まで働[はたら]きます。"], "a": "から", "wrong": ["まで", "より", "に"], "en": "I work from 9 to 5.", "why": "から marks the start." },
         { "s": ["学校[がっこう]", "うちまで歩[ある]きます。"], "a": "から", "wrong": ["まで", "より", "で"], "en": "I walk from school to home.", "why": "から marks where you start." },
         { "s": ["車[くるま]はバス", "早[はや]いです。"], "a": "より", "wrong": ["から", "まで", "と"], "en": "A car is faster than a bus.", "why": "より marks what you compare against." },
-        { "s": ["つかれた", "もうねます。"], "a": "から", "wrong": ["まで", "より", "と"], "en": "I am tired, so I am going to bed.", "why": "から after a clause means because." }
+        { "s": ["つかれた", "もうねます。"], "a": "から", "wrong": ["まで", "より", "と"], "en": "I am tired, so I am going to bed.", "why": "から after a clause means because." },
+        { "s": ["学校[がっこう]は三時[さんじ]", "です。"], "a": "まで", "wrong": ["から", "より", "に"], "en": "School goes until 3.", "why": "まで marks the end." },
+        { "s": ["この本[ほん]はあの本[ほん]", "おもしろいです。"], "a": "より", "wrong": ["から", "まで", "と"], "en": "This book is more interesting than that one.", "why": "より marks what you compare against." },
+        { "s": ["バスは電車[でんしゃ]", "おそいです。"], "a": "より", "wrong": ["から", "まで", "と"], "en": "A bus is slower than a train.", "why": "より marks what you compare against." }
       ],
       "fix": [
         { "s": "車[くるま]はバスから早[はや]いです。", "a": "より", "wrong": ["このままでいい", "まで", "と"], "en": "A car is faster than a bus.", "why": "より marks what you compare against." },
@@ -290,13 +307,17 @@ window.JOSHI = {
         { "s": ["日本語[にほんご]", "上手[じょうず]ですね。"], "a": "が", "wrong": ["を", "に", "で"], "en": "You are good at Japanese.", "why": "上手 takes が." },
         { "s": ["へやにねこ", "います。"], "a": "が", "wrong": ["は", "を", "に"], "en": "There is a cat in the room.", "why": "が marks the new thing." },
         { "s": ["日本語[にほんご]", "できます。"], "a": "が", "wrong": ["を", "に", "で"], "en": "I can speak Japanese.", "why": "できます takes が." },
-        { "s": ["ぞう", "はなが長[なが]いです。"], "a": "は", "wrong": ["が", "を", "に"], "en": "An elephant has a long nose.", "why": "は sets the topic, が marks the part." }
+        { "s": ["ぞう", "はなが長[なが]いです。"], "a": "は", "wrong": ["が", "を", "に"], "en": "An elephant has a long nose.", "why": "は sets the topic, が marks the part." },
+        { "s": ["きょう", "いい天気[てんき]です。"], "a": "は", "wrong": ["が", "を", "に"], "en": "Today the weather is good.", "why": "は sets the topic." },
+        { "s": ["あの人[ひと]", "先生[せんせい]です。"], "a": "は", "wrong": ["が", "を", "に"], "en": "That person is the teacher.", "why": "は sets the topic." }
       ],
       "fix": [
         { "s": "日本語[にほんご]を上手[じょうず]です。", "a": "が", "wrong": ["このままでいい", "は", "に"], "en": "I am good at Japanese.", "why": "上手 takes が." },
         { "s": "だれは来[き]ましたか。", "a": "が", "wrong": ["このままでいい", "を", "に"], "en": "Who came?", "why": "A question word takes が." },
         { "s": "わたしは学生[がくせい]です。", "a": "このままでいい", "wrong": ["が", "を", "に"], "en": "I am a student.", "why": "は sets the topic." },
-        { "s": "すしを好[す]きです。", "a": "が", "wrong": ["このままでいい", "は", "に"], "en": "I like sushi.", "why": "好き takes が." }
+        { "s": "すしを好[す]きです。", "a": "が", "wrong": ["このままでいい", "は", "に"], "en": "I like sushi.", "why": "好き takes が." },
+        { "s": "きょうがいい天気[てんき]です。", "a": "は", "wrong": ["このままでいい", "を", "に"], "en": "Today the weather is good.", "why": "は sets the topic." },
+        { "s": "ぞうがはなが長[なが]いです。", "a": "は", "wrong": ["このままでいい", "を", "に"], "en": "An elephant has a long nose.", "why": "は sets the topic, が marks the part." }
       ]
     }
   ]

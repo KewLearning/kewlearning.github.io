@@ -72,9 +72,50 @@
     return a;
   }
 
+  /* ---- spread the answers through the round ----
+     Andrew tapped の twelve times and scored full marks, which was a
+     content fault and is fixed in the data: every panel now carries items
+     where its own particle is the wrong answer. This is the other half of
+     it. A plain shuffle can deal six の items in a row, and six right in a
+     row tells a student that tapping one option works. So the round is
+     dealt round robin across the answers instead: shuffle inside each
+     answer, shuffle the order of the answers, then take one from each in
+     turn. Same items, same count, no run of identical answers. */
+  function spread(items){
+    var by = {}, keys = [];
+    shuffle(items).forEach(function(it){
+      if (!by[it.a]){ by[it.a] = []; keys.push(it.a); }
+      by[it.a].push(it);
+    });
+    /* Round robin was the first attempt and it is not enough: the small
+       answers run out and the big one comes out in a block at the end.
+       The の drill dealt five の in a row that way.
+
+       So: at each step take whichever answer has the most left that is
+       not the one just placed. While no answer holds more than half the
+       round, which the data check enforces, that always leaves a gap to
+       put the next one in, and no two neighbours ever match. */
+    var out = [], last = null;
+    for (var n = items.length; n > 0; n--){
+      var pick = null, most = 0;
+      shuffle(keys).forEach(function(k){
+        if (k === last || !by[k].length) return;
+        if (by[k].length > most){ most = by[k].length; pick = k; }
+      });
+      if (pick === null){                 /* only the last answer is left */
+        for (var i = 0; i < keys.length; i++)
+          if (by[keys[i]].length){ pick = keys[i]; break; }
+      }
+      if (pick === null) break;
+      out.push(by[pick].shift());
+      last = pick;
+    }
+    return out;
+  }
+
   function startRound(){
     var p = PANELS[panelAt];
-    round = { items: shuffle(mode === "fix" ? p.fix : p.drill),
+    round = { items: spread(mode === "fix" ? p.fix : p.drill),
               at: 0, hit: 0, miss: 0, done: false, opts: null, picked: null };
     laySlot();
   }
@@ -252,6 +293,17 @@
     item: function(){ return round && round.items[round.at]; },
     opts: function(){ return round && round.opts; },
     ok: function(){ return OK; },
+    pick: function(v){                      /* answer the current item with v */
+      var i = round.opts.indexOf(v);
+      if (i < 0) return false;
+      document.querySelectorAll('.opt')[i].click();
+      return true;
+    },
+    next: function(){
+      var b = document.getElementById('next');
+      if (b) b.click();
+      return !!b;
+    },
     plain: plain, kana: kana, ruby: ruby
   };
 })();
