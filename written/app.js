@@ -279,7 +279,11 @@
     { id:"dokkai",  ja:"どっかい",  en:"reading" },
     { id:"sakubun", ja:"さくぶん",  en:"writing" },
     { id:"sakusen", ja:"さくせん",  en:"strategy" },
-    { id:"kiroku",  ja:"きろく",    en:"your practice exams" }
+    { id:"kiroku",  ja:"きろく",    en:"your practice exams" },
+    /* Andrew: a student sitting a practice paper cannot type an answer
+       at all until the keyboard is on, so the how-to goes in the app.
+       Last, because it is read once and never again. */
+    { id:"nyuu",    ja:"にゅうりょく", en:"typing Japanese" }
   ];
 
   function chips(items, chosen, onPick, label){
@@ -789,9 +793,18 @@
   }
 
   /* ---------------------------------------------------------------- draw */
+  function drawNyuu(){
+    document.body.classList.remove("hidescript");
+    chips([], null, function(){});
+    var N = window.NYUURYOKU;
+    if (!N){ $("main").innerHTML = ""; return; }
+    $("main").innerHTML = '<div class="work">' + N.html() + '</div>';
+    N.wire();
+  }
+
   var DRAW = { bunpou:drawBunpou, machigai:drawMachigai, kikitori:drawKikitori,
                dokkai:drawDokkai, sakubun:drawSakubun, sakusen:drawSakusen,
-               kiroku:drawKiroku };
+               kiroku:drawKiroku, nyuu:drawNyuu };
 
   /* ================= きろく, your practice exams =================
      Andrew: "a tool into which students can enter practice exam data and

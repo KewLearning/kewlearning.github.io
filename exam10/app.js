@@ -1243,6 +1243,20 @@
     $("sc").innerHTML = esc(X.year || "");
   };
 
+  /* ---- the Japanese keyboard ----
+     Shared with the other exam apps and with れきしの人: the content and
+     the check box both live in nyuuryoku.js, whose canonical copy is the
+     dev repo root. Nothing here is app-specific, so nothing here is a
+     second version of it. */
+  DRAW.nyuu = function(){
+    var N = window.NYUURYOKU;
+    if (!N){ $("main").innerHTML = foot(""); return; }
+    $("main").innerHTML = '<div class="work">' + N.html() + '</div>'
+      + foot('<span class="hint">Nothing typed here is kept or sent.</span>');
+    N.wire();
+    $("sc").innerHTML = esc(X.year || "");
+  };
+
   /* ---- the tabs, in the order the paper runs ----
      The data says which tabs this paper has and in what order,
      because the two papers do not run the same way round: Year 11
@@ -1255,9 +1269,20 @@
     gram:  { ja:"ぶんぽう", en:"Grammar",     has: function(){ return (X.grammar || []).length; } },
     kanji: { ja:"かんじ",   en:"Kanji",       has: function(){ return (X.kanji || []).length; } },
     essay: { ja:"さくぶん", en:"Essay",       has: function(){ return !!X.essay; } },
-    plan:  { ja:"しけん",   en:"The paper",   has: function(){ return true; } }
+    plan:  { ja:"しけん",   en:"The paper",   has: function(){ return true; } },
+    /* Andrew: a student cannot type an answer at all until the Japanese
+       keyboard is on, so the how-to goes in the app rather than on a
+       sheet. It is appended to every paper below, whatever tabs the
+       paper itself lists. */
+    nyuu:  { ja:"にゅうりょく", en:"Typing Japanese",
+             has: function(){ return !!window.NYUURYOKU; } }
   };
-  var STEPS = (X.tabs || ["kiki", "read", "trans", "gram", "kanji", "essay", "plan"])
+  var ORDER = (X.tabs || ["kiki", "read", "trans", "gram", "kanji", "essay", "plan"])
+                .slice();
+  /* the keyboard how-to goes last in every paper, including one whose
+     data lists its own tabs and has never heard of this one */
+  if (ORDER.indexOf("nyuu") < 0) ORDER.push("nyuu");
+  var STEPS = ORDER
     .filter(function(id){ return TAB[id] && TAB[id].has(); })
     .map(function(id){ return { id: id, ja: TAB[id].ja, en: TAB[id].en }; });
 

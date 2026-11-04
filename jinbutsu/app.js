@@ -3192,6 +3192,11 @@
       who:  function(){ return q.who; },
       shown: function(){ return dShown; },
       bank: function(){ return bank.length; },
+      /* the whole bank, so the check can test every line it could
+         ever ask rather than sampling a dozen of them */
+      all:  function(){
+        return bank.map(function(x){ return { ja: x.ja, who: x.who }; });
+      },
       run:  function(){ return dRun; }
     };
     if (!dShown) say(q.ja);
@@ -3749,7 +3754,10 @@
      came out and says which of the three states they are in: still
      typing rōmaji, kana at last, or kana converted to kanji. */
   DRAW.nyuu = function(){
-    var N = K.nyuuryoku || { steps: [] };
+    /* The content lives in nyuuryoku.js now, shared with the Year 10, 11
+       and 12 exam apps, so there is one copy of it rather than four. The
+       layout below stays this app's own. */
+    var N = window.NYUURYOKU || { steps: [], check: {}, links: [] };
     $("main").innerHTML =
         '<div class="rule"><b>Japanese keyboard</b>' + esc(N.intro) + '</div>'
       + '<div class="work"><div class="howto">'
@@ -3789,31 +3797,12 @@
     inp.oninput = function(){
       var v = inp.value;
       if (!v){ $("nfb").innerHTML = ""; return; }
-      var kana  = /[ぁ-ゟ゠-ヿ]/.test(v);
-      var kanji = /[一-鿿]/.test(v);
-      var latin = /[A-Za-z]/.test(v);
-      var cls, head, say;
-      if (kanji && kana){
-        cls = "yes"; head = "That is it";
-        say = "Kana and kanji together, which is what a Japanese keyboard "
-            + "typing properly looks like.";
-      } else if (kanji){
-        cls = "yes"; head = "Kanji";
-        say = "Converted. Press Space on a word to convert it and Enter to keep it.";
-      } else if (kana && !latin){
-        cls = "yes"; head = "Kana";
-        say = "The keyboard is on and in hiragana. Press Space while a word is "
-            + "underlined to turn it into kanji.";
-      } else if (kana && latin){
-        cls = "hm"; head = "Half and half";
-        say = "Some kana, some English letters. The indicator near the clock "
-            + "has been flipped between あ and A partway through.";
-      } else {
-        cls = "no"; head = "Still English letters";
-        say = "Nothing has come out as kana. Either the taskbar still says ENG "
-            + "(Windows key and Space) or it says JPN with an A beside it "
-            + "(Alt and the ` key, above Tab).";
-      }
+      /* the three states a student can be in, read by the shared file so
+         this app and the exam apps cannot drift apart on what counts as
+         working */
+      var r = N.read(v);
+      var cls = r.state === "part" ? "hm" : r.state;
+      var head = r.head, say = r.say;
       $("nfb").innerHTML = '<div class="mark ' + cls + '"><b>' + head + '</b>'
         + esc(say) + '</div>';
       if (cls === "yes" && !S.done["nyuu"]){
