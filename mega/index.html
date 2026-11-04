@@ -577,6 +577,21 @@
   #promptw.jp{font-family:var(--jp)}
   #promptw.big{font-size:clamp(28px,5vw,44px);line-height:1.1}
   /* ---- \u3057\u308a\u3068\u308a: the chain ---- */
+  /* ---- タイプ: the typing race ----
+     The word to aim at, large; what has been made under it; and the
+     letters still in the air after that, the way an IME underlines
+     what it has not turned into kana yet. No romaji is ever set in
+     the reading face: those few grey letters are keystrokes. */
+  .tcount{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+  .tword{font-size:clamp(38px,8vw,72px);line-height:1.15;margin:0 0 4px}
+  .ten{font-size:15px;color:var(--muted);margin:0 0 22px}
+  .ttyped{font-size:clamp(30px,6vw,52px);line-height:1.2;min-height:1.3em;
+       border-bottom:2px solid var(--line);display:inline-block;
+       min-width:min(440px,80vw);padding:0 10px 4px}
+  .tok{color:var(--ok)}
+  .tbad{color:var(--accent)}
+  .tair{font-family:var(--font);font-size:.55em;color:var(--muted);
+       text-decoration:underline;vertical-align:middle;margin-left:2px}
   .chain{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
        gap:7px;margin:0 0 16px;min-height:40px}
   .link{font-family:var(--jp);font-size:19px;border:1.5px solid var(--line);
@@ -817,9 +832,9 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="data/mega.js?v=20261029a"></script>
-<script src="data/audio.js?v=20261029a"></script>
-<script src="app.js?v=20261029a"></script>
-<div class="build" aria-hidden="true">build 2026-10-29a</div>
+<script src="data/mega.js?v=20261102a"></script>
+<script src="data/audio.js?v=20261102a"></script>
+<script src="app.js?v=20261102a"></script>
+<div class="build" aria-hidden="true">build 2026-11-02a</div>
 </body>
 </html>

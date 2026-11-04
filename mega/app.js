@@ -1741,6 +1741,7 @@
     { id:"pairs", ja:"ペア",           en:"Memory" },
     { id:"karuta",ja:"かるた",         en:"Hear it, grab it" },
     { id:"shiri", ja:"しりとり",       en:"Chain the words" },
+    { id:"type",  ja:"タイプ",         en:"Type it fast" },
     { id:"kata",  ja:"カタカナ",       en:"Katakana" },
     { id:"kanji", ja:"かんじ",         en:"The kanji" },
     { id:"verb",  ja:"どうし",         en:"Change the verb" },
@@ -3199,6 +3200,232 @@
                           : "Pick at least one thing to ask about";
   }
 
+  /* ================= タイプ, the typing race =================
+     Type the sounds, and the kana appear: the same thing a Japanese
+     keyboard does, built in so a Year 7 room needs nothing installed
+     and nothing set up. "ka" makes か. "kk" makes っ. "n" before a
+     consonant makes ん. A dash makes ー.
+
+     The romaji is never shown. It is keystrokes, not reading, and
+     putting it on screen would undo the rule this whole app works
+     to: no romaji in front of this cohort. What the student sees is
+     the word they are aiming at, the kana they have made so far, and
+     the few letters still in the air that have not become a kana
+     yet, which is exactly what an IME underlines.
+
+     Ten words against the clock, and the best time is kept per
+     script so hiragana and katakana are not compared with each other.
+
+     Phrases and mixed-script entries are left out, as in しりとり:
+     typing の in the middle of フットボールのしあい is a lesson about
+     an IME rather than about kana. */
+  var ROMA = {
+    "a":"あ","i":"い","u":"う","e":"え","o":"お",
+    "ka":"か","ki":"き","ku":"く","ke":"け","ko":"こ",
+    "ga":"が","gi":"ぎ","gu":"ぐ","ge":"げ","go":"ご",
+    "sa":"さ","si":"し","shi":"し","su":"す","se":"せ","so":"そ",
+    "za":"ざ","zi":"じ","ji":"じ","zu":"ず","ze":"ぜ","zo":"ぞ",
+    "ta":"た","ti":"ち","chi":"ち","tu":"つ","tsu":"つ","te":"て","to":"と",
+    "da":"だ","de":"で","do":"ど","du":"づ",
+    "na":"な","ni":"に","nu":"ぬ","ne":"ね","no":"の",
+    "ha":"は","hi":"ひ","hu":"ふ","fu":"ふ","he":"へ","ho":"ほ",
+    "ba":"ば","bi":"び","bu":"ぶ","be":"べ","bo":"ぼ",
+    "pa":"ぱ","pi":"ぴ","pu":"ぷ","pe":"ぺ","po":"ぽ",
+    "ma":"ま","mi":"み","mu":"む","me":"め","mo":"も",
+    "ya":"や","yu":"ゆ","yo":"よ",
+    "ra":"ら","ri":"り","ru":"る","re":"れ","ro":"ろ",
+    "wa":"わ","wo":"を","nn":"ん",
+    "kya":"きゃ","kyu":"きゅ","kyo":"きょ","gya":"ぎゃ","gyu":"ぎゅ","gyo":"ぎょ",
+    "sha":"しゃ","shu":"しゅ","sho":"しょ","sya":"しゃ","syu":"しゅ","syo":"しょ",
+    "ja":"じゃ","ju":"じゅ","jo":"じょ","cha":"ちゃ","chu":"ちゅ","cho":"ちょ",
+    "nya":"にゃ","nyu":"にゅ","nyo":"にょ","hya":"ひゃ","hyu":"ひゅ","hyo":"ひょ",
+    "bya":"びゃ","byu":"びゅ","byo":"びょ","pya":"ぴゃ","pyu":"ぴゅ","pyo":"ぴょ",
+    "mya":"みゃ","myu":"みゅ","myo":"みょ",
+    "rya":"りゃ","ryu":"りゅ","ryo":"りょ",
+    "fa":"ふぁ","fi":"ふぃ","fe":"ふぇ","fo":"ふぉ",
+    "she":"しぇ","che":"ちぇ","je":"じぇ","thi":"てぃ","dhi":"でぃ",
+    "xa":"ぁ","xi":"ぃ","xu":"ぅ","xe":"ぇ","xo":"ぉ",
+    "xya":"ゃ","xyu":"ゅ","xyo":"ょ","xtu":"っ","ltu":"っ",
+    "-":"ー"
+  };
+  var VOW = "aiueo";
+  /* keystrokes in, [kana so far, letters still in the air] out */
+  function romaToKana(buf){
+    var out = "", i = 0;
+    while (i < buf.length){
+      var hit = null, len = 0, n, seg;
+      for (n = 3; n >= 1; n--){
+        seg = buf.substr(i, n);
+        if (seg.length === n && ROMA[seg]){ hit = ROMA[seg]; len = n; break; }
+      }
+      if (hit){ out += hit; i += len; continue; }
+      var c = buf.charAt(i), d = buf.charAt(i + 1);
+      if (d && c === d && VOW.indexOf(c) < 0 && c !== "n"){ out += "っ"; i++; continue; }
+      if (c === "n" && d && VOW.indexOf(d) < 0 && d !== "y" && d !== "n"){
+        out += "ん"; i++; continue;
+      }
+      break;
+    }
+    return [out, buf.slice(i)];
+  }
+  function toKata(t){
+    return String(t).replace(/[\u3041-\u3096]/g, function(c){
+      return String.fromCharCode(c.charCodeAt(0) + 96);
+    });
+  }
+  function typePool(){
+    var out = [], seen = {};
+    function add(y, en){
+      if (!y || /の|[\s\u3000]/.test(y)) return;                 /* a phrase */
+      if (/[\u3041-\u3096]/.test(y) && /[\u30a1-\u30f6]/.test(y)) return;  /* mixed script */
+      if (seen[y]) return;
+      seen[y] = 1;
+      out.push({ ja: y, en: en, kata: /[\u30a1-\u30f6]/.test(y) });
+    }
+    W.filter(function(w){ return w.en; }).forEach(function(w){
+      add(kana(w.ja) || plain(w.ja), w.en);
+    });
+    ((M.katakana || {}).words || []).forEach(function(w){ add(w.ka, w.en); });
+    return out;
+  }
+  var TYPE = { which: "all", n: 10 };
+  var TSETS = [
+    { id: "all",  ja: "ぜんぶ",   en: "every word in the unit" },
+    { id: "hira", ja: "ひらがな", en: "the hiragana words only" },
+    { id: "kata", ja: "カタカナ", en: "the katakana words only" }
+  ];
+  DRAW.type = function(){
+    var pool = typePool().filter(function(w){
+      return TYPE.which === "all" || (TYPE.which === "kata") === !!w.kata;
+    });
+    var race = shuffle(pool).slice(0, Math.min(TYPE.n, pool.length));
+    var at = 0, buf = "", began = 0, over = false, missed = 0;
+
+    $("main").innerHTML = ruleFor("type", "tight")
+      + '<div class="work fit"><div class="col" style="text-align:center">'
+      + '<div class="tcount" id="tcount"></div>'
+      + '<div class="tword jp" id="tword"></div>'
+      + '<div class="ten" id="ten"></div>'
+      + '<div class="ttyped jp" id="ttyped"></div>'
+      + '<div id="tfb" class="fbslot"></div>'
+      + '</div></div>'
+      + foot('<span class="score" id="tsc"></span>'
+        + '<span class="sp"></span>'
+        + TSETS.map(function(t){
+            return '<button class="btn sm ' + (t.id === TYPE.which ? "" : "ghost")
+              + '" data-tset="' + t.id + '" title="' + esc(t.en) + '">' + t.ja + '</button>';
+          }).join("")
+        + '<button class="btn ghost sm" id="tagain">もう一回[いっかい]</button>');
+    each($("main"), "[data-tset]", function(b){
+      b.onclick = function(){ TYPE.which = b.dataset.tset; DRAW.type(); };
+    });
+    $("tagain").onclick = function(){ DRAW.type(); };
+    $("tagain").innerHTML = ruby("もう一回[いっかい]");
+
+    /* the engine itself, so the check drives the table that ships
+       rather than a copy of it that could drift */
+    window.MEGA_TYPE_ENGINE = { roma: romaToKana, kata: toKata, table: ROMA };
+    window.MEGA_TYPE = {
+      /* the pool the rung actually deals from. The check reads this
+         rather than rebuilding the filter, because a check that
+         rebuilds a rule cannot notice the rule changing. */
+      pool:  function(){
+        return pool.map(function(w){ return { ja: w.ja, kata: !!w.kata }; });
+      },
+      word:  function(){ return race[at] ? race[at].ja : null; },
+      typed: function(){ return $("ttyped").textContent; },
+      at:    function(){ return at; },
+      of:    function(){ return race.length; },
+      feed:  function(k){ onKey({ key: k, preventDefault: function(){} }); }
+    };
+
+    function paint(){
+      if (!race.length){ $("tword").textContent = "—"; return; }
+      var w = race[at];
+      $("tcount").textContent = (at + 1) + " of " + race.length;
+      $("tword").textContent = w.ja;
+      $("ten").textContent = w.en;
+      var pair = romaToKana(buf);
+      var made = w.kata ? toKata(pair[0]) : pair[0];
+      /* what is right so far goes green; the letters still in the air
+         sit after it the way an IME underlines them */
+      var ok = 0;
+      while (ok < made.length && made.charAt(ok) === w.ja.charAt(ok)) ok++;
+      $("ttyped").innerHTML =
+          '<span class="tok">' + esc(made.slice(0, ok)) + '</span>'
+        + '<span class="tbad">' + esc(made.slice(ok)) + '</span>'
+        + '<span class="tair">' + esc(pair[1]) + '</span>';
+      $("tsc").innerHTML = began
+        ? '<b>' + Math.round((Date.now() - began) / 100) / 10 + '</b>s'
+        : 'Type the word to start the clock';
+    }
+    function onKey(ev){
+      if (over || !race.length) return;
+      var k = ev.key;
+      if (k === "Backspace"){ ev.preventDefault(); buf = buf.slice(0, -1); paint(); return; }
+      if (k === "Escape"){ buf = ""; paint(); return; }
+      if (!/^[a-zA-Z'\-]$/.test(k)) return;
+      ev.preventDefault();
+      if (!began) began = Date.now();
+      buf += k.toLowerCase();
+      var w = race[at];
+      var pair = romaToKana(buf);
+      var made = w.kata ? toKata(pair[0]) : pair[0];
+      /* a kana that is wrong is dropped rather than left to pile up:
+         a typing race that makes you delete is a different exercise */
+      if (made.length && !w.ja.startsWith(made.slice(0, made.length))){
+        var good = 0;
+        while (good < made.length && made.charAt(good) === w.ja.charAt(good)) good++;
+        if (good < made.length){
+          missed++;
+          buf = backTo(w, good);
+          flash("down", "\u2715");
+          paint();
+          return;
+        }
+      }
+      if (made === w.ja && !pair[1]){
+        first("type:" + w.ja, 1, "typed");
+        at++; buf = "";
+        if (at >= race.length) return win();
+      }
+      paint();
+    }
+    /* the keystrokes that would rebuild the first n kana of a word */
+    function backTo(w, n){
+      var want = w.ja.slice(0, n), try_ = "", i;
+      for (i = 0; i <= buf.length; i++){
+        var pr = romaToKana(buf.slice(0, i));
+        var md = w.kata ? toKata(pr[0]) : pr[0];
+        if (md === want && !pr[1]) try_ = buf.slice(0, i);
+      }
+      return try_;
+    }
+    function win(){
+      over = true;
+      var secs = Math.max(0.1, Math.round((Date.now() - began) / 100) / 10);
+      var key = "type:" + TYPE.which + race.length;
+      S.best = S.best || {};
+      if (typeof S.best !== "object") S.best = {};
+      var best = S.best[key];
+      if (!best || secs < best){ S.best[key] = secs; save(); }
+      ninja($("tfb"));
+      $("tword").textContent = "";
+      $("ten").textContent = "";
+      $("ttyped").innerHTML = "";
+      $("tfb").innerHTML = '<div class="mark yes"><b>' + race.length + ' words in '
+        + secs + ' seconds</b>'
+        + (missed ? missed + ' slip' + (missed === 1 ? "" : "s") + ' along the way. ' : '')
+        + (best && secs < best ? "Your best yet."
+           : (best ? "Your best is " + best + "s." : "")) + '</div>';
+      done("type");
+    }
+    document.addEventListener("keydown", onKey);
+    if (KEYOFF) document.removeEventListener("keydown", KEYOFF);
+    KEYOFF = onKey;
+    paint();
+  };
+
   /* ================= しりとり =================
      The chain game, on this unit's own words. Read the word, work
      out the kana it ends on, pick the word that starts with it.
@@ -3314,6 +3541,24 @@
 
     window.MEGA_SHIRI = {
       chain: function(){ return chain.map(function(w){ return w.yomi; }); },
+      /* Run the real search over and over and report the chains that
+         broke the \u3093 rule. One chain proves nothing here: with this
+         word list only \u3057\u3093\u304b\u3093\u305b\u3093 can be reached at all, and it
+         turns up in about one chain in forty. The check runs enough
+         of them for that to be certain rather than lucky. */
+      trials: function(want, n){
+        var pool = shiriPool(), bad = [];
+        for (var i = 0; i < n; i++){
+          var c = shiriChain(pool, want);
+          for (var j = 0; j < c.length; j++){
+            if (tailOf(c[j].yomi) === "\u3093"){
+              bad.push(c.map(function(w){ return w.yomi; }).join(" \u2192 "));
+              break;
+            }
+          }
+        }
+        return { ran: n, count: bad.length, show: bad.slice(0, 3) };
+      },
       at:    function(){ return at; },
       opts:  function(){
         return [].map.call(document.querySelectorAll("#sopt [data-o]"),

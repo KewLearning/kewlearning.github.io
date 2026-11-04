@@ -1242,7 +1242,7 @@
                 }).join("") + '</ul>'
             : '')
         + (skillOrder.length
-            ? '<h3 class="kh">What those questions were asking for</h3>'
+            ? '<h3 class="kh">What each question wanted</h3>'
               + skillOrder.slice(0, 4).map(function(id){
                   var k = null;
                   (PAP.skills || []).forEach(function(x){ if (x.id === id) k = x; });

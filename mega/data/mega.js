@@ -270,6 +270,8 @@ window.MEGA = {
       "rule": "Turn two cards over. A match stays up and you go again; a miss turns back and the other player has a turn. Pick what the pairs are made of, and one player or two." },
     { "step": "quiz", "title_en": "Team quiz",
       "rule": "Put this on the projector and split the class into teams. Read the question out, let them answer in the room, then tap who got it. Space shows the answer and moves on, 1 to 4 give the point, 0 is nobody, r plays the Japanese again." },
+    { "step": "type", "title_en": "Type it fast",
+      "rule": "Type the sounds and the kana appear, the way the Japanese keyboard writes them. Type ka for か, double a letter for っ, n before a consonant for ん, and a dash for ー. Ten words against the clock." },
     { "step": "shiri", "title_en": "Chain the words",
       "rule": "Read the word and find the kana it ends on. Pick the word that starts with that kana. The long dash does not count, so スーパー ends on パ. Small ゃゅょっ count as やゆよつ. A word ending in ん ends the game." },
     { "step": "karuta", "title_en": "Hear it, grab it",

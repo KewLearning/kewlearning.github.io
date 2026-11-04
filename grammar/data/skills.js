@@ -120,7 +120,7 @@ window.SKILLS = [
         sentence:"<b>はじめまして。</b>",
         options:["Nice to meet you (for the first time)","Goodbye","Thank you","Good morning"],
         answer:"Nice to meet you (for the first time)",
-        explain:"はじめまして is said only when meeting someone for the first time."
+        explain:"はじめまして is for meeting someone the first time only."
       },
       {
         type:"identify",
@@ -143,7 +143,7 @@ window.SKILLS = [
         sentence:"(before a meal)",
         options:["いただきます","ごちそうさまでした","おやすみなさい","ただいま"],
         answer:"いただきます",
-        explain:"いただきます is said before eating; ごちそうさまでした is said afterwards."
+        explain:"Say いただきます before eating and ごちそうさまでした after."
       }
     ]
   },
@@ -159,7 +159,7 @@ window.SKILLS = [
         prompt:"Introduce yourself: 'I am Emma.'",
         words:["わたし","は","エマ","です"],
         answer:"わたしはエマです",
-        explain:"わたしは (as for me) + your name + です. Your name is written in katakana if it is not Japanese."
+        explain:"わたしは + your name + です. Write a non-Japanese name in katakana."
       },
       {
         type:"identify",
@@ -198,7 +198,7 @@ window.SKILLS = [
         sentence:"<b>どうぞよろしくおねがいします。</b>",
         options:["it is more polite","it means something completely different","it is more casual","it is a question"],
         answer:"it is more polite",
-        explain:"おねがいします makes the phrase more polite — used with teachers and adults rather than close friends."
+        explain:"おねがいします makes the phrase more polite. Use it with teachers and adults."
       },
       {
         type:"identify",
@@ -206,7 +206,7 @@ window.SKILLS = [
         sentence:"(meeting an older person for the first time)",
         options:["はじめまして。どうぞよろしくおねがいします。","やあ！","おっす","またね"],
         answer:"はじめまして。どうぞよろしくおねがいします。",
-        explain:"Politeness in Japanese changes with who you are speaking to. The full polite form is right for an older person you have just met."
+        explain:"Politeness depends on who you are talking to. Use the full polite form with an adult."
       }
     ]
   },
@@ -278,7 +278,7 @@ window.SKILLS = [
         sentence:"<b>これ</b> ・ <b>それ</b>",
         options:["これ is near me; それ is near you","これ is near you; それ is near me","they mean the same thing","これ is a question word"],
         answer:"これ is near me; それ is near you",
-        explain:"これ = this (near the speaker), それ = that (near the listener), あれ = that over there (away from both)."
+        explain:"これ is near you. それ is near the listener. あれ is away from both."
       },
       {
         type:"identify",
@@ -325,7 +325,7 @@ window.SKILLS = [
         sentence:"これはあなたのかばんですか。 (Is this your bag?) It IS yours.",
         options:["はい、そうです。","いいえ、そうです。","はい、ちがいます。","いいえ、ちがいます。"],
         answer:"はい、そうです。",
-        explain:"はい goes with そうです (yes, that is right), いいえ goes with ちがいます (no, that is not it). The bag is yours, so the answer is はい、そうです。"
+        explain:"はい goes with そうです. いいえ goes with ちがいます. The bag is yours, so the answer is はい、そうです。"
       }
     ]
   },
@@ -363,9 +363,9 @@ window.SKILLS = [
         type:"identify",
         prompt:"Which type of adjective is きれい?",
         sentence:"きれい<b>な</b>はな (a pretty flower)",
-        options:["a な-adjective — it needs な before a noun","an い-adjective","a verb","a noun"],
-        answer:"a な-adjective — it needs な before a noun",
-        explain:"Adjectives ending in い like 大きい attach directly (大きいねこ). な-adjectives like きれい need な: きれいなはな. きれい is a な-adjective even though it ends in い."
+        options:["a な-adjective: it needs な before a noun","an い-adjective","a verb","a noun"],
+        answer:"a な-adjective: it needs な before a noun",
+        explain:"い-adjectives attach directly: 大きいねこ. な-adjectives need な: きれいなはな. きれい is a な-adjective."
       },
       {
         type:"identify",
@@ -373,7 +373,7 @@ window.SKILLS = [
         sentence:"<b>わたしのへやはきれいではありません。</b>",
         options:["My room is not clean","My room is clean","Is my room clean?","My room is big"],
         answer:"My room is not clean",
-        explain:"ではありません is the polite negative of です — 'is not'."
+        explain:"ではありません is the polite negative of です."
       },
       {
         type:"identify",
@@ -389,7 +389,7 @@ window.SKILLS = [
         sentence:"きのう、てんきは<b>よかったです</b>。",
         options:["The weather was good yesterday","The weather is good today","The weather will be good","The weather was bad"],
         answer:"The weather was good yesterday",
-        explain:"いい becomes よかった in the past — an irregular one worth memorising."
+        explain:"いい becomes よかった in the past. Learn this one by heart."
       }
     ]
   },
@@ -406,7 +406,7 @@ window.SKILLS = [
         sentence:"きのうは日よう日<b>でした</b>。",
         options:["Yesterday was Sunday","Today is Sunday","Tomorrow is Sunday","Yesterday was not Sunday"],
         answer:"Yesterday was Sunday",
-        explain:"でした is the polite past of です — 'was'."
+        explain:"でした is the polite past of です."
       },
       {
         type:"identify",
@@ -422,7 +422,7 @@ window.SKILLS = [
         sentence:"きれい<b>ではありません</b> ／ きれい<b>じゃありません</b>",
         options:["じゃ is the more casual contraction of では","they mean different things","じゃ is more polite","では is incorrect"],
         answer:"じゃ is the more casual contraction of では",
-        explain:"じゃ is a spoken contraction of では. Both are polite enough for class, but では is the more formal written choice."
+        explain:"じゃ is the spoken form of では. Write では."
       },
       {
         type:"order",
@@ -493,7 +493,7 @@ window.SKILLS = [
         sentence:"12 = 十 + ?",
         options:["じゅうに","にじゅう","じゅうにじゅう","にじゅうに"],
         answer:"じゅうに",
-        explain:"Japanese builds numbers by adding: じゅう (10) + に (2) = じゅうに (12). Note にじゅう is 20, the other way round."
+        explain:"Japanese adds: じゅう (10) + に (2) = じゅうに (12). にじゅう is 20."
       },
       {
         type:"identify",
@@ -501,7 +501,7 @@ window.SKILLS = [
         sentence:"20 = ?",
         options:["にじゅう","じゅうに","にじゅうに","じゅうじゅう"],
         answer:"にじゅう",
-        explain:"に (2) × じゅう (10) = にじゅう (20). The order tells you whether to add or multiply."
+        explain:"に (2) × じゅう (10) = にじゅう (20). The order tells you to add or multiply."
       },
       {
         type:"identify",
@@ -542,7 +542,7 @@ window.SKILLS = [
         sentence:"<b>月よう日</b>",
         options:["Monday","Sunday","Moon day festival","Tuesday"],
         answer:"Monday",
-        explain:"月 (moon) + よう日 = Monday. The days use 月火水木金土日 — moon, fire, water, wood, metal, earth, sun."
+        explain:"月 (moon) + よう日 = Monday. The days run 月火水木金土日: moon, fire, water, wood, metal, earth, sun."
       },
       {
         type:"identify",
@@ -558,7 +558,7 @@ window.SKILLS = [
         sentence:"<b>七時に学校へ行きます。</b>",
         options:["I go to school at 7 o'clock","I go to school for 7 hours","School is 7 minutes away","I leave school at 7"],
         answer:"I go to school at 7 o'clock",
-        explain:"に marks a point in time (七時に = at 7 o'clock) and へ marks the destination."
+        explain:"に marks the time: 七時に, at 7 o'clock. へ marks the destination."
       },
       {
         type:"order",
@@ -622,7 +622,7 @@ window.SKILLS = [
         sentence:"一しゅうかんに<b>三かい</b>およぎます。",
         options:["I swim three times a week","I swim for three hours a week","I swim on the third day","I swim three weeks a year"],
         answer:"I swim three times a week",
-        explain:"〜かい counts occasions. 一しゅうかんに三かい = three times per week; に here marks the period the frequency applies to."
+        explain:"〜かい counts occasions: 一しゅうかんに三かい, three times a week. に marks the period."
       },
       {
         type:"identify",
@@ -630,7 +630,7 @@ window.SKILLS = [
         sentence:"<b>ときどき</b>えいがを見ます。",
         options:["sometimes","always","never","every day"],
         answer:"sometimes",
-        explain:"Frequency words sit before the verb: いつも (always), よく (often), ときどき (sometimes), あまり〜ません (not often), ぜんぜん〜ません (never)."
+        explain:"Put frequency words before the verb: いつも, よく, ときどき, あまり〜ません, ぜんぜん〜ません."
       },
       {
         type:"identify",
@@ -722,7 +722,7 @@ window.SKILLS = [
         sentence:"スーパーへ<b>行って</b>、パンを買いました。",
         options:["sequence (do X, then Y)","progressive (doing X now)","request","permission"],
         answer:"sequence (do X, then Y)",
-        explain:"First going to the supermarket, then buying bread — a sequence of two actions."
+        explain:"Two actions in order: go to the supermarket, then buy bread."
       },
       {
         type:"gapfill",
@@ -814,7 +814,7 @@ window.SKILLS = [
         sentence:"もう<b>帰ってもいいです</b>。",
         options:["permission (it's OK to do X)","prohibition (must not)","progressive","request"],
         answer:"permission (it's OK to do X)",
-        explain:"てもいい gives permission — it's fine to do something."
+        explain:"てもいい gives permission."
       },
       {
         type:"gapfill",
@@ -1022,7 +1022,7 @@ window.SKILLS = [
         prompt:"Put the tiles in order: (I) talk with my friend.",
         words:["ともだち","と","はなします"],
         answer:"ともだちとはなします",
-        explain:"と attaches to the person you do something with (ともだちと), and the verb goes last.",
+        explain:"と attaches to the person you do it with: ともだちと. The verb goes last.",
         tags:["と"]
       },
       {
@@ -1032,7 +1032,7 @@ window.SKILLS = [
         after:"ペンです。",
         cue:"(particle)",
         accept:["の"],
-        explain:"の shows possession — 'my pen'."
+        explain:"の shows possession: 'my pen'."
       },
       {
         type:"gapfill",
@@ -1041,7 +1041,7 @@ window.SKILLS = [
         after:"行きます。",
         cue:"(particle)",
         accept:["に"],
-        explain:"に marks the destination — where you're going."
+        explain:"に marks the destination."
       },
       {
         type:"gapfill",
@@ -1059,7 +1059,7 @@ window.SKILLS = [
         after:"食べます。",
         cue:"(particle)",
         accept:["を"],
-        explain:"を marks the direct object — the thing being eaten."
+        explain:"を marks the direct object: the thing being eaten."
       },
       {
         type:"gapfill",
@@ -1077,7 +1077,7 @@ window.SKILLS = [
         after:"日本に行きたいです。",
         cue:"(particle)",
         accept:["も"],
-        explain:"も means 'also/too' — I also want to go to Japan."
+        explain:"も means 'also': I want to go to Japan too."
       },
       {
         type:"order",
@@ -1205,7 +1205,7 @@ window.SKILLS = [
         sentence:"テニス<b>が</b>好きです。",
         options:["object of a liking/ability word (好き, 上手, etc.)","subject","location","means"],
         answer:"object of a liking/ability word (好き, 上手, etc.)",
-        explain:"が marks the thing you like, are good at, etc., before words like 好き and 上手。"
+        explain:"が marks the thing you like or are good at, before 好き and 上手."
       },
       {
         type:"identify",
@@ -1247,7 +1247,7 @@ window.SKILLS = [
         after:"食べました。",
         cue:"(particle)",
         accept:["で"],
-        explain:"で marks the means or tool used to do something — eating with chopsticks."
+        explain:"で marks the tool: eating with chopsticks."
       },
       {
         type:"identify",
@@ -1264,7 +1264,7 @@ window.SKILLS = [
         after:"バナナを買いました。",
         cue:"(particle)",
         accept:["と"],
-        explain:"と connects a complete list of items — 'apples and bananas', nothing else."
+        explain:"と lists everything: 'apples and bananas', nothing else."
       },
       {
         type:"identify",
@@ -1272,7 +1272,7 @@ window.SKILLS = [
         sentence:"スーパーでりんご<b>や</b>バナナを買いました。",
         options:["and, etc. (an incomplete list of examples)","and (a complete list)","contrast","subject"],
         answer:"and, etc. (an incomplete list of examples)",
-        explain:"や lists examples — there may be other things too, unlike と."
+        explain:"や lists examples. There may be other things too."
       },
       {
         type:"identify",
@@ -1288,7 +1288,7 @@ window.SKILLS = [
         sentence:"犬<b>も</b>ねこもいません。",
         options:["neither...nor (も + negative)","also/too","emphasis","location"],
         answer:"neither...nor (も + negative)",
-        explain:"も with a negative verb means 'neither... nor...' — no dogs and no cats."
+        explain:"も with a negative means 'neither': no dogs and no cats."
       },
       {
         type:"order",
@@ -1430,7 +1430,7 @@ window.SKILLS = [
         sentence:"雨が<b>ふったら</b>、うちにいます。",
         options:["if/when (condition or time)","after doing X","experience","advice"],
         answer:"if/when (condition or time)",
-        explain:"たら means 'if' or 'when' — a condition or expected future time."
+        explain:"たら means 'if' or 'when': a condition or an expected time."
       },
       {
         type:"gapfill",
@@ -1838,7 +1838,7 @@ window.SKILLS = [
         sentence:"日本に<b>行ったとき</b>、京都のお寺を見ました。",
         options:["time (when X happened)","condition (if X)","reason (because X)","result (so X)"],
         answer:"time (when X happened)",
-        explain:"PF+とき marks a point in time — 'when I went to Japan'."
+        explain:"PF+とき marks a point in time: 'when I went to Japan'."
       },
       {
         type:"gapfill",
@@ -1907,7 +1907,7 @@ window.SKILLS = [
         after:"。",
         cue:"べんきょうします",
         accept:["べんきょうするつもりです"],
-        explain:"します is irregular — its plain form is する. べんきょうします→べんきょうする→べんきょうするつもりです"
+        explain:"します is irregular. Its plain form is する: べんきょうします→べんきょうする→べんきょうするつもりです"
       },
       {
         type:"identify",
@@ -1915,7 +1915,7 @@ window.SKILLS = [
         sentence:"<b>テレビを見るより</b>本を読むほうが楽しいです。",
         options:["comparison (rather than X)","time","reason","condition"],
         answer:"comparison (rather than X)",
-        explain:"PF+より compares two things — 'more than doing X'."
+        explain:"PF+より compares two things: 'more than doing X'."
       },
       {
         type:"gapfill",
@@ -1949,7 +1949,7 @@ window.SKILLS = [
         sentence:"明日は<b>雪になるでしょう</b>。",
         options:["probability (it will probably X)","hearsay","possibility (maybe, less certain)","obligation"],
         answer:"probability (it will probably X)",
-        explain:"PF+でしょう expresses a confident prediction — more certain than かもしれません."
+        explain:"PF+でしょう is a confident prediction. かもしれません is less certain."
       },
       {
         type:"gapfill",
@@ -1975,7 +1975,7 @@ window.SKILLS = [
         sentence:"車を買うためにお金を<b>ためています</b>。",
         options:["purpose (in order to X)","reason (because X)","result of X","condition"],
         answer:"purpose (in order to X)",
-        explain:"PF+ために shows the purpose behind an action — 'in order to buy a car'."
+        explain:"PF+ために gives the purpose: 'in order to buy a car'."
       },
       {
         type:"gapfill",
@@ -1992,7 +1992,7 @@ window.SKILLS = [
         sentence:"かぜをひかないように<b>手を洗いましょう</b>。",
         options:["purpose/result (so that X happens or doesn't)","reason","comparison","time"],
         answer:"purpose/result (so that X happens or doesn't)",
-        explain:"PF+ように expresses a hoped-for result, often with things you can't fully control, like getting sick."
+        explain:"PF+ように is a hoped-for result, often one you cannot control."
       },
       {
         type:"gapfill",
@@ -2026,7 +2026,7 @@ window.SKILLS = [
         sentence:"きのう<b>見たえいが</b>はおもしろかったです。",
         options:["relative clause (the movie that I watched)","reason","time","purpose"],
         answer:"relative clause (the movie that I watched)",
-        explain:"A plain-form verb directly before a noun describes that noun — 'the movie I watched'."
+        explain:"A plain-form verb before a noun describes it: 'the movie I watched'."
       },
       {
         type:"gapfill",
@@ -2095,7 +2095,7 @@ window.SKILLS = [
         after:"。",
         cue:"べんきょうします",
         accept:["べんきょうするべきです"],
-        explain:"します is irregular — its plain form is する. べんきょうします→べんきょうする→べんきょうするべきです"
+        explain:"します is irregular. Its plain form is する: べんきょうします→べんきょうする→べんきょうするべきです"
       }
     ]
   },
@@ -2129,7 +2129,7 @@ window.SKILLS = [
         sentence:"八時までに学校に<b>行かなければなりません</b>。",
         options:["compulsion (must do X)","advice","permission","prohibition"],
         answer:"compulsion (must do X)",
-        explain:"なければなりません means you must do something — it's compulsory."
+        explain:"なければなりません means you must do it."
       },
       {
         type:"gapfill",
@@ -2146,7 +2146,7 @@ window.SKILLS = [
         sentence:"せいふくを<b>着なくてもいいです</b>。",
         options:["no obligation (don't have to do X)","compulsion (must do X)","prohibition (must not)","advice"],
         answer:"no obligation (don't have to do X)",
-        explain:"なくてもいいです means something isn't required — you don't have to do it."
+        explain:"なくてもいいです means you do not have to do it."
       },
       {
         type:"gapfill",
@@ -2155,7 +2155,7 @@ window.SKILLS = [
         after:"もいいです。",
         cue:"きます",
         accept:["こなくても"],
-        explain:"来ます is irregular — its plain negative is こない. きます→こない→こなくても"
+        explain:"来ます is irregular. Its plain negative is こない: きます→こない→こなくても"
       },
       {
         type:"transform",
@@ -2236,7 +2236,7 @@ window.SKILLS = [
         sentence:"姉は三時<b>ごろ</b>帰ります。",
         options:["approximate time (around X o'clock)","exact time","approximate amount","comparison"],
         answer:"approximate time (around X o'clock)",
-        explain:"ごろ means 'around' a point in time — not exact."
+        explain:"ごろ means 'around' a time, not an exact one."
       },
       {
         type:"gapfill",
@@ -2262,7 +2262,7 @@ window.SKILLS = [
         after:"かかります。",
         cue:"(approximate amount)",
         accept:["ぐらい","くらい"],
-        explain:"ぐらい／くらい shows an approximate amount — here, about ten minutes."
+        explain:"ぐらい／くらい gives an approximate amount: about ten minutes."
       }
     ]
   },
@@ -2288,7 +2288,7 @@ window.SKILLS = [
         after:"ありません。",
         cue:"(only, + negative)",
         accept:["しか"],
-        explain:"しか needs a negative verb at the end of the sentence — 'only one ticket'."
+        explain:"しか needs a negative verb at the end: 'only one ticket'."
       },
       {
         type:"identify",
@@ -2296,7 +2296,7 @@ window.SKILLS = [
         sentence:"一人<b>だけ</b>です。",
         options:["only (no negative needed)","only (+ negative)","comparison","approximate amount"],
         answer:"only (no negative needed)",
-        explain:"だけ also means 'only', but unlike しか it doesn't need a negative verb."
+        explain:"だけ also means 'only', and takes no negative."
       },
       {
         type:"gapfill",
@@ -2313,7 +2313,7 @@ window.SKILLS = [
         sentence:"車はバス<b>より</b>早いです。",
         options:["comparison (more X than Y)","approximate amount","only","superlative"],
         answer:"comparison (more X than Y)",
-        explain:"より attaches to the thing being compared against — 'faster than the bus'."
+        explain:"より attaches to the thing compared against: 'faster than the bus'."
       },
       {
         type:"gapfill",
@@ -2330,7 +2330,7 @@ window.SKILLS = [
         sentence:"これが<b>一番</b>好きです。",
         options:["superlative (the most)","comparison (more than)","approximate amount","only"],
         answer:"superlative (the most)",
-        explain:"一番 means 'the most' — the top of a comparison."
+        explain:"一番 means 'the most': the top of a comparison."
       },
       {
         type:"gapfill",
@@ -2356,7 +2356,7 @@ window.SKILLS = [
         sentence:"今日は雨でした<b>が</b>、海に行きました。",
         options:["but (simple contrast)","because (reason)","so (cause and effect)","although (unexpected contrast)"],
         answer:"but (simple contrast)",
-        explain:"が connects two contrasting ideas — a simple, neutral 'but'."
+        explain:"が joins two contrasting ideas: a plain 'but'."
       },
       {
         type:"gapfill",
@@ -2365,7 +2365,7 @@ window.SKILLS = [
         after:"、少し長かったです。",
         cue:"(but)",
         accept:["が"],
-        explain:"が joins two contrasting plain or polite clauses — a simple, neutral 'but'."
+        explain:"が joins two contrasting clauses, plain or polite: a plain 'but'."
       },
       {
         type:"identify",
@@ -2373,7 +2373,7 @@ window.SKILLS = [
         sentence:"つかれた<b>から</b>もうねます。",
         options:["because (reason/cause)","however","in order to (purpose)","when (time)"],
         answer:"because (reason/cause)",
-        explain:"から gives a direct, personal reason — 'because I'm tired'."
+        explain:"から gives a direct, personal reason: 'because I am tired'."
       },
       {
         type:"gapfill",
@@ -2399,7 +2399,7 @@ window.SKILLS = [
         sentence:"いっしょうけんめい勉強した<b>けれども</b>、テストができませんでした。",
         options:["however (despite trying hard)","because","so","comparison"],
         answer:"however (despite trying hard)",
-        explain:"けれども (or けれど／けど) means 'however' — similar to が but often used more conversationally."
+        explain:"けれども (けれど, けど) means 'however'. It sounds more conversational than が."
       },
       {
         type:"gapfill",
@@ -2416,7 +2416,7 @@ window.SKILLS = [
         sentence:"雨がふった<b>ので</b>行きませんでした。",
         options:["so / because (softer, more objective reason)","however","purpose","time"],
         answer:"so / because (softer, more objective reason)",
-        explain:"ので gives a reason too, but sounds softer and more objective than から — often used to explain or excuse."
+        explain:"ので gives a reason and sounds softer than から. Use it to explain politely."
       },
       {
         type:"gapfill",
@@ -2425,7 +2425,7 @@ window.SKILLS = [
         after:"、学校を休みました。",
         cue:"(so, explaining a reason)",
         accept:["ので"],
-        explain:"ので softens the reason — useful for polite explanations or excuses."
+        explain:"ので softens the reason. Use it for polite explanations."
       },
       {
         type:"identify",
@@ -2433,7 +2433,7 @@ window.SKILLS = [
         sentence:"雨がふる<b>と</b>すずしくなります。",
         options:["when/if (a natural, automatic result)","however","because","although"],
         answer:"when/if (a natural, automatic result)",
-        explain:"と as a conjunction shows a natural, automatic result — 'when it rains, it becomes cool' (always happens)."
+        explain:"と gives an automatic result: when it rains, it gets cool, every time."
       },
       {
         type:"gapfill",
@@ -2450,7 +2450,7 @@ window.SKILLS = [
         sentence:"雨がふった<b>のに</b>来てくれました。",
         options:["although (unexpected, often with surprise or complaint)","because","so","when"],
         answer:"although (unexpected, often with surprise or complaint)",
-        explain:"のに shows an unexpected or disappointing contrast — stronger than が, often carrying surprise or complaint."
+        explain:"のに marks an unexpected contrast. It is stronger than が and carries surprise."
       },
       {
         type:"gapfill",
@@ -2459,7 +2459,7 @@ window.SKILLS = [
         after:"、テストができませんでした。",
         cue:"(although)",
         accept:["のに"],
-        explain:"のに shows a disappointing or surprising contrast — despite studying hard, the test didn't go well."
+        explain:"のに marks a disappointing contrast: studied hard, test went badly."
       }
     ]
   },
@@ -2476,7 +2476,7 @@ window.SKILLS = [
         sentence:"りょうりをするの<b>は</b>楽しいです。",
         options:["nominalisation ('the act of doing X')","possession","location","question marker"],
         answer:"nominalisation ('the act of doing X')",
-        explain:"の turns the verb phrase before it into a noun — 'doing cooking' becomes the subject."
+        explain:"の turns the verb phrase before it into a noun."
       },
       {
         type:"gapfill",
@@ -2493,7 +2493,7 @@ window.SKILLS = [
         sentence:"漢字をおぼえる<b>こと</b>はむずかしいですか。",
         options:["nominalisation (the act/fact of doing X)","possession","comparison","question marker"],
         answer:"nominalisation (the act/fact of doing X)",
-        explain:"こと also nominalises a verb phrase, often for more abstract or formal ideas than の."
+        explain:"こと also makes a verb phrase into a noun. It is more formal than の."
       },
       {
         type:"gapfill",
@@ -2502,7 +2502,7 @@ window.SKILLS = [
         after:"です。",
         cue:"(the act of...)",
         accept:["こと"],
-        explain:"こと nominalises the verb phrase — here, 'listening to music' becomes the noun describing the hobby."
+        explain:"こと turns the verb phrase into a noun: 'listening to music'."
       },
       {
         type:"identify",
@@ -2519,7 +2519,7 @@ window.SKILLS = [
         after:"ができますか。",
         cue:"(can...)",
         accept:["こと"],
-        explain:"PF+ことができる means 'can do' — こと nominalises the verb, then ができる adds ability."
+        explain:"PF+ことができる means 'can do'. こと makes the noun, ができる adds the ability."
       }
     ]
   },
@@ -2545,7 +2545,7 @@ window.SKILLS = [
         after:"にしました。",
         cue:"(decided...)",
         accept:["こと"],
-        explain:"PF+ことにする shows a personal decision — こと nominalises, にする adds 'decide'."
+        explain:"PF+ことにする is a personal decision. こと makes the noun, にする decides."
       },
       {
         type:"identify",
@@ -2553,7 +2553,7 @@ window.SKILLS = [
         sentence:"来年、日本に行く<b>ことになりました</b>。",
         options:["result (it has been decided/turns out that X)","personal decision","ability","nominalisation only"],
         answer:"result (it has been decided/turns out that X)",
-        explain:"PF+ことになる shows a decision or arrangement made by others or circumstances, not the speaker's own choice."
+        explain:"PF+ことになる is a decision made by others or by circumstances, not by you."
       },
       {
         type:"gapfill",
@@ -2579,7 +2579,7 @@ window.SKILLS = [
         sentence:"何年生です<b>か</b>。",
         options:["question marker","tag question","assurance","soft statement ending"],
         answer:"question marker",
-        explain:"か marks a sentence as a question — the standard, neutral question marker."
+        explain:"か marks a question."
       },
       {
         type:"gapfill",
@@ -2596,7 +2596,7 @@ window.SKILLS = [
         sentence:"日本語を勉強します<b>か</b>。",
         options:["か at the end turns the statement into a question","the word order changed","the verb changed form","です was added"],
         answer:"か at the end turns the statement into a question",
-        explain:"Japanese doesn't reorder the words to ask a question. Adding か to the end of a polite sentence is enough."
+        explain:"Japanese does not reorder the words for a question. Add か to the end."
       },
       {
         type:"gapfill",
@@ -2622,7 +2622,7 @@ window.SKILLS = [
         sentence:"日本語はとても楽しいです<b>ね</b>。",
         options:["tag question / seeking agreement (isn't it?)","assurance (telling, informing)","question marker","soft statement ending"],
         answer:"tag question / seeking agreement (isn't it?)",
-        explain:"ね invites agreement or confirmation from the listener — 'isn't it?'"
+        explain:"ね asks for agreement: 'is it not?'"
       },
       {
         type:"gapfill",
@@ -2631,7 +2631,7 @@ window.SKILLS = [
         after:"",
         cue:"(isn't it?)",
         accept:["ね","ねえ"],
-        explain:"ね seeks agreement — similar to English 'isn't it?' or 'right?'"
+        explain:"ね seeks agreement, like 'right?'"
       },
       {
         type:"identify",
@@ -2639,7 +2639,7 @@ window.SKILLS = [
         sentence:"日本語は楽しいです<b>よ</b>。",
         options:["assurance (telling the listener something new/certain)","tag question","question marker","soft ending"],
         answer:"assurance (telling the listener something new/certain)",
-        explain:"よ asserts information the listener may not know — adds confidence or persuasion."
+        explain:"よ tells the listener something new, with confidence."
       },
       {
         type:"gapfill",
@@ -2655,7 +2655,7 @@ window.SKILLS = [
 
   {
     id:"sfp-links", category:"Questions", band:"links",
-    name:"の (soft question — register and tone)",
+    name:"の (the soft question)",
     example:"あした来るの？",
     introduced:true, mode:"progression", assessed:true, resources:null,
     items:[
@@ -2665,7 +2665,7 @@ window.SKILLS = [
         sentence:"日本に行ったことがある<b>の</b>？",
         options:["soft question ending (casual, curious tone)","topic marker","possession","location"],
         answer:"soft question ending (casual, curious tone)",
-        explain:"の as a sentence-final particle softens a question, often sounding curious or casual — different from の as a possession particle."
+        explain:"の at the end of a sentence softens a question and sounds casual. の for possession is a different の."
       },
       {
         type:"gapfill",
@@ -2691,7 +2691,7 @@ window.SKILLS = [
         sentence:"バナナよりりんご<b>のほう</b>が好きです。",
         options:["softer comparison (X is more the one, compared to Y)","superlative","only","approximate amount"],
         answer:"softer comparison (X is more the one, compared to Y)",
-        explain:"のほう softens a comparison — 'apples are more the preferred one, compared to bananas'."
+        explain:"のほう softens a comparison: apples are the one I prefer."
       },
       {
         type:"gapfill",
@@ -2708,7 +2708,7 @@ window.SKILLS = [
         sentence:"バナナ<b>より</b>りんごのほうが好きです。",
         options:["it marks the option you like less","it marks the option you prefer","it marks the topic","it marks the object"],
         answer:"it marks the option you like less",
-        explain:"In AよりBのほうが…, より attaches to A (the one you like less) and のほう attaches to B (the one you prefer)."
+        explain:"In AよりBのほうが…, より goes on A and のほう on B. You prefer B."
       },
       {
         type:"order",
@@ -2722,7 +2722,7 @@ window.SKILLS = [
 
   {
     id:"misc-b4", category:"Can and Must", band:"links",
-    name:"potential form (can do)",
+    name:"Potential form (can do)",
     example:"弟は日本語がちょっと読めます。",
     introduced:true, mode:"progression", assessed:true, resources:null,
     items:[
@@ -2732,7 +2732,7 @@ window.SKILLS = [
         sentence:"弟は日本語がちょっと<b>読めます</b>。",
         options:["potential (can do X)","passive (is done by)","causative (make/let do)","desiderative (want to do)"],
         answer:"potential (can do X)",
-        explain:"The potential form shows ability — 'can read'."
+        explain:"The potential form shows ability: 'can read'."
       },
       {
         type:"gapfill",
@@ -2797,7 +2797,7 @@ window.SKILLS = [
         sentence:"わたしは日本語<b>が</b>話せます。",
         options:["with the potential form, the thing you can do takes が","が always marks the subject","potential verbs take no particle","を can never follow a noun"],
         answer:"with the potential form, the thing you can do takes が",
-        explain:"When a verb goes into the potential form, its object usually switches from を to が. 日本語を話します → 日本語が話せます",
+        explain:"In the potential form the object usually changes を to が: 日本語を話します → 日本語が話せます",
         tags:["particle"]
       },
       {
@@ -2807,7 +2807,7 @@ window.SKILLS = [
         after:"読めません。",
         cue:"(particle)",
         accept:["が"],
-        explain:"The thing you can or can't do takes が with the potential form. 漢字が読めません",
+        explain:"The thing you can do takes が in the potential form: 漢字が読めません",
         tags:["particle"]
       }
     ]
@@ -2825,7 +2825,7 @@ window.SKILLS = [
         sentence:"時間が<b>あれば</b>、日本へ行きたいです。",
         options:["conditional (if X)","reason (because X)","time (when X)","result (so X)"],
         answer:"conditional (if X)",
-        explain:"ば forms a conditional — 'if there is time'."
+        explain:"ば makes a conditional: 'if there is time'."
       },
       {
         type:"gapfill",
@@ -2842,7 +2842,7 @@ window.SKILLS = [
         sentence:"ハリーポッター<b>という</b>本を読んだことがありますか。",
         options:["called (a thing named X)","comparison","possession","question marker"],
         answer:"called (a thing named X)",
-        explain:"NAMEというNOUN introduces something by name — 'a book called Harry Potter'."
+        explain:"NAMEというNOUN introduces something by name: 'a book called Harry Potter'."
       },
       {
         type:"gapfill",
@@ -2858,7 +2858,7 @@ window.SKILLS = [
 
   {
     id:"particles-harder-b2", category:"Particles", band:"links",
-    name:"existence vs action vs destination vs time vs indirect object",
+    name:"に・で・へ (existence, action, destination, time)",
     example:"こうえんで子供たちがあそんでいます。",
     introduced:true, mode:"progression", assessed:true, resources:null,
     items:[
@@ -2868,7 +2868,7 @@ window.SKILLS = [
         sentence:"つくえの上<b>に</b>本があります。",
         options:["existence — marks where something is (with ある/いる)","place of action — where something happens","means — how something is done","destination — where something is going"],
         answer:"existence — marks where something is (with ある/いる)",
-        explain:"に marks location with existence verbs like ある/いる. で would be wrong here — で marks where an action happens, not where something simply is."
+        explain:"に marks where something exists, with ある and いる. で marks where an action happens."
       },
       {
         type:"gapfill",
@@ -2877,7 +2877,7 @@ window.SKILLS = [
         after:"ねこがいます。",
         cue:"(existence)",
         accept:["に"],
-        explain:"に is used for location with ある/いる — describing where something exists."
+        explain:"に marks location with ある and いる."
       },
       {
         type:"identify",
@@ -2885,7 +2885,7 @@ window.SKILLS = [
         sentence:"<ruby>子<rt>こ</rt></ruby><ruby>供<rt>ども</rt></ruby>たちがこうえん<b>で</b>あそんでいます。",
         options:["あそぶ (to play) is an action, so で (place of action) is needed","子供 needs a subject particle, not location","に is only ever used for time, never location","で and に mean exactly the same thing here"],
         answer:"あそぶ (to play) is an action, so で (place of action) is needed",
-        explain:"A common mistake is using に here since the children 'are in' the park — but あそぶ is an action, so で (place of action) is correct, not に (existence)."
+        explain:"あそぶ is an action, so use で. に marks existence."
       },
       {
         type:"gapfill",
@@ -2894,7 +2894,7 @@ window.SKILLS = [
         after:"本を読みます。",
         cue:"(place of action)",
         accept:["で"],
-        explain:"読む is an action, so で marks where it happens — not に."
+        explain:"読む is an action, so で marks where it happens."
       },
       {
         type:"gapfill",
@@ -2903,7 +2903,7 @@ window.SKILLS = [
         after:"本があります。",
         cue:"(existence)",
         accept:["に"],
-        explain:"ある is an existence verb, so に marks where it is — not で."
+        explain:"ある is an existence verb, so に marks where it is."
       },
       {
         type:"gapfill",
@@ -2912,7 +2912,7 @@ window.SKILLS = [
         after:"行きます。",
         cue:"(destination)",
         accept:["に","へ"],
-        explain:"Either に or へ works for destination — they're interchangeable here."
+        explain:"に and へ both mark the destination here."
       },
       {
         type:"gapfill",
@@ -2921,7 +2921,7 @@ window.SKILLS = [
         after:"としょかんへ行きます。",
         cue:"(point in time)",
         accept:["に"],
-        explain:"に marks the time here — the destination is already marked separately by へ, so don't repeat に there."
+        explain:"に marks the time. へ already marks the destination, so do not add に there."
       },
       {
         type:"gapfill",
@@ -2930,7 +2930,7 @@ window.SKILLS = [
         after:"手紙を書きました。",
         cue:"(who receives it)",
         accept:["に"],
-        explain:"に marks the person a letter is written to — the indirect object."
+        explain:"に marks the person written to: the indirect object."
       },
       {
         type:"gapfill",
@@ -2939,7 +2939,7 @@ window.SKILLS = [
         after:"すしを食べました。",
         cue:"(means)",
         accept:["で"],
-        explain:"で marks the tool or means used — chopsticks, in this case."
+        explain:"で marks the tool: chopsticks."
       },
       {
         type:"gapfill",
@@ -2948,7 +2948,7 @@ window.SKILLS = [
         after:"すしを食べました。",
         cue:"(place of action)",
         accept:["で"],
-        explain:"で also marks where an action happens — compare with the previous item: で covers both 'where' and 'how'."
+        explain:"で also marks where an action happens. で covers both 'where' and 'how'."
       }
     ]
   },
@@ -2966,7 +2966,7 @@ window.SKILLS = [
         sentence:"わたしは先週のしゅうまつ、京都に行きました。朝早く電車に乗って、友<ruby>達<rt>だち</rt></ruby>と京都のお寺を見ました。天気がよかったので、こうえんでおべんとうを食べました。とても楽しかったです。でも、少しつかれました。",
         options:["Kyoto","Osaka","Tokyo","Nagoya"],
         answer:"Kyoto",
-        explain:"先週のしゅうまつ、京都に行きました — 'Last weekend, (I) went to Kyoto.'"
+        explain:"先週のしゅうまつ、京都に行きました: 'Last weekend, (I) went to Kyoto.'"
       },
       {
         type:"identify",
@@ -2974,7 +2974,7 @@ window.SKILLS = [
         sentence:"わたしは先週のしゅうまつ、京都に行きました。朝早く電車に乗って、友<ruby>達<rt>だち</rt></ruby>と京都のお寺を見ました。天気がよかったので、こうえんでおべんとうを食べました。とても楽しかったです。でも、少しつかれました。",
         options:["By train","By car","By bus","On foot"],
         answer:"By train",
-        explain:"電車に乗って — 'got on the train, and...'"
+        explain:"電車に乗って: 'got on the train, and...'"
       },
       {
         type:"identify",
@@ -2982,7 +2982,7 @@ window.SKILLS = [
         sentence:"わたしは先週のしゅうまつ、京都に行きました。朝早く電車に乗って、友<ruby>達<rt>だち</rt></ruby>と京都のお寺を見ました。天気がよかったので、こうえんでおべんとうを食べました。とても楽しかったです。でも、少しつかれました。",
         options:["Because the weather was good","Because it was cheap","Because a friend suggested it","Because it was raining"],
         answer:"Because the weather was good",
-        explain:"天気がよかったので — 'because the weather was good.'"
+        explain:"天気がよかったので: 'because the weather was good.'"
       },
       {
         type:"identify",
@@ -2990,7 +2990,7 @@ window.SKILLS = [
         sentence:"わたしは先週のしゅうまつ、京都に行きました。朝早く電車に乗って、友<ruby>達<rt>だち</rt></ruby>と京都のお寺を見ました。天気がよかったので、こうえんでおべんとうを食べました。とても楽しかったです。でも、少しつかれました。",
         options:["Happy but a little tired","Sad and lonely","Bored","Angry"],
         answer:"Happy but a little tired",
-        explain:"とても楽しかったです。でも、少しつかれました — 'It was very fun. But (I) got a little tired.'"
+        explain:"とても楽しかったです。でも、少しつかれました: 'It was very fun. But (I) got a little tired.'"
       }
     ]
   },
@@ -3008,7 +3008,7 @@ window.SKILLS = [
         sentence:"日本には、どこに行ってもコンビニがあります。コンビニでは、食べ物や飲み物を買うだけではなく、電気だい代をはら払ったり、にもつ荷物をおく送ったり、コピーをしたりすることもできます。多くの店が長い時間ひら開いているため、仕事や学校でいそが忙しい人にとって、とてもべんり便利です。また、夜でもあか明るく、人がいるので、あんしん安心できるばしょ場所だと考える人もいます。しかし、この便利なサービスにはかんきょう環境へのもんだい問題もあります。コンビニでは、おにぎり、べんとう弁当、サラダやデザートなど、いつでも新しくてきれいに見えるしょうひん商品がもとめられます。そのため、まだ食べられる商品でも、きめられた時間をすぎるとう売ることができず、すてられてしまうことがあります。店に商品が少ないと、きゃく客がふべん不便だとかんじるかもしれないので、店はひつよういじょう必要以上に商品をようい用意することもあります。ほうそうも大きな問題です。日本では、商品をせいけつにたも保ち、こわれないようにし、見た目をよくするために、ていねいにほうそうするサービスが大切にされています。一つの商品が、プラスチックのようきやふくろに何ど度もつつまれていることもあります。これはえいせいで便利ですが、使った後には多くのごみになります。一方、日本にはむかし昔から「もったいない」という考え方があります。これは、まだ使える物や食べられる物をむだにするのはよくない、という考えです。さいきん最近では、売れのこりそうな食べ物をやす安くしたり、アプリを使ってひつよう必要な人にし知らせたりする店もあります。はし、カップ、ボトルや買い物ぶくろをじぶん自分でも持ってけば、使いすての商品をへらすこともできます。しかし、客だけにせきにんを持たせるのはじゅうぶん十分ではありません。きぎょう企業も、ほうそうを少なくしたり、食べ物をようい用意するりょうをもっとせいかくに考えたりするひつよう必要があります。せいふや町も、きぎょう企業と客がきょうりょく協力しやすいしくみを作るべきでしょう。コンビニをなくせば、ごみの問題がすべてかいけつするわけではありません。コンビニは多くの人の生活をささえています。たいせつ大切なのは、べんり便利さをかんぜんにあきらめることではなく、「もったいない」という考えをげんだい現代の生活に合うかたち形で生かすことです。",
         options:["Pay bills and send packages","Only buy food","Get medical checkups","Rent bicycles"],
         answer:"Pay bills and send packages",
-        explain:"食べ物や飲み物を買うだけではなく、電気だい代をはら払ったり、にもつ荷物をおく送ったり — 'not only buying food and drink, but also paying bills and sending packages.'"
+        explain:"食べ物や飲み物を買うだけではなく、電気だい代をはら払ったり、にもつ荷物をおく送ったり: 'not only buying food and drink, but also paying bills and sending packages.'"
       },
       {
         type:"identify",
@@ -3016,7 +3016,7 @@ window.SKILLS = [
         sentence:"日本には、どこに行ってもコンビニがあります。コンビニでは、食べ物や飲み物を買うだけではなく、電気だい代をはら払ったり、にもつ荷物をおく送ったり、コピーをしたりすることもできます。多くの店が長い時間ひら開いているため、仕事や学校でいそが忙しい人にとって、とてもべんり便利です。また、夜でもあか明るく、人がいるので、あんしん安心できるばしょ場所だと考える人もいます。しかし、この便利なサービスにはかんきょう環境へのもんだい問題もあります。コンビニでは、おにぎり、べんとう弁当、サラダやデザートなど、いつでも新しくてきれいに見えるしょうひん商品がもとめられます。そのため、まだ食べられる商品でも、きめられた時間をすぎるとう売ることができず、すてられてしまうことがあります。店に商品が少ないと、きゃく客がふべん不便だとかんじるかもしれないので、店はひつよういじょう必要以上に商品をようい用意することもあります。",
         options:["Customers might feel inconvenienced if stock runs low","To save money on electricity","Because the government requires it","Because food is cheaper in bulk"],
         answer:"Customers might feel inconvenienced if stock runs low",
-        explain:"店に商品が少ないと、きゃく客がふべん不便だとかんじるかもしれない — 'if a store has little stock, customers might feel it's inconvenient.'"
+        explain:"店に商品が少ないと、きゃく客がふべん不便だとかんじるかもしれない: 'if a store has little stock, customers might feel it is inconvenient.'"
       },
       {
         type:"identify",
@@ -3024,7 +3024,7 @@ window.SKILLS = [
         sentence:"ほうそうも大きな問題です。日本では、商品をせいけつにたも保ち、こわれないようにし、見た目をよくするために、ていねいにほうそうするサービスが大切にされています。一つの商品が、プラスチックのようきやふくろに何ど度もつつまれていることもあります。これはえいせいで便利ですが、使った後には多くのごみになります。",
         options:["Keep clean, prevent damage, improve appearance","Make food cheaper, faster, lighter","Advertise the brand, attract customers, increase sales","Reduce waste, save money, save time"],
         answer:"Keep clean, prevent damage, improve appearance",
-        explain:"商品をせいけつにたも保ち、こわれないようにし、見た目をよくするために — 'to keep products clean, prevent damage, and improve appearance.'"
+        explain:"商品をせいけつにたも保ち、こわれないようにし、見た目をよくするために: 'to keep products clean, prevent damage, and improve appearance.'"
       },
       {
         type:"identify",
@@ -3032,7 +3032,7 @@ window.SKILLS = [
         sentence:"一方、日本にはむかし昔から「もったいない」という考え方があります。これは、まだ使える物や食べられる物をむだにするのはよくない、という考えです。",
         options:["It's wrong to waste something that can still be used or eaten","It's good to buy new things often","Only older people believe in it","It means being extremely careful with money"],
         answer:"It's wrong to waste something that can still be used or eaten",
-        explain:"まだ使える物や食べられる物をむだにするのはよくない — 'it is not good to waste things that can still be used or eaten.'"
+        explain:"まだ使える物や食べられる物をむだにするのはよくない: 'it is not good to waste things that can still be used or eaten.'"
       },
       {
         type:"identify",
@@ -3040,7 +3040,7 @@ window.SKILLS = [
         sentence:"しかし、客だけにせきにんを持たせるのはじゅうぶん十分ではありません。きぎょう企業も、ほうそうを少なくしたり、食べ物をようい用意するりょうをもっとせいかくに考えたりするひつよう必要があります。せいふや町も、きぎょう企業と客がきょうりょく協力しやすいしくみを作るべきでしょう。",
         options:["Businesses and government also need to take action","Customers don't care enough about waste","It is illegal for customers to reduce waste themselves","Only recycling actually matters"],
         answer:"Businesses and government also need to take action",
-        explain:"きぎょう企業も…考えたりするひつよう必要があります。せいふや町も…しくみを作るべきでしょう — businesses and government also need to act, not just customers."
+        explain:"きぎょう企業も…考えたりするひつよう必要があります。せいふや町も…しくみを作るべきでしょう: businesses and government also need to act, not just customers."
       },
       {
         type:"identify",
@@ -3048,7 +3048,7 @@ window.SKILLS = [
         sentence:"コンビニをなくせば、ごみの問題がすべてかいけつするわけではありません。コンビニは多くの人の生活をささえています。たいせつ大切なのは、べんり便利さをかんぜんにあきらめることではなく、「もったいない」という考えをげんだい現代の生活に合うかたち形で生かすことです。",
         options:["Convenience shouldn't be abandoned, but 'mottainai' thinking should be adapted to modern life","Convenience stores should be shut down entirely","Recycling alone will solve the problem","Nothing can realistically be done"],
         answer:"Convenience shouldn't be abandoned, but 'mottainai' thinking should be adapted to modern life",
-        explain:"便利さをかんぜんにあきらめることではなく、「もったいない」という考えを…生かすことです — the key final judgement of the article."
+        explain:"便利さをかんぜんにあきらめることではなく、「もったいない」という考えを…生かすことです: the key final judgement of the article."
       }
     ]
   },
@@ -3065,7 +3065,7 @@ window.SKILLS = [
         sentence:"プラスチックのほうそうはべんりです。<b>一方で</b>、ごみがふえるというもんだいがあります。",
         options:["on the other hand (a contrasting point)","because (a reason)","in order to (a purpose)","should (a recommendation)"],
         answer:"on the other hand (a contrasting point)",
-        explain:"一方で introduces a different or contrasting point — often used to move from advantages to disadvantages in evaluative writing."
+        explain:"一方で introduces the other side. Use it to move from the good points to the bad."
       },
       {
         type:"gapfill",
@@ -3074,7 +3074,7 @@ window.SKILLS = [
         after:"、ごみのもんだいがあります。",
         cue:"(on the other hand)",
         accept:["一方で","いっぽうで"],
-        explain:"一方で shifts from one side of an issue to the other — a key evaluative-writing connector."
+        explain:"一方で moves from one side of an issue to the other."
       },
       {
         type:"identify",
@@ -3082,7 +3082,7 @@ window.SKILLS = [
         sentence:"<b>たしかに</b>、ほうそうは食べ物をきれいにたもつためにひつようですが、使いすてのプラスチックが多すぎます。",
         options:["acknowledging a point before disagreeing (it's true that... however...)","giving a strong recommendation","stating a direct reason","expressing possibility"],
         answer:"acknowledging a point before disagreeing (it's true that... however...)",
-        explain:"たしかに～ですが acknowledges the other side's point before pivoting to your own — essential for a fair evaluative essay or a persuasive rebuttal."
+        explain:"たしかに〜ですが admits the other side first, then turns to your own point."
       },
       {
         type:"gapfill",
@@ -3091,7 +3091,7 @@ window.SKILLS = [
         after:"コンビニはべんりですが、ごみが多いです。",
         cue:"(It is true that...)",
         accept:["たしかに"],
-        explain:"たしかに introduces a concession — acknowledging the other side is true, before disagreeing with が."
+        explain:"たしかに concedes a point. Disagree after it with が."
       }
     ]
   },
@@ -3108,7 +3108,7 @@ window.SKILLS = [
         sentence:"ごみをこまかく分けることは、リサイクルできる物をふやす<b>という点でこうかてきです</b>。",
         options:["effective in terms of... (evaluating one specific strength)","should (a recommendation)","because (a reason)","possibility"],
         answer:"effective in terms of... (evaluating one specific strength)",
-        explain:"～という点でこうかてきです evaluates one specific strength of an idea — useful for balanced evaluative writing."
+        explain:"〜という点でこうかてきです names one strength of an idea."
       },
       {
         type:"gapfill",
@@ -3117,7 +3117,7 @@ window.SKILLS = [
         after:"こうかてきです。",
         cue:"(in terms of...)",
         accept:["という点で","という点では"],
-        explain:"という点で isolates exactly which aspect something is effective in — sharper than just saying 'it's effective'."
+        explain:"という点で names exactly which aspect is effective."
       },
       {
         type:"identify",
@@ -3125,7 +3125,7 @@ window.SKILLS = [
         sentence:"同じほうほうが、すべての町でうまく行く<b>とはかぎりません</b>。",
         options:["not necessarily true (a nuanced qualifier)","definitely true","definitely false","expressing possibility"],
         answer:"not necessarily true (a nuanced qualifier)",
-        explain:"とはかぎりません softens a claim — showing something is not always or necessarily true. A key nuance phrase for high-scoring evaluative writing."
+        explain:"とはかぎりません says something is not always true."
       },
       {
         type:"gapfill",
@@ -3134,7 +3134,7 @@ window.SKILLS = [
         after:"。",
         cue:"(not necessarily)",
         accept:["とはかぎりません"],
-        explain:"とはかぎりません is used to qualify a claim, showing it isn't always true."
+        explain:"とはかぎりません qualifies a claim."
       },
       {
         type:"identify",
@@ -3142,7 +3142,7 @@ window.SKILLS = [
         sentence:"<b>ぜんたいてきに考えると</b>、こまかいごみぶんべつはこうかてきですが、それだけではごみのもんだいをかいけつできません。",
         options:["overall / considering everything (introducing a final evaluation)","because (a reason)","in order to (a purpose)","should (a recommendation)"],
         answer:"overall / considering everything (introducing a final evaluation)",
-        explain:"全体的に考えると introduces your final, balanced evaluation — a strong way to open a conclusion."
+        explain:"全体的に考えると opens your final judgement."
       },
       {
         type:"gapfill",
@@ -3151,7 +3151,7 @@ window.SKILLS = [
         after:"、コンビニはべんりですが、もっとごみをへらすべきです。",
         cue:"(overall...)",
         accept:["ぜんたいてきに考えると","ぜんたいてきにかんがえると"],
-        explain:"全体的に考えると signals you're weighing up everything discussed before giving your final judgement."
+        explain:"全体的に考えると weighs up everything before your judgement."
       },
       {
         type:"identify",
@@ -3159,7 +3159,7 @@ window.SKILLS = [
         sentence:"<b>ぜひ</b>、使いすてのふくろをへらし、マイバッグを使ってください。",
         options:["a strong, encouraging call to action","a simple, neutral request","a prohibition","expressing possibility"],
         answer:"a strong, encouraging call to action",
-        explain:"ぜひ intensifies てください into a warm, strong call to action — common in persuasive conclusions."
+        explain:"ぜひ turns てください into a strong call to action."
       },
       {
         type:"gapfill",
@@ -3168,7 +3168,7 @@ window.SKILLS = [
         after:"、マイボトルを使ってください。",
         cue:"(please make sure to...)",
         accept:["ぜひ"],
-        explain:"ぜひ adds encouragement and strength to a request — perfect for ending a persuasive piece."
+        explain:"ぜひ adds strength to a request. Use it to close a persuasive piece."
       },
       {
         type:"identify",
@@ -3176,7 +3176,7 @@ window.SKILLS = [
         sentence:"新しいしせつを作る<b>のではなく</b>、できるだけ多くの物をしげんとして使うほうほうをえらびました。",
         options:["not X, but rather Y (contrasting two options)","because (a reason)","in order to (a purpose)","possibility"],
         answer:"not X, but rather Y (contrasting two options)",
-        explain:"のではなく、～ rejects one option in favour of another — useful for explaining a considered choice."
+        explain:"のではなく、〜 rejects one option and takes another."
       },
       {
         type:"gapfill",
@@ -3192,8 +3192,8 @@ window.SKILLS = [
 
   {
     id:"vocab-kyushoku-pool", category:"Topic Vocabulary", band:null,
-    name:"給食 (School Lunch) — Topic Vocabulary",
-    nameT:["給食の言葉","きゅうしょくのことば","kyūshoku no kotoba","給食 (School Lunch) — Topic Vocabulary"],
+    name:"給食 (School Lunch) Topic Vocabulary",
+    nameT:["給食の言葉","きゅうしょくのことば","kyūshoku no kotoba","給食 (School Lunch) Topic Vocabulary"],
     example:"自治体・給食費・えいようし・調理場・はいぜん・当番・献立・食べ残し・衛生・せきにんかん",
     introduced:true, mode:"pool", assessed:false, resources:null,
     items:[
@@ -3203,7 +3203,7 @@ window.SKILLS = [
         sentence:"<ruby>自治体<rt>じちたい</rt></ruby>",
         options:["local government / municipality","school lunch fee","dietitian","hygiene"],
         answer:"local government / municipality",
-        explain:"自治体 refers to local government bodies — cities or towns — which sometimes help fund school lunches."
+        explain:"自治体 is a local government body, a city or town. Some help fund school lunches."
       },
       {
         type:"identify",
@@ -3219,7 +3219,7 @@ window.SKILLS = [
         sentence:"えいようし",
         options:["dietitian / nutritionist","teacher","kitchen","rostered duty"],
         answer:"dietitian / nutritionist",
-        explain:"えいようし (栄養士) is the professional who plans school-lunch menus for nutritional balance. None of its kanji are on the VCE list, so it's written in hiragana here."
+        explain:"えいようし (栄養士) is the dietitian who plans the lunch menus. Its kanji are off the VCE list, so write it in hiragana."
       },
       {
         type:"identify",
@@ -3235,7 +3235,7 @@ window.SKILLS = [
         sentence:"はいぜん",
         options:["serving and distributing food","cleaning up","paying the bill","planning the menu"],
         answer:"serving and distributing food",
-        explain:"はいぜん (配膳) is the act of serving out and distributing the food to classmates. None of its kanji are on the VCE list, so it's written in hiragana here."
+        explain:"はいぜん (配膳) is serving the food out to classmates. Its kanji are off the VCE list, so write it in hiragana."
       },
       {
         type:"identify",
@@ -3243,7 +3243,7 @@ window.SKILLS = [
         sentence:"<ruby>当番<rt>とうばん</rt></ruby>",
         options:["rostered duty","menu","fee","leftover food"],
         answer:"rostered duty",
-        explain:"当番 is a rostered duty — students take turns serving lunch as 給食当番."
+        explain:"当番 is a rostered duty. Students take turns as 給食当番."
       },
       {
         type:"identify",
@@ -3259,7 +3259,7 @@ window.SKILLS = [
         sentence:"<ruby>食<rt>た</rt></ruby>べ<ruby>残<rt>のこ</rt></ruby>し",
         options:["leftover food","fresh ingredients","hygiene","rostered duty"],
         answer:"leftover food",
-        explain:"食べ残し is food left uneaten — a key word for discussing school-lunch waste."
+        explain:"食べ残し is food left uneaten. Use it when you write about waste."
       },
       {
         type:"identify",
@@ -3267,7 +3267,7 @@ window.SKILLS = [
         sentence:"<ruby>衛生<rt>えいせい</rt></ruby>",
         options:["hygiene","responsibility","menu","local government"],
         answer:"hygiene",
-        explain:"衛生 covers hygiene and cleanliness — relevant when discussing serving food safely."
+        explain:"衛生 is hygiene. Use it when you write about serving food safely."
       },
       {
         type:"identify",
@@ -3275,7 +3275,7 @@ window.SKILLS = [
         sentence:"せきにんかん",
         options:["sense of responsibility","sense of hygiene","sense of taste","sense of fairness"],
         answer:"sense of responsibility",
-        explain:"せきにんかん (責任感) is a sense of responsibility — one of the things students are said to learn from lunch duty. None of its kanji are on the VCE list, so it's written in hiragana here."
+        explain:"せきにんかん (責任感) is a sense of responsibility. Its kanji are off the VCE list, so write it in hiragana."
       },
       {
         type:"gapfill",
@@ -3293,7 +3293,7 @@ window.SKILLS = [
         after:"には、いろいろなメニューがあります。",
         cue:"(menu)",
         accept:["こんだて","献立"],
-        explain:"献立 is the menu — here, this month's menu."
+        explain:"献立 is the menu. Here it is this month's menu."
       },
       {
         type:"gapfill",
@@ -3302,7 +3302,7 @@ window.SKILLS = [
         after:"なので、しょっきをはこびます。",
         cue:"(rostered duty)",
         accept:["とうばん","当番"],
-        explain:"当番 is the rostered duty — today it's this student's turn to carry the tableware."
+        explain:"当番 is the rostered duty. Today it is this student's turn to carry the tableware."
       },
       {
         type:"gapfill",
@@ -3320,7 +3320,7 @@ window.SKILLS = [
         after:"をへらしたいです。",
         cue:"(leftover food)",
         accept:["たべのこし","食べ残し"],
-        explain:"食べ残し — reducing leftover food is a common goal mentioned in discussions of school lunches."
+        explain:"食べ残し is leftover food. Reducing it is a common goal in school lunch writing."
       },
       {
         type:"gapfill",
@@ -3329,7 +3329,7 @@ window.SKILLS = [
         after:"を学ぶことができます。",
         cue:"(sense of responsibility)",
         accept:["せきにんかん","責任感"],
-        explain:"せきにんかん (責任感) — doing lunch duty is said to teach students a sense of responsibility."
+        explain:"せきにんかん is a sense of responsibility. Lunch duty teaches it."
       },
       {
         type:"identify",
@@ -3337,7 +3337,7 @@ window.SKILLS = [
         sentence:"によって",
         options:["depending on / by means of","according to (citing a source)","in spite of","in addition to"],
         answer:"depending on / by means of",
-        explain:"によって shows something varies depending on a factor — 地域によって, 'depending on the area'. Reading tip: it starts with に, which can look like the location/time particle に at a glance — check whether a whole word or just a particle is doing the work here."
+        explain:"によって says something varies with a factor: 地域によって, depending on the area. It starts with に, so check whether it is this word or the particle."
       },
       {
         type:"identify",
@@ -3345,7 +3345,7 @@ window.SKILLS = [
         sentence:"えいよう",
         options:["nutrition","budget","preparation","facility"],
         answer:"nutrition",
-        explain:"えいよう (栄養) is nutrition itself — related to but distinct from えいようし (dietitian), which you've already met. Neither kanji is on the VCE list, so it's written in hiragana here."
+        explain:"えいよう (栄養) is nutrition. えいようし is the dietitian. The kanji of both are off the VCE list, so write them in hiragana."
       },
       {
         type:"identify",
@@ -3361,7 +3361,7 @@ window.SKILLS = [
         sentence:"はこぶ",
         options:["to carry","to prepare","to adjust","to incorporate"],
         answer:"to carry",
-        explain:"はこぶ (運ぶ) is to carry something. Reading tip: it starts with は, which can look like the topic particle は — at the start of a clause, check whether it's this whole verb or just a particle attached to something before it."
+        explain:"はこぶ (運ぶ) is to carry. It starts with は. Check whether it is this verb or the topic particle."
       },
       {
         type:"identify",
@@ -3369,7 +3369,7 @@ window.SKILLS = [
         sentence:"べつ",
         options:["separate / different","preparation","general","burden"],
         answer:"separate / different",
-        explain:"べつ (別) means separate or different — used for a separate meal prepared for students with allergies."
+        explain:"べつ (別) means separate. Use it for a separate meal made for allergies."
       },
       {
         type:"identify",
@@ -3377,7 +3377,7 @@ window.SKILLS = [
         sentence:"じゅんび",
         options:["preparation","budget","system","opportunity"],
         answer:"preparation",
-        explain:"じゅんび (準備) is preparation — a very common, reusable word across many topics, not just school lunches."
+        explain:"じゅんび (準備) is preparation. Use it across topics, not only this one."
       },
       {
         type:"identify",
@@ -3385,7 +3385,7 @@ window.SKILLS = [
         sentence:"一<ruby>般<rt>ぱん</rt></ruby>",
         options:["general / in general","nutrition","facility","burden"],
         answer:"general / in general",
-        explain:"一般に means 'generally' or 'in general' — a useful word for making broad statements before giving specifics."
+        explain:"一般に means 'generally'. Use it before you give the specifics."
       },
       {
         type:"identify",
@@ -3393,7 +3393,7 @@ window.SKILLS = [
         sentence:"ほごしゃ",
         options:["parent / guardian","dietitian","local government","business"],
         answer:"parent / guardian",
-        explain:"ほごしゃ (保護者) is the formal word for parent/guardian — common in school and legal contexts across many topics."
+        explain:"ほごしゃ (保護者) is the formal word for a parent or guardian. Schools use it."
       },
       {
         type:"identify",
@@ -3401,7 +3401,7 @@ window.SKILLS = [
         sentence:"しせつ",
         options:["facility","budget","system","opportunity"],
         answer:"facility",
-        explain:"しせつ (施設) is a facility — a broadly useful word beyond just school lunches."
+        explain:"しせつ (施設) is a facility. Use it across topics."
       },
       {
         type:"identify",
@@ -3409,7 +3409,7 @@ window.SKILLS = [
         sentence:"<ruby>人件費<rt>じんけんひ</rt></ruby>",
         options:["personnel costs (staff wages)","school-lunch fee","budget","facility"],
         answer:"personnel costs (staff wages)",
-        explain:"人件費 specifically means the cost of paying staff — a more precise word than just 'cost'."
+        explain:"人件費 is the cost of paying staff. ひよう is cost in general."
       },
       {
         type:"identify",
@@ -3417,7 +3417,7 @@ window.SKILLS = [
         sentence:"ふたん",
         options:["burden / cost borne by someone","budget","facility","preparation"],
         answer:"burden / cost borne by someone",
-        explain:"ふたん (負担) is the burden or cost that someone bears — 家庭のふたん, 'the burden on the family'."
+        explain:"ふたん (負担) is a burden someone carries: 家庭のふたん, the burden on the family."
       },
       {
         type:"identify",
@@ -3425,7 +3425,7 @@ window.SKILLS = [
         sentence:"<ruby>家庭<rt>かてい</rt></ruby>",
         options:["family / household","local government","business","facility"],
         answer:"family / household",
-        explain:"かてい (家庭) is family/household — distinct from 家族 (family members) in that it emphasises the home/household unit."
+        explain:"かてい (家庭) is the household. 家族 is the family members."
       },
       {
         type:"identify",
@@ -3433,7 +3433,7 @@ window.SKILLS = [
         sentence:"<ruby>食器<rt>しょっき</rt></ruby>",
         options:["tableware / dishes","leftover food","menu","packaging"],
         answer:"tableware / dishes",
-        explain:"しょっき (食器) is tableware — the dishes and utensils students carry and clean up during lunch duty."
+        explain:"しょっき (食器) is tableware: the dishes students carry and wash."
       },
       {
         type:"identify",
@@ -3441,7 +3441,7 @@ window.SKILLS = [
         sentence:"まわり",
         options:["surroundings / around","amount","opportunity","system"],
         answer:"surroundings / around",
-        explain:"まわり (周り) means surroundings or 'around' — つくえのまわり, 'around the desk'."
+        explain:"まわり (周り) means around: つくえのまわり, around the desk."
       },
       {
         type:"identify",
@@ -3449,7 +3449,7 @@ window.SKILLS = [
         sentence:"りょう",
         options:["amount / quantity","budget","facility","burden"],
         answer:"amount / quantity",
-        explain:"りょう (量) is amount or quantity — useful across many topics wherever you're discussing more or less of something."
+        explain:"りょう (量) is an amount. Use it wherever you compare more and less."
       },
       {
         type:"identify",
@@ -3457,7 +3457,7 @@ window.SKILLS = [
         sentence:"しゅうきょう",
         options:["religion","system","opportunity","adjustment"],
         answer:"religion",
-        explain:"しゅうきょう (宗教) is religion — relevant when discussing accommodations for dietary needs."
+        explain:"しゅうきょう (宗教) is religion. Use it when you write about dietary needs."
       },
       {
         type:"identify",
@@ -3465,7 +3465,7 @@ window.SKILLS = [
         sentence:"<ruby>体調<rt>たいちょう</rt></ruby>",
         options:["physical condition / health condition","personnel costs","budget","system"],
         answer:"physical condition / health condition",
-        explain:"たいちょう (体調) is one's physical condition — used when adjusting food for a student's health needs."
+        explain:"たいちょう (体調) is physical condition. Use it for a student's health needs."
       },
       {
         type:"identify",
@@ -3473,7 +3473,7 @@ window.SKILLS = [
         sentence:"ひよう",
         options:["cost / expense (general)","personnel costs specifically","budget specifically","burden specifically"],
         answer:"cost / expense (general)",
-        explain:"ひよう (費用) is the general word for cost or expense — broader than 人件費 (personnel costs specifically)."
+        explain:"ひよう (費用) is cost in general. 人件費 is staff cost only."
       },
       {
         type:"identify",
@@ -3481,7 +3481,7 @@ window.SKILLS = [
         sentence:"ちょうせい",
         options:["adjustment","preparation","budget","system"],
         answer:"adjustment",
-        explain:"ちょうせい (調整) is adjustment — りょうをちょうせいする, 'to adjust the amount'."
+        explain:"ちょうせい (調整) is adjustment: りょうをちょうせいする, to adjust the amount."
       },
       {
         type:"identify",
@@ -3489,7 +3489,7 @@ window.SKILLS = [
         sentence:"きかい",
         options:["opportunity / chance","system","facility","budget"],
         answer:"opportunity / chance",
-        explain:"きかい (機会) is opportunity or chance — かんきょうについて考えるきかい, 'an opportunity to think about the environment'."
+        explain:"きかい (機会) is an opportunity: かんきょうについて考えるきかい."
       },
       {
         type:"identify",
@@ -3497,7 +3497,7 @@ window.SKILLS = [
         sentence:"せいど",
         options:["system","opportunity","facility","adjustment"],
         answer:"system",
-        explain:"せいど (制度) is a system — used to describe how something is institutionally organised, e.g. 給食のせいど."
+        explain:"せいど (制度) is a system: 給食のせいど, the school lunch system."
       },
       {
         type:"identify",
@@ -3505,7 +3505,7 @@ window.SKILLS = [
         sentence:"日本<ruby>式<rt>しき</rt></ruby>",
         options:["Japanese-style","Japanese-made","Japanese-only","Japanese-run"],
         answer:"Japanese-style",
-        explain:"にほんしき (日本式) means 'Japanese-style' — useful for any comparative writing task, not just this topic."
+        explain:"にほんしき (日本式) means Japanese-style. Use it in any comparison task."
       },
       {
         type:"identify",
@@ -3513,7 +3513,7 @@ window.SKILLS = [
         sentence:"<ruby>取<rt>と</rt></ruby>り<ruby>入<rt>い</rt></ruby>れる",
         options:["to incorporate / adopt","to prepare","to adjust","to carry"],
         answer:"to incorporate / adopt",
-        explain:"とりいれる (取り入れる) means to incorporate or adopt something — central to comparative writing ('should we adopt this Japanese practice?'). Reading tip: it starts with と, which can look like the connective/quotative particle と — check whether a whole verb follows before assuming it's just a particle."
+        explain:"とりいれる (取り入れる) is to adopt something. It starts with と, so check whether it is this verb or the particle."
       },
       {
         type:"identify",
@@ -3521,7 +3521,7 @@ window.SKILLS = [
         sentence:"むりに",
         options:["forcibly / unreasonably","generally","separately","specifically"],
         answer:"forcibly / unreasonably",
-        explain:"むりに (無理に) means forcibly or unreasonably — むりに食べさせる, 'to force (someone) to eat'. Reading tip: it ends in に, which can look like a separate に particle attached to むり as a noun — here むりに is one word, an adverb."
+        explain:"むりに (無理に) means forcibly: むりに食べさせる, to force someone to eat. It is one word, an adverb."
       },
       {
         type:"gapfill",
@@ -3530,7 +3530,7 @@ window.SKILLS = [
         after:"、給食のほうほうは少しちがいます。",
         cue:"(depending on...)",
         accept:["によって"],
-        explain:"によって — the method varies depending on the area or school."
+        explain:"によって: the method varies with the area or the school."
       },
       {
         type:"gapfill",
@@ -3539,7 +3539,7 @@ window.SKILLS = [
         after:"。",
         cue:"(to carry)",
         accept:["はこぶ","はこびます"],
-        explain:"はこぶ (運ぶ) — students carry the tableware to the classroom."
+        explain:"はこぶ (運ぶ): students carry the tableware to the classroom."
       },
       {
         type:"gapfill",
@@ -3548,7 +3548,7 @@ window.SKILLS = [
         after:"する学校もあります。",
         cue:"(preparation)",
         accept:["じゅんび"],
-        explain:"じゅんび (準備) — some schools prepare a separate meal for students with food allergies."
+        explain:"じゅんび (準備): some schools prepare a separate meal for food allergies."
       },
       {
         type:"gapfill",
@@ -3557,7 +3557,7 @@ window.SKILLS = [
         after:"としたら、もんだいがあるかもしれません。",
         cue:"(to incorporate/adopt)",
         accept:["とりいれる"],
-        explain:"とりいれる (取り入れる) — if Japanese-style lunches were to be adopted in Australia."
+        explain:"とりいれる (取り入れる): if Australia adopted Japanese-style lunches."
       },
       {
         type:"gapfill",
@@ -3566,7 +3566,7 @@ window.SKILLS = [
         after:"が多すぎたり、少なすぎたりすることもあります。",
         cue:"(amount)",
         accept:["りょう"],
-        explain:"りょう (量) — the amount of food can sometimes be too much or too little."
+        explain:"りょう (量): the amount of food can be too much or too little."
       },
       {
         type:"gapfill",
@@ -3575,7 +3575,7 @@ window.SKILLS = [
         after:"全部食べさせるのではなく、りょうをちょうせいすることがたいせつです。",
         cue:"(forcibly)",
         accept:["むりに"],
-        explain:"むりに (無理に) — rather than forcing students to eat everything, adjusting the amount is important."
+        explain:"むりに (無理に): adjust the amount instead of forcing students to eat it all."
       }
     ]
   },
@@ -3592,7 +3592,7 @@ window.SKILLS = [
         sentence:"先生<b>によると</b>、きゅうしょくは学校のちょうりしつか、ちいきのきゅうしょくセンターで作られます。",
         options:["according to (citing a source)","because (a reason)","in order to (a purpose)","should (a recommendation)"],
         answer:"according to (citing a source)",
-        explain:"～によると cites where information comes from — essential for referencing texts in comparative writing."
+        explain:"〜によると says where the information came from. Use it to cite a text."
       },
       {
         type:"gapfill",
@@ -3601,7 +3601,7 @@ window.SKILLS = [
         after:"、きゅうしょくひは、まいつきほごしゃがはらいます。",
         cue:"(according to...)",
         accept:["によると"],
-        explain:"によると attaches to the source being cited — here, 'according to this text'."
+        explain:"によると attaches to the source: 'according to this text'."
       },
       {
         type:"identify",
@@ -3609,7 +3609,7 @@ window.SKILLS = [
         sentence:"この文章から、きゅうしょくにはけんこうやせきにんについて学ぶもくてきもある<b>ことが分かります</b>。",
         options:["we can understand/see that... (a conclusion drawn from a text)","it is necessary that...","it is possible that...","it is not necessarily true that..."],
         answer:"we can understand/see that... (a conclusion drawn from a text)",
-        explain:"～ことが分かります signals a conclusion drawn from evidence in a text — key language for interpretive and comparative writing."
+        explain:"〜ことが分かります states a conclusion you drew from the text."
       },
       {
         type:"gapfill",
@@ -3635,7 +3635,7 @@ window.SKILLS = [
         sentence:"けんこう<b>という点では</b>、きゅうしょくはいいと思います。",
         options:["evaluating one specific aspect (in terms of X, I think Y)","giving a strong recommendation","stating a direct reason","expressing a possibility"],
         answer:"evaluating one specific aspect (in terms of X, I think Y)",
-        explain:"～という点では、～と思います narrows your evaluation to one specific aspect — useful for a balanced, structured comparison."
+        explain:"〜という点では、〜と思います narrows your judgement to one aspect."
       },
       {
         type:"gapfill",
@@ -3644,7 +3644,7 @@ window.SKILLS = [
         after:"、きゅうしょくはいいと思います。",
         cue:"(in terms of...)",
         accept:["点では"],
-        explain:"という点では isolates exactly which aspect you're evaluating before giving your judgement."
+        explain:"という点では names the aspect before you judge it."
       },
       {
         type:"identify",
@@ -3652,7 +3652,7 @@ window.SKILLS = [
         sentence:"当番をすること<b>をとおして</b>、せきにんかんやきょうりょくすることを学ぶことができます。",
         options:["through (doing) X, one can learn Y","because of X, Y happens","in order to X, do Y","despite X, Y still happens"],
         answer:"through (doing) X, one can learn Y",
-        explain:"～を通して～を学ぶことができます explains what students gain through an experience — common in analytical writing about school customs. 通 isn't on the VCE list, so it's shown in hiragana here."
+        explain:"〜を通して〜を学ぶことができます says what you gain from an experience. 通 is off the VCE list, so write it in hiragana."
       },
       {
         type:"gapfill",
@@ -3669,7 +3669,7 @@ window.SKILLS = [
         sentence:"トイレそうじは、けんこう<b>めん</b>でしんぱいされることがあります。",
         options:["a specific aspect (e.g. the health aspect)","a reason","a purpose","a possibility"],
         answer:"a specific aspect (e.g. the health aspect)",
-        explain:"～めん attaches to a noun to specify which aspect you're discussing — 'in terms of the health aspect'."
+        explain:"〜めん names the aspect: 'in terms of health'."
       },
       {
         type:"gapfill",
@@ -3686,7 +3686,7 @@ window.SKILLS = [
         sentence:"そうじ時間のよさをみとめて、さんせいする人のほうが<b>はるかに</b>多いです。",
         options:["by far / significantly (a strong comparison intensifier)","a little / slightly","about the same","not at all"],
         answer:"by far / significantly (a strong comparison intensifier)",
-        explain:"はるかに strengthens a comparison — 'far more', 'significantly more' — useful when one side clearly outweighs the other."
+        explain:"はるかに strengthens a comparison: 'far more'."
       },
       {
         type:"gapfill",
@@ -3695,7 +3695,7 @@ window.SKILLS = [
         after:"多いです。",
         cue:"(by far)",
         accept:["はるかに"],
-        explain:"はるかに makes the comparison emphatic — 'by far more'."
+        explain:"はるかに makes the comparison emphatic: 'by far'."
       }
     ]
   },
@@ -3712,7 +3712,7 @@ window.SKILLS = [
         sentence:"まいあさ、コーヒーを<b>のみます</b>。",
         options:["present/future, affirmative, polite","present/future, negative, polite","past, affirmative, polite","past, negative, polite"],
         answer:"present/future, affirmative, polite",
-        explain:"～ます is the polite present/future affirmative — things you do now or will do."
+        explain:"〜ます is the polite present and future: what you do or will do."
       },
       {
         type:"transform",
@@ -3736,7 +3736,7 @@ window.SKILLS = [
         sentence:"あさごはんを<b>たべません</b>。",
         options:["present/future, negative, polite","present/future, affirmative, polite","past, negative, polite","past, affirmative, polite"],
         answer:"present/future, negative, polite",
-        explain:"～ません is the polite present/future negative — I don't / won't do X."
+        explain:"〜ません is the polite negative: what you do not or will not do."
       },
       {
         type:"transform",
@@ -3753,7 +3753,7 @@ window.SKILLS = [
         after:"。",
         cue:"いく",
         accept:["いきません"],
-        explain:"いく→いきません — polite present negative."
+        explain:"いく→いきません: the polite present negative."
       },
       {
         type:"identify",
@@ -3761,7 +3761,7 @@ window.SKILLS = [
         sentence:"きのう、えいがを<b>みました</b>。",
         options:["past, affirmative, polite","past, negative, polite","present/future, affirmative, polite","present/future, negative, polite"],
         answer:"past, affirmative, polite",
-        explain:"～ました is the polite past affirmative — something that did happen."
+        explain:"〜ました is the polite past: it happened."
       },
       {
         type:"transform",
@@ -3777,7 +3777,7 @@ window.SKILLS = [
         sentence:"しゅくだいを<b>しませんでした</b>。",
         options:["past, negative, polite","past, affirmative, polite","present/future, negative, polite","present/future, affirmative, polite"],
         answer:"past, negative, polite",
-        explain:"～ませんでした is the polite past negative — something that did not happen."
+        explain:"〜ませんでした is the polite past negative: it did not happen."
       },
       {
         type:"transform",
@@ -3793,7 +3793,7 @@ window.SKILLS = [
         sentence:"このかばんは<b>たかいです</b>。",
         options:["い-adjective + です (polite present)","な-adjective/noun + です","plain form","past tense"],
         answer:"い-adjective + です (polite present)",
-        explain:"い-adjectives take です directly for the polite present — no な or だ needed."
+        explain:"い-adjectives take です directly. Add no な and no だ."
       },
       {
         type:"transform",
@@ -3808,7 +3808,7 @@ window.SKILLS = [
         sentence:"田中さんは<b>げんきではありません</b>。",
         options:["な-adjective/noun + ではありません (polite negative)","い-adjective negative","plain form","past tense"],
         answer:"な-adjective/noun + ではありません (polite negative)",
-        explain:"な-adjectives and nouns use では/じゃ + ありません for the polite negative — they never take くない like い-adjectives."
+        explain:"な-adjectives and nouns take では/じゃ + ありません. They never take くない."
       },
       {
         type:"gapfill",
@@ -3834,7 +3834,7 @@ window.SKILLS = [
         sentence:"わたしはまいあさ、コーヒーを<b>のむ</b>。",
         options:["dictionary form (plain present) — casual speech, or before PF+expressions like とき/かもしれない","polite present (ます form)","plain past","polite past"],
         answer:"dictionary form (plain present) — casual speech, or before PF+expressions like とき/かもしれない",
-        explain:"The dictionary form is the plain present. It's used in casual speech and is the base every PF+expression (とき、かもしれない、と思う…) attaches to."
+        explain:"The dictionary form is the plain present. Every PF+expression attaches to it: とき, かもしれない, と思う."
       },
       {
         type:"transform",
@@ -3858,7 +3858,7 @@ window.SKILLS = [
         sentence:"あの店ではおさけを<b>のまない</b>。",
         options:["plain negative — casual speech, or before PF+expressions like ように/かもしれない","dictionary form (plain present)","plain past","plain past negative"],
         answer:"plain negative — casual speech, or before PF+expressions like ように/かもしれない",
-        explain:"The plain negative ends in ない. It's the form ように, かもしれない and other PF+expressions attach to."
+        explain:"The plain negative ends in ない. ように and かもしれない attach to it."
       },
       {
         type:"transform",
@@ -3882,14 +3882,14 @@ window.SKILLS = [
         sentence:"きのう、友<ruby>達<rt>だち</rt></ruby>と<b>はなした</b>。",
         options:["plain past — casual speech, or before PF+expressions like とき/し/と思った","dictionary form (plain present)","plain negative","plain past negative"],
         answer:"plain past — casual speech, or before PF+expressions like とき/し/と思った",
-        explain:"The plain past ends in た/だ. It conjugates the same way as the て-form, swapping て→た and で→だ."
+        explain:"The plain past ends in た or だ. It follows the て-form pattern: て→た, で→だ."
       },
       {
         type:"transform",
         prompt:"Change to the plain past (た) form",
         sentence:"のみます (to drink)",
         accept:["のんだ"],
-        explain:"Verbs ending in む become んだ in the plain past, the same pattern as the te-form. のみます→のんだ",
+        explain:"Verbs ending in む take んだ in the plain past, like the て-form: のみます→のんだ",
         tags:["godan-verbs"]
       },
       {
@@ -3906,7 +3906,7 @@ window.SKILLS = [
         sentence:"けさ、あさごはんを<b>たべなかった</b>。",
         options:["plain past negative — casual speech, or before PF+expressions like かもしれない/と思った","plain past","plain negative","dictionary form (plain present)"],
         answer:"plain past negative — casual speech, or before PF+expressions like かもしれない/と思った",
-        explain:"The plain past negative ends in なかった — take the plain negative (ない) and change い→かった."
+        explain:"The plain past negative ends in なかった. Take ない and change い→かった."
       },
       {
         type:"transform",
@@ -3935,9 +3935,9 @@ window.SKILLS = [
         type:"identify",
         prompt:"What is happening to this な-adjective/noun?",
         sentence:"むかし、この町は<b>げんきだった</b>。",
-        options:["plain past of a な-adjective/noun — uses だ, not です","plain present of a な-adjective/noun","plain negative","polite form"],
-        answer:"plain past of a な-adjective/noun — uses だ, not です",
-        explain:"な-adjectives and nouns use だ/だった/ではない/ではなかった in the plain form — です is only for polite speech."
+        options:["plain past of a な-adjective/noun: uses だ, not です","plain present of a な-adjective/noun","plain negative","polite form"],
+        answer:"plain past of a な-adjective/noun: uses だ, not です",
+        explain:"な-adjectives and nouns take だ, だった, ではない, ではなかった. です is polite only."
       }
     ]
   }

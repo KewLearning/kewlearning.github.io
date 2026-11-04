@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>じょし · particles</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='8' y='26' width='20' height='12' rx='6' fill='%2316375e'/%3E%3Crect x='36' y='26' width='20' height='12' rx='6' fill='%2316375e'/%3E%3Crect x='26' y='30' width='12' height='4' fill='%2316375e'/%3E%3C/svg%3E">
+<style>
+  /* The suite's shell: one screen, one scroll region, the textbook font
+     stack, and colour that carries meaning. Built for a 1366 by 768
+     school laptop and for a projector, because the tables are teaching
+     material before they are a drill. */
+  :root{
+    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
+    --keep:#5a6470;         /* "leave it alone" is not an answer in colour */
+    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
+       overflow:hidden}
+
+  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       background:var(--paper);border-bottom:1px solid var(--line);
+       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
+  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
+  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
+       font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--muted)}
+  .bar .sp{flex:1}
+  .tool{min-height:38px;padding:0 11px;border:2px solid var(--deep);
+        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
+        font-family:var(--font);font-size:13px;font-weight:700}
+  .tool.off{border-color:var(--line);color:var(--muted)}
+
+  nav.panels{flex:none;display:flex;overflow-x:auto;background:var(--paper);
+       border-bottom:1px solid var(--line);scrollbar-width:none}
+  nav.panels::-webkit-scrollbar{display:none}
+  nav.panels button{flex:none;padding:8px 14px 7px;border:0;background:none;
+       border-bottom:3px solid transparent;cursor:pointer;font-family:var(--jp);
+       font-size:16px;color:var(--muted);white-space:nowrap}
+  nav.panels button i{display:block;font-family:var(--font);font-style:normal;
+       font-size:10.5px;font-weight:700;letter-spacing:.05em;
+       text-transform:uppercase}
+  nav.panels button.on{color:var(--deep);border-bottom-color:var(--deep)}
+
+  nav.modes{flex:none;display:flex;gap:7px;padding:8px 14px;
+       background:var(--bg);border-bottom:1px solid var(--line-soft)}
+  nav.modes button{padding:5px 13px;border:2px solid var(--line);border-radius:999px;
+       background:#fff;cursor:pointer;font-family:var(--jp);font-size:14px;
+       color:var(--muted)}
+  nav.modes button.on{border-color:var(--deep);color:var(--deep);font-weight:700}
+  nav.modes .sp{flex:1}
+  nav.modes .lede{align-self:center;font-size:12.5px;color:var(--muted)}
+
+  main{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 14px 28px;
+       -webkit-overflow-scrolling:touch}
+
+  .sheets{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .sheet{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:10px 12px 12px;flex:1 1 300px;min-width:270px}
+  .sheet.big{flex:2 1 420px}
+  .sheet h3{font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+       color:var(--muted);margin-bottom:7px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+       gap:5px}
+  .grid.one{grid-template-columns:1fr}
+  .cell{border:1px solid var(--line-soft);border-radius:8px;padding:6px 8px;
+       cursor:pointer;background:#fff;text-align:left;font-family:var(--jp)}
+  .cell:hover{border-color:var(--deep)}
+  .cell b{display:block;font-size:18px;font-weight:700}
+  .cell s{display:block;text-decoration:none;font-size:13.5px;color:var(--muted);
+       font-family:var(--font)}
+  /* an emptied column still holds its line, so the grid does not jump
+     when かくす goes on and off */
+  .cell s:empty::after{content:"\30FB\30FB\30FB";color:var(--line)}
+  .key{font-size:12px;color:var(--muted);margin-top:9px}
+
+  .round{max-width:640px;margin:0 auto}
+  .step{font-size:12.5px;color:var(--muted);margin-bottom:9px}
+  .ask{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:16px;text-align:center;margin-bottom:11px}
+  .ask .en{font-size:14.5px;color:var(--muted)}
+  .ask .fr{font-family:var(--jp);font-size:25px;line-height:1.7;margin-top:6px}
+  .ask .fr u{text-decoration:none;border-bottom:3px solid var(--deep);
+       padding:0 20px;margin:0 3px}
+  .asknote{font-size:12.5px;color:var(--muted);margin-top:7px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .opt{border:2px solid var(--line);border-radius:10px;background:#fff;
+       padding:11px 9px;cursor:pointer;font-family:var(--jp);font-size:22px;
+       min-height:52px}
+  .opt.keep{font-size:17px;color:var(--keep)}
+  .opt:hover{border-color:var(--deep)}
+  .opt.right{border-color:var(--ok);background:#eef7f0;color:var(--ok)}
+  .opt.wrong{border-color:var(--accent);background:#fbeeee;color:var(--accent)}
+  .opt:disabled{cursor:default}
+  .why{margin-top:11px;background:var(--paper);border:1px solid var(--line);
+       border-left:4px solid var(--warm);border-radius:9px;padding:9px 11px;
+       font-size:14px}
+  .why b{font-family:var(--jp);font-size:17px}
+  .nextrow{display:flex;gap:8px;margin-top:11px;align-items:center}
+  .nextrow .sp{flex:1}
+  .btn{min-height:42px;padding:0 16px;border:0;border-radius:10px;
+       background:var(--deep);color:#fff;cursor:pointer;font-family:var(--font);
+       font-size:15px;font-weight:700}
+  .btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+  .tally{font-size:13px;color:var(--muted)}
+  .done{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:16px;text-align:center}
+  .done b{font-size:22px}
+  ruby rt{font-size:.5em;font-family:var(--jp);color:var(--muted)}
+  body.nofuri rt{visibility:hidden}
+  body.noen .en{display:none}
+  .build{flex:none;font-size:10.5px;color:var(--muted);text-align:right;
+       padding:0 14px 4px}
+  @media (max-width:560px){
+    .opts{grid-template-columns:1fr}
+    .ask .fr{font-size:21px}
+  }
+</style>
+</head>
+<body class="">
+<div class="bar">
+  <h1>じょし<span>particles · years 7 to 12</span></h1>
+  <div class="sp"></div>
+  <button class="tool" id="furiBtn">ふりがな</button>
+  <button class="tool" id="enBtn">EN</button>
+  <button class="tool" id="sayBtn" title="Read the sentence out loud">♪</button>
+</div>
+<nav class="panels" id="panels"></nav>
+<nav class="modes" id="modes"></nav>
+<main id="main"></main>
+<script src="data/joshi.js?v=20261104b"></script>
+<script src="app.js?v=20261104b"></script>
+<div class="build" aria-hidden="true">build 2026-11-04b</div>
+</body>
+</html>
