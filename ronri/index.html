@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>論理パズル · logic puzzles in Japanese</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='12' y='12' width='40' height='40' fill='none' stroke='%2316375e' stroke-width='4'/%3E%3Cline x1='12' y1='25.3' x2='52' y2='25.3' stroke='%2316375e' stroke-width='3'/%3E%3Cline x1='12' y1='38.6' x2='52' y2='38.6' stroke='%2316375e' stroke-width='3'/%3E%3Cline x1='25.3' y1='12' x2='25.3' y2='52' stroke='%2316375e' stroke-width='3'/%3E%3Cline x1='38.6' y1='12' x2='38.6' y2='52' stroke='%2316375e' stroke-width='3'/%3E%3Ccircle cx='45' cy='19' r='4.5' fill='%232f6a3e'/%3E%3C/svg%3E">
+<style>
+  /* The suite's shell. This one is built for a laptop first, because it is
+     the thing Andrew's student is being given computer time for, but the
+     round has to survive a phone and a phone turned sideways like the
+     others do. */
+  :root{
+    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
+    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
+       overflow:hidden}
+
+  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       background:var(--paper);border-bottom:1px solid var(--line);
+       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
+  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
+  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
+       font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--muted)}
+  .bar .sp{flex:1}
+  .tool{min-height:36px;padding:0 11px;border:2px solid var(--deep);
+        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
+        font-family:var(--font);font-size:13px;font-weight:700}
+  .tool.off{border-color:var(--line);color:var(--muted)}
+  .tool.on{background:var(--deep);color:#fff}
+  .no{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  main{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 14px 24px}
+  .wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;
+        max-width:1250px;margin:0 auto}
+
+  /* ---- the clues ---- */
+  .clues{flex:1 1 360px;min-width:320px;background:var(--paper);
+         border:1px solid var(--line);border-radius:12px;padding:11px 13px 13px}
+  .clues h2{font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+            color:var(--muted);margin-bottom:3px}
+  .clues .say{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .clue{display:flex;gap:9px;padding:6px 7px;border-radius:8px;cursor:pointer;
+        border:1px solid transparent}
+  .clue:hover{background:#f6f9fc;border-color:var(--line-soft)}
+  .clue b{flex:none;width:19px;height:19px;border-radius:50%;background:var(--line-soft);
+          color:var(--muted);font-size:11.5px;font-weight:700;text-align:center;
+          line-height:19px;margin-top:3px}
+  .clue .ja{font-family:var(--jp);font-size:17px;line-height:1.65}
+  .clue .en{display:none;font-size:13px;color:var(--muted);margin-top:1px}
+  .clue.open .en{display:block}
+  .clue.open b{background:var(--deep);color:#fff}
+  .clue.used{opacity:.45}
+  .clue.flag b{background:var(--accent);color:#fff}
+
+  /* ---- the grids ---- */
+  .grids{flex:2 1 520px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .gw{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+      padding:9px 11px 11px}
+  .gw h3{font-family:var(--jp);font-size:14px;margin-bottom:5px;color:var(--deep)}
+  table{border-collapse:collapse}
+  th,td{border:1px solid var(--line-soft);padding:0;text-align:center}
+  th{font-family:var(--jp);font-size:12.5px;font-weight:600;color:var(--muted);
+     padding:3px 5px;white-space:nowrap;background:#f7f9fb}
+  th.rh{text-align:right;padding-right:7px}
+  td button{width:34px;height:31px;border:0;background:none;cursor:pointer;
+            font-size:17px;line-height:1;color:var(--muted);font-family:var(--font)}
+  td button:hover{background:#eef4fa}
+  td button.y{color:var(--ok);font-weight:700}
+  td button.n{color:var(--accent)}
+  td button.auto{color:#c3ccd6}
+
+  .acts{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;align-items:center}
+  .btn{min-height:40px;padding:0 15px;border:0;border-radius:10px;
+       background:var(--deep);color:#fff;cursor:pointer;font-family:var(--font);
+       font-size:14.5px;font-weight:700}
+  .btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+  .msg{margin-top:10px;border:1px solid var(--line);border-left:4px solid var(--warm);
+       background:var(--paper);border-radius:9px;padding:9px 11px;font-size:14px}
+  .msg.good{border-left-color:var(--ok)}
+  .msg.bad{border-left-color:var(--accent)}
+  .msg b{font-family:var(--jp)}
+  .done{background:var(--paper);border:1px solid var(--ok);border-left-width:4px;
+        border-radius:12px;padding:13px 15px;margin-top:11px}
+  .done h3{font-family:var(--jp);font-size:19px;color:var(--ok)}
+  .done table{margin-top:8px}
+  .done td{padding:3px 9px;font-family:var(--jp);font-size:15px}
+  .how{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .how li{margin-left:16px}
+  ruby rt{font-size:.5em;font-family:var(--jp);color:var(--muted)}
+  body.nofuri rt{visibility:hidden}
+  .build{flex:none;font-size:10.5px;color:var(--muted);text-align:right;
+         padding:0 14px 4px}
+
+  @media (max-width:900px){
+    .wrap{flex-direction:column}
+    .clues,.grids{width:100%}
+  }
+  @media (max-width:560px){
+    main{padding:9px 10px 16px}
+    .clues{min-width:0;padding:9px 10px 11px}
+    .clue .ja{font-size:16px}
+    td button{width:30px;height:29px;font-size:16px}
+    th{font-size:11.5px;padding:2px 4px}
+  }
+  @media (max-height:620px){
+    .bar{padding:4px 12px}
+    .bar h1{font-size:17px}
+    .bar h1 span{display:none}
+    .tool{min-height:31px;font-size:12px}
+    main{padding:8px 10px 14px}
+    .build{display:none}
+  }
+</style>
+</head>
+<body class="">
+<div class="bar">
+  <h1>論理パズル<span>logic puzzles in Japanese</span></h1>
+  <div class="sp"></div>
+  <span class="no" id="pno"></span>
+  <button class="tool" data-lv="a">やさしい</button>
+  <button class="tool" data-lv="b">ふつう</button>
+  <button class="tool" data-lv="c">むずかしい</button>
+  <button class="tool" id="newBtn">あたらしい</button>
+  <button class="tool" id="furiBtn">ふりがな</button>
+</div>
+<main id="main"></main>
+<script src="data/ronri.js?v=20261107a"></script>
+<script src="engine.js?v=20261107a"></script>
+<script src="app.js?v=20261107a"></script>
+<div class="build" aria-hidden="true">build 2026-11-07a</div>
+</body>
+</html>
