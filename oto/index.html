@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>おとのきまり · find the rule</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Cpath d='M8 44c6 0 6-24 12-24s6 24 12 24 6-24 12-24 6 24 12 24' fill='none' stroke='%2316375e' stroke-width='4'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
+    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
+       overflow:hidden}
+
+  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       background:var(--paper);border-bottom:1px solid var(--line);
+       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
+  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
+  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
+       font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  main{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 0 24px}
+
+  nav.invs{display:flex;background:var(--paper);border-bottom:1px solid var(--line);
+       overflow-x:auto;scrollbar-width:none}
+  nav.invs::-webkit-scrollbar{display:none}
+  nav.invs button{flex:none;padding:8px 16px 7px;border:0;background:none;
+       border-bottom:3px solid transparent;cursor:pointer;font-family:var(--jp);
+       font-size:16px;color:var(--muted);white-space:nowrap}
+  nav.invs button i{display:block;font-family:var(--font);font-style:normal;
+       font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  nav.invs button.on{color:var(--deep);border-bottom-color:var(--deep)}
+
+  .steps{display:flex;align-items:center;gap:7px;padding:8px 16px;
+       background:var(--bg);font-size:12.5px;color:var(--muted);
+       border-bottom:1px solid var(--line-soft)}
+  .steps span{font-family:var(--jp);font-size:14px}
+  .steps span.on{color:var(--deep);font-weight:700}
+  .steps span.past{color:var(--ok)}
+  .steps b{color:var(--line)}
+
+  .wrap{max-width:860px;margin:0 auto;padding:13px 14px 0}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+       padding:14px 16px 16px;margin-bottom:12px}
+  .card.sub{background:#fbfcfe}
+  .card h2{font-size:19px;margin-bottom:4px}
+  .card h3{font-size:15px;margin-bottom:5px}
+  .lede{font-size:14.5px;color:var(--muted);margin-bottom:8px}
+  .lede.good{color:var(--ok);font-weight:600}
+  .note{font-size:13px;color:var(--muted);margin-top:8px;
+       border-left:3px solid var(--warm);padding-left:9px}
+  .note.good{border-left-color:var(--ok)}
+  .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:11px 0}
+  .acts .sp{flex:1}
+  .btn{min-height:40px;padding:0 15px;border:0;border-radius:10px;
+       background:var(--deep);color:#fff;cursor:pointer;font-family:var(--font);
+       font-size:14.5px;font-weight:700}
+  .btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+  .btn:disabled{background:var(--line);color:#fff;cursor:default}
+
+  table{border-collapse:collapse;width:100%}
+  .dt th,.dt td{border-bottom:1px solid var(--line-soft);padding:5px 8px;
+       text-align:left;font-size:14px}
+  .dt th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+       color:var(--muted)}
+  .dt .ja{font-family:var(--jp);font-size:18px}
+  .dt .ja i{font-family:var(--font);font-style:normal;font-size:11px;
+       color:var(--muted)}
+  .dt .ans{color:var(--deep);font-weight:700}
+  .dt .ty{font-family:var(--jp);font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .dt .en{color:var(--muted);font-size:12.5px}
+  .dt tr.new td{background:#fdf7e8}
+  .dt.res tr.ok td{background:#f2f9f4}
+  .dt.res tr.no td{background:#fbeeee}
+  .dt.res tr.no td:last-child{color:var(--accent);font-weight:700}
+  .dt.res tr.ok td:last-child{color:var(--ok);font-weight:700}
+
+  .rt th{text-align:left;padding:6px 10px 6px 0;font-family:var(--jp);
+       font-size:15px;white-space:nowrap;vertical-align:top}
+  .rt th i{display:block;font-family:var(--font);font-style:normal;
+       font-size:11.5px;font-weight:400;color:var(--muted)}
+  .rt td{padding:4px 0;border-bottom:1px solid var(--line-soft)}
+  .chip{min-height:34px;padding:0 11px;margin:2px 4px 2px 0;border:2px solid var(--line);
+       border-radius:999px;background:#fff;cursor:pointer;font-family:var(--jp);
+       font-size:16px;color:var(--muted)}
+  .chip:hover{border-color:var(--deep)}
+  .chip.on{border-color:var(--deep);background:var(--deep);color:#fff;font-weight:700}
+
+  .won{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:10px}
+  .words{margin-left:18px;font-size:14px}
+  .words li{margin-bottom:2px}
+  .words b{font-family:var(--jp);font-size:16px}
+  .build{flex:none;font-size:10.5px;color:var(--muted);text-align:right;
+       padding:0 14px 4px}
+
+  @media (max-width:560px){
+    .wrap{padding:10px 10px 0}
+    .card{padding:11px 12px 13px}
+    .card h2{font-size:17px}
+    .dt th,.dt td{padding:4px 5px;font-size:13px}
+    .dt .ja{font-size:16px}
+    .rt th{font-size:14px;padding-right:6px}
+    .chip{min-height:32px;padding:0 9px;font-size:15px}
+  }
+  @media (max-height:620px){
+    .bar{padding:4px 12px}
+    .bar h1 span{display:none}
+    .steps{padding:5px 14px}
+    .build{display:none}
+  }
+</style>
+</head>
+<body class="">
+<div class="bar">
+  <h1>おとのきまり<span>find the rule, then test it</span></h1>
+</div>
+<main id="main"></main>
+<script src="data/oto.js?v=20261108a"></script>
+<script src="app.js?v=20261108a"></script>
+<div class="build" aria-hidden="true">build 2026-11-08a</div>
+</body>
+</html>
