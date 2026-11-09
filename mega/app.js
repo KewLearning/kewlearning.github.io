@@ -3050,6 +3050,8 @@
       + '<div class="qsub" id="qsub" hidden></div>'
       + '</div>'
       + '<div class="qbar" id="qbar"></div>'
+      + '<p class="qkeys">space: answer and next &middot; 1 to ' + QUIZ.teams
+      + ': the point &middot; 0: nobody &middot; r: hear it again</p>'
       + '</div>'
       + foot('<button class="btn sm ghost" id="qend">やめる <span class="en">Finish</span></button>');
     $("qend").onclick = function(){ QUIZ.on = false; DRAW.quiz(); };
@@ -3166,9 +3168,7 @@
     QBANKS.forEach(function(b){ if (QUIZ.banks[b.id]) n++; });
     $("main").innerHTML = ruleFor("quiz", "tight")
       + '<div class="work fit"><div class="col qsetup">'
-      + '<p class="qlead">Put this on the projector. Split the class into teams. '
-      + 'Read the question out, let them answer in the room, then tap who got it.</p>'
-      + '<div class="qrow"><span class="qlab">Teams</span>'
+      + '<div class="qrow"><span class="qlab">How many teams</span>'
       + [2, 3, 4].map(function(t){
           return '<button class="btn sm ' + (QUIZ.teams === t ? "" : "ghost")
             + '" data-team="' + t + '">' + t + '</button>';
@@ -3180,8 +3180,6 @@
             + '" data-bank="' + b.id + '" title="' + esc(b.en) + '">' + b.ja + '</button>';
         }).join("")
       + '</div>'
-      + '<p class="qkeys">Space shows the answer and moves on. '
-      + 'Press 1, 2, 3 or 4 to give the point, 0 for nobody, r to hear it again.</p>'
       + '<div class="qrow"><button class="btn big" id="qgo"'
       + (n ? "" : " disabled") + '>はじめ <span class="en">Start the quiz</span></button></div>'
       + '</div></div>'
