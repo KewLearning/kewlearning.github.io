@@ -762,6 +762,100 @@
         clack(c.currentTime + 0.004, 0.26);
       } catch (e){}
     }
+    /* ---- 太鼓 and 拍子木 ----
+       Andrew asked for the traditional sounds when a team scores: the
+       drum, and the wood. Both are synthesised like everything else here,
+       because two more files to download for two sound effects is not a
+       trade worth making, and because a recording of a festival is
+       somebody's recording.
+
+       A 太鼓 strike is three things at once. The skin, which is a very
+       short burst of noise with the top taken off. The head note, which
+       falls: a struck drum head drops in pitch as the tension releases,
+       and a steady tone sounds like a test signal instead. And the
+       barrel under it, lower and longer, which is what makes it carry
+       across a schoolyard rather than click.
+
+       The pitch is an argument, so each team can have its own drum. In a
+       loud room that is the difference between hearing that somebody
+       scored and hearing who. */
+    function taiko(hz, when){
+      if (!S.sfx) return;
+      try {
+        var c = build(); if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = (when || c.currentTime) + 0.004;
+        hz = hz || 104;
+
+        /* the skin */
+        var sk = c.createBufferSource(), skf = c.createBiquadFilter(),
+            skg = c.createGain();
+        sk.buffer = noise;
+        skf.type = "lowpass"; skf.frequency.value = 1500;
+        skg.gain.setValueAtTime(0.5, t);
+        skg.gain.exponentialRampToValueAtTime(0.0008, t + 0.05);
+        sk.connect(skf); skf.connect(skg); skg.connect(c.destination);
+        sk.start(t); sk.stop(t + 0.08);
+
+        /* the head, falling */
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(hz * 1.9, t);
+        o.frequency.exponentialRampToValueAtTime(hz, t + 0.09);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.62, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + 0.34);
+        o.connect(g); g.connect(c.destination);
+        o.start(t); o.stop(t + 0.36);
+
+        /* the barrel */
+        var o2 = c.createOscillator(), g2 = c.createGain();
+        o2.type = "triangle";
+        o2.frequency.setValueAtTime(hz * 0.62, t);
+        o2.frequency.exponentialRampToValueAtTime(hz * 0.48, t + 0.3);
+        g2.gain.setValueAtTime(0.0001, t);
+        g2.gain.exponentialRampToValueAtTime(0.3, t + 0.014);
+        g2.gain.exponentialRampToValueAtTime(0.0008, t + 0.5);
+        o2.connect(g2); g2.connect(c.destination);
+        o2.start(t); o2.stop(t + 0.52);
+      } catch (e){}
+    }
+
+    /* 拍子木: two blocks of hardwood, struck together. Very short, very
+       bright, and nothing underneath it. This is the chon that opens
+       things, and it goes in front of the drum. */
+    function ki(when, gain){
+      if (!S.sfx) return;
+      try {
+        var c = build(); if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = (when || c.currentTime) + 0.002;
+        var n = c.createBufferSource(), f = c.createBiquadFilter(),
+            g = c.createGain();
+        n.buffer = noise;
+        f.type = "bandpass"; f.frequency.value = 2300; f.Q.value = 2.2;
+        g.gain.setValueAtTime(gain == null ? 0.34 : gain, t);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + 0.045);
+        n.connect(f); f.connect(g); g.connect(c.destination);
+        n.start(t); n.stop(t + 0.06);
+      } catch (e){}
+    }
+
+    /* what a team scoring sounds like: the wood, then the drum a beat
+       later, at that team's pitch */
+    function festival(team, of){
+      if (!S.sfx) return;
+      try {
+        var c = build(); if (!c) return;
+        if (c.state === "suspended") c.resume();
+        var t = c.currentTime;
+        var steps = Math.max(1, (of || 1) - 1);
+        var hz = 88 * Math.pow(1.19, Math.min(team || 0, steps));
+        ki(t, 0.3);
+        taiko(hz, t + 0.075);
+      } catch (e){}
+    }
+
     /* ---- the whoosh and the warble ----
        Both synthesised rather than fetched: the page has to work on a
        tram, and two more files to download for two sound effects is not
@@ -1015,6 +1109,7 @@
       } catch (e){}
     }
     return { play: play, ratchet: ratchet, clunk: clunk, wake: wakeAudio,
+             taiko: taiko, ki: ki, festival: festival,
              whoosh: whoosh, warble: warble, slurp: slurp, buzz: buzz,
              boom: boom, bonus: bonus, sadtrombone: sadtrombone,
              ctx: function(){ return ctx; } };
@@ -2884,7 +2979,7 @@
     window.MEGA_PAIRS = deck.map(function(c){ return c.id; });
     $("board").innerHTML = deck.map(function(c, i){
       return '<button class="card" data-c="' + i + '" aria-label="card ' + (i + 1) + '">'
-        + '<span class="back">日</span>'
+        + '<span class="back pat-sei"></span>'
         + '<span class="front' + (c.pic ? " pic" : "") + (c.jp ? " jp" : "")
         + '">' + c.face + '</span></button>';
     }).join("");
@@ -3058,11 +3153,18 @@
 
     /* a seam for the check: the question, whether the answer is out,
        and the score */
+    var drums = 0;
     window.MEGA_QUIZ = {
       ask: function(){ return q ? q.ask : null; },
       shown: function(){ return shown; },
       score: function(){ return score.slice(); },
-      left: function(){ return bank.length - i; }
+      left: function(){ return bank.length - i; },
+      /* How many drums have actually been struck. The point used to be
+         awarded with `CLICK.play ? CLICK.play() : 0`, which would have
+         made no sound at all had the name been wrong, and nothing would
+         have said so. Counting it means the check can tell the
+         difference between a sound and a silence. */
+      drums: function(){ return drums; }
     };
 
     function onKey(e){
@@ -3081,9 +3183,15 @@
 
     paintTeams(); ask();
 
-    function paintTeams(){
+    function paintTeams(won){
+      var TM = M.teams || [];
       $("qteams").innerHTML = score.map(function(n, t){
-        return '<div class="qteam"><b>' + (t + 1) + '</b><span>' + n + '</span></div>';
+        var c = TM[t % (TM.length || 1)] || { hex: "#16375e", ja: "", pat: "sei" };
+        return '<div class="qteam pat-' + c.pat + (won === t ? " won" : "")
+          + '" style="--tc:' + c.hex + '" data-t="' + t + '">'
+          + '<span class="no">' + (t + 1) + '</span>'
+          + '<span class="pt">' + n + '</span>'
+          + '<span class="nm">' + esc(c.ja) + '</span></div>';
       }).join("");
       $("sc").innerHTML = '<b>' + (i + 1) + '</b> of ' + bank.length;
     }
@@ -3137,7 +3245,17 @@
     }
     function award(t){
       if (!shown) return;
-      if (t >= 0){ score[t]++; CLICK.play ? CLICK.play() : 0; }
+      if (t >= 0){
+        score[t]++;
+        if (typeof CLICK.festival !== "function")
+          throw new Error("the point has no sound: CLICK.festival is missing");
+        CLICK.festival(t, QUIZ.teams);
+        drums++;
+        /* the panel that just scored swells for a moment, so a room that
+           did not catch the drum can still see who got it */
+        paintTeams(t);
+        setTimeout(function(){ if ($("qteams")) paintTeams(); }, 420);
+      }
       next();
     }
     function next(){ i++; ask(); }

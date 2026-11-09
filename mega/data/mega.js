@@ -255,6 +255,13 @@ window.MEGA = {
     { "day":"do",   "who":"watashi", "with":"kazoku",  "how":"ferii",    "where":"pikunikku",
       "en": "On Saturday I will go to a picnic by ferry with my family." }
   ],
+  "teams": [
+    { "ja": "藍", "kana": "あい", "en": "indigo", "hex": "#165e83", "pat": "sei" },
+    { "ja": "紅", "kana": "べに", "en": "crimson", "hex": "#c9171e", "pat": "ichi" },
+    { "ja": "山吹", "kana": "やまぶき", "en": "golden", "hex": "#d8a200", "pat": "hishi" },
+    { "ja": "若竹", "kana": "わかたけ", "en": "bamboo green", "hex": "#2f8f5b", "pat": "uroko" }
+  ],
+
   "rules": [
     { "step": "katch", "title_en": "Catch the word",
       "rule": "Catch the word that matches the English above the screen. Move with the arrow keys or your finger. Three misses and the game is over." },
