@@ -1888,6 +1888,7 @@
     { id:"colour",ja:"いろ",       en:"Colours" },
     { id:"wear",  ja:"きています", en:"Wearing" },
     { id:"dress", ja:"きせかえ",   en:"Dress them" },
+    { id:"yomu",  ja:"よむ",       en:"Read it" },
     { id:"spin",  ja:"ルーレット", en:"Spin a word" },
     { id:"katch", ja:"ことばキャッチ", en:"Catch the word" },
     { id:"write", ja:"かいて",     en:"Write it" }
@@ -3071,6 +3072,464 @@
       wireSay();
     };
   };
+
+  /* ---- よむ ----
+     Andrew asked for a reading section like れきしの人's, with the
+     meaning popping up when a student taps a word. Three decisions are
+     worth knowing about before you change anything here.
+
+     THE PASSAGE IS TOKENISED, NOT ANNOTATED. Nothing in data/yomu.js
+     carries a gloss for a word in a passage. The page cuts each spaced
+     chunk into its pieces and looks every piece up in a lexicon built
+     from words.js, so 長[なが]くて is the same word as 長[なが]い and
+     answers with the same meaning, and a word whose meaning changes in
+     the word list changes here in the same edit. The check refuses a
+     passage with a chunk the lexicon cannot cut, so れきしの人's honest
+     "not on the word list" reply is not needed: a student never meets
+     one.
+
+     THE QUESTIONS COME OUT OF THE PASSAGE. The page reads the passage
+     the same way a marker would, works out which facts it actually
+     states, and then builds the true-or-false sentences from the
+     figure's own facts. So the questions cannot ask about something the
+     passage does not say, and a passage that contradicts its figure
+     fails the check rather than reaching a student.
+
+     THE PICTURE IS HIDDEN UNTIL THE END. だれですか shows the six and
+     asks which one; this step must not, because a student who can see
+     the figure answers the questions off the drawing and never reads
+     the Japanese. The figure arrives when the four are answered, as the
+     payoff.
+
+     One chunk is one tap target, not one per piece. A thumb on a phone
+     deserves 「かみが」 rather than two targets of one character, and
+     answering both かみ and が at once is the better teaching anyway. */
+  var Y = window.HITO_YOMU || { texts: [], pieces: {}, extra: [] };
+  var LEX = null, NAMES = {};
+
+  function lexicon(){
+    if (LEX) return LEX;
+    LEX = {};
+    function put(form, g){ if (form && !LEX[form]) LEX[form] = g; }
+    function add(ja, en, kind, w){
+      var p = plain(ja), k = kana(ja);
+      function g(note, neg){
+        return { ja: ja, en: en, kind: kind, w: w || null,
+                 note: note || "", neg: !!neg };
+      }
+      [p, k].forEach(function(x){
+        put(x, g());
+        if (kind === "i"){
+          var st = x.replace(/い$/, "");
+          put(st + "くて", g("くて joins this to the next description"));
+          put(st + "くない", g("くない is the negative", true));
+          put(st + "くなくて", g("くなくて joins a negative on", true));
+        }
+        if (kind === "na"){
+          put(x + "な", g("な goes in front of the noun it describes"));
+          put(x + "で", g("で joins this to the next description"));
+          put(x + "じゃない", g("じゃない is the negative", true));
+        }
+      });
+    }
+    W.words.forEach(function(w){ add(w.ja, w.en, w.kind, w); });
+    Object.keys(P.traits).forEach(function(k){
+      var t = P.traits[k];
+      add(t.ja, t.en, t.kind,
+          { group: "person", kind: t.kind, kana: kana(t.ja), trait: k });
+    });
+    (Y.extra || []).forEach(function(x){ add(x.ja, x.en, "extra", null); });
+    Object.keys(Y.pieces || {}).forEach(function(f){
+      var pc = Y.pieces[f];
+      put(f, { ja: f, en: pc.en, kind: pc.kind, w: null, note: pc.note || "" });
+    });
+    /* A name wins over a colour when さん follows it, and only then:
+       みどりさん is a person and みどりの セーター is green. */
+    P.people.forEach(function(p){
+      NAMES[p.name] = { ja: p.name, en: "a name", kind: "name", w: null, note: "" };
+      put(p.name, NAMES[p.name]);
+    });
+    return LEX;
+  }
+  /* How many characters of the written form hold the first n characters
+     of the plain form. 長[なが]い is four written characters and two
+     plain ones, so a piece boundary has to be counted rather than
+     sliced. A boundary that lands inside a reading is refused: that is
+     a lexicon that disagrees with the text, not a piece. */
+  function cut(raw, n){
+    var i = 0, got = 0, m;
+    while (got < n && i < raw.length){
+      m = /^([一-鿿々]+)\[([ぁ-ゟー]+)\]/.exec(raw.slice(i));
+      if (m){ got += m[1].length; i += m[0].length; }
+      else { got++; i++; }
+    }
+    return got === n ? i : -1;
+  }
+  var YPUNCT = /[、。！？「」]/;
+  function chunks(para){
+    var out = [];
+    String(para).split(/[\s　]+/).forEach(function(c){
+      if (!c) return;
+      var head = "", tail = "";
+      while (c.length && YPUNCT.test(c.charAt(0))){ head += c.charAt(0); c = c.slice(1); }
+      while (c.length && YPUNCT.test(c.charAt(c.length - 1))){
+        tail = c.charAt(c.length - 1) + tail; c = c.slice(0, -1);
+      }
+      if (c) out.push({ head: head, word: c, tail: tail });
+    });
+    return out;
+  }
+  /* Longest match first, but it has to be able to change its mind.
+     親切[しんせつ]です starts with 親切で, which is a word — 親切 joined
+     to the next description — and that leaves a す nothing can read.
+     Taking the longest match and walking on gave up there and called
+     the whole sentence unreadable, which is how tools/browser-check.js
+     found this: the passages were fine and every generated question
+     about a な personality word was not. So each candidate is tried,
+     longest first, and the one that lets the REST of the chunk come
+     apart is the one that is kept. A chunk is at most eight characters
+     and the backtracking is never visible. */
+  function pieces(word){
+    var lex = lexicon();
+    function go(raw, depth){
+      if (!raw.length) return [];
+      if (depth > 12) return null;
+      var flat = plain(raw);
+      for (var n = flat.length; n > 0; n--){
+        var f = flat.slice(0, n);
+        if (!lex[f]) continue;
+        var take = cut(raw, n);
+        if (take <= 0) continue;
+        var rest = go(raw.slice(take), depth + 1);
+        if (rest) return [{ raw: raw.slice(0, take), g: lex[f] }].concat(rest);
+      }
+      return null;
+    }
+    var out = go(word, 0);
+    if (!out) return null;
+    out.forEach(function(x, i){
+      var nx = out[i + 1];
+      if (nx && nx.g.kind === "suffix" && NAMES[plain(x.raw)]) x.g = NAMES[plain(x.raw)];
+    });
+    return out;
+  }
+  /* What the passage says, read the way a marker would read it. The
+     part being described carries across a くて and resets at a 。, which
+     is what makes せが 高くて、かみが 短いです two claims about two
+     different parts rather than two about the first one. */
+  function claims(txt){
+    var out = [], part = null, colour = null, bad = [];
+    (txt.paras || []).forEach(function(para){
+      chunks(para).forEach(function(c){
+        var ps = pieces(c.word);
+        if (!ps){ bad.push(c.word); return; }
+        ps.forEach(function(x){
+          var g = x.g, w = g.w;
+          if (!w) return;
+          if (w.kind === "noun" && w.group !== "colour"){
+            part = w.kana; colour = null; return;
+          }
+          if (w.group === "colour"){
+            colour = w.kana;
+            if (part === "かみ")
+              out.push({ t: "part", part: part, adj: w.kana, neg: !!g.neg });
+            return;
+          }
+          if (w.group === "person"){
+            /* A personality word is in BOTH lists: words.js has it as an
+               adjective to sort, people.js as a trait a figure can have.
+               The lexicon answers with the words.js entry, so the trait
+               key is found by its reading rather than carried on it. */
+            var tk = w.trait || traitKeyOf(w.kana);
+            if (tk) out.push({ t: "trait", trait: tk });
+            return;
+          }
+          if (w.kind === "i" || w.kind === "na"){
+            out.push({ t: "part", part: part, adj: w.kana, neg: !!g.neg }); return;
+          }
+          if (w.kind === "garment"){
+            out.push({ t: "wear", item: w.kana, colour: colour, verb: null });
+            colour = null; return;
+          }
+          if (w.kind === "verb"){
+            for (var i = out.length - 1; i >= 0; i--)
+              if (out[i].t === "wear" && !out[i].verb){ out[i].verb = w.kana; break; }
+          }
+        });
+        if (c.tail.indexOf("。") >= 0){ part = null; colour = null; }
+      });
+    });
+    return { said: out, unreadable: bad };
+  }
+  function traitKeyOf(k){
+    var out = null;
+    Object.keys(P.traits).forEach(function(key){
+      if (kana(P.traits[key].ja) === k) out = key;
+    });
+    return out;
+  }
+  var SLOTS = [["top", "kiru"], ["bottom", "haku"], ["shoes", "haku"],
+               ["hat", "kaburu"], ["extra", "suru"]];
+  function wordKana(k){
+    var found = null;
+    W.words.forEach(function(x){ if (x.kana === k) found = x; });
+    return found;
+  }
+  /* Every claim is checked against the figure. ok is what the passage
+     states truthfully, and is the only pool the questions are built
+     from; wrong is what the check refuses to ship. */
+  function verify(p, said){
+    var f = p.facts, cl = f.clothes || {}, ok = {}, wrong = [];
+    var want = {
+      "かみ": { id: "hair", adj: f.hair === "long" ? "ながい" : "みじかい",
+              colour: f.colour === "black" ? "くろい" : "ちゃいろい" },
+      "め": { id: "eyes", adj: f.eyes === "big" ? "おおきい" : "ちいさい" },
+      "せ": { id: "tall", adj: "たかい", neg: !f.tall }
+    };
+    said.forEach(function(c){
+      if (c.t === "part"){
+        var w = want[c.part];
+        if (!w){ wrong.push("「" + c.adj + "」 describes nothing named"); return; }
+        var cw = wordKana(c.adj);
+        if (cw && cw.group === "colour"){
+          if (c.adj === w.colour) ok["colour"] = 1;
+          else wrong.push(c.part + " is " + w.colour + ", not " + c.adj);
+          return;
+        }
+        if (c.adj !== w.adj || !!c.neg !== !!w.neg)
+          wrong.push(c.part + " is " + (w.neg ? w.adj + "くない" : w.adj)
+            + ", not " + (c.neg ? c.adj + "くない" : c.adj));
+        else ok[w.id] = 1;
+        return;
+      }
+      if (c.t === "wear"){
+        var slot = null, name = null;
+        SLOTS.forEach(function(s){
+          if (!slot && cl[s[0]] && cl[s[0]][0] === c.item){ slot = cl[s[0]]; name = s[0]; }
+        });
+        if (c.item === "めがね"){
+          if (f.glasses) ok["glasses"] = 1;
+          else wrong.push("no glasses on this figure");
+          return;
+        }
+        if (!slot){ wrong.push("this figure is not wearing " + c.item); return; }
+        if ((slot[1] || null) !== (c.colour || null)){
+          wrong.push("the " + c.item + " is " + (slot[1] || "no colour")
+            + ", not " + (c.colour || "no colour"));
+          return;
+        }
+        var gw = wordKana(c.item), vb = gw && (W.verbs[gw.verb] || {}).ja;
+        if (vb && c.verb && kana(vb) !== c.verb){
+          wrong.push(c.item + " takes " + kana(vb) + ", not " + c.verb); return;
+        }
+        ok["c-" + name] = 1;
+        return;
+      }
+      if (c.t === "trait"){
+        if (p.traits.indexOf(c.trait) >= 0) ok["t-" + c.trait] = 1;
+        else wrong.push("this figure is not " + kana(P.traits[c.trait].ja));
+      }
+    });
+    return { ok: Object.keys(ok), wrong: wrong };
+  }
+  /* The true sentence and the false one for a fact the passage states.
+     Both come out of factsOf, the same function the writing step marks
+     against, so a question cannot say something the rest of the app
+     would call wrong. The false one is factsOf run on a copy of the
+     figure with that one fact changed. */
+  function traitSay(key){ return P.traits[key].ja + "です。"; }
+  function factJa(p, id){
+    if (id.indexOf("t-") === 0) return traitSay(id.slice(2));
+    var out = null;
+    factsOf(p).forEach(function(f){ if (f.id === id) out = f.ja; });
+    return out;
+  }
+  function flipJa(p, id){
+    if (id === "glasses") return null;
+    if (id.indexOf("t-") === 0){
+      var mine = p.traits, pool = Object.keys(P.traits).filter(function(k){
+        return mine.indexOf(k) < 0;
+      });
+      return pool.length ? traitSay(pool[Math.floor(Math.random() * pool.length)]) : null;
+    }
+    var q = JSON.parse(JSON.stringify(p)), f = q.facts;
+    if (id === "hair") f.hair = f.hair === "long" ? "short" : "long";
+    else if (id === "colour") f.colour = f.colour === "black" ? "brown" : "black";
+    else if (id === "eyes") f.eyes = f.eyes === "big" ? "small" : "big";
+    else if (id === "tall") f.tall = !f.tall;
+    else if (id.indexOf("c-") === 0){
+      var slot = f.clothes[id.slice(2)];
+      if (!slot || !slot[1]) return null;
+      var mineC = wordKana(slot[1]);
+      var others = W.words.filter(function(x){
+        return x.group === "colour" && x.kana !== slot[1]
+          /* keep the の right: swap an い colour for an い colour and a
+             noun colour for a noun colour, so only the colour is false */
+          && (x.kind === "i") === (mineC && mineC.kind === "i")
+          /* and never dress みどりさん in みどり: the sentence is about a
+             colour and the name is the same word */
+          && x.kana !== p.name;
+      });
+      if (!others.length) return null;
+      slot[1] = others[Math.floor(Math.random() * others.length)].kana;
+    } else return null;
+    return factJa(q, id);
+  }
+  /* Four statements: two true, two false, from the facts the passage
+     states. Dealt two and two rather than tossed a coin four times,
+     because a round that comes out all true teaches a student to tick
+     everything. */
+  function askSet(p, ids){
+    var pool = shuffle(ids.filter(function(id){ return id !== "glasses"; }));
+    var set = [], wantFalse = 2, wantTrue = 2;
+    /* Two sentences that read the same are one question asked twice, and
+       the false ones are drawn at random, so a collision is a matter of
+       time rather than bad luck. */
+    function fresh(ja){
+      return !!ja && !set.some(function(s){ return s.ja === ja; });
+    }
+    function take(id, want){
+      if (want === "no"){
+        for (var k = 0; k < 6; k++){
+          var no = flipJa(p, id);
+          if (fresh(no)){ set.push({ id: id, ja: no, truth: false }); return true; }
+        }
+        return false;
+      }
+      var yes = factJa(p, id);
+      if (!fresh(yes)) return false;
+      set.push({ id: id, ja: yes, truth: true });
+      return true;
+    }
+    pool.forEach(function(id){
+      if (set.length >= 4) return;
+      if (wantFalse > 0 && take(id, "no")){ wantFalse--; return; }
+      if (wantTrue > 0 && take(id, "yes")) wantTrue--;
+    });
+    pool.forEach(function(id){
+      if (set.length >= 4) return;
+      if (set.some(function(s){ return s.id === id; })) return;
+      take(id, "yes");
+    });
+    return shuffle(set);
+  }
+  /* The passage, drawn as tap targets. The gloss costs a point the
+     first time a chunk is opened in this passage and nothing after
+     that: a student who taps back to check a word they have already
+     paid for is doing the right thing and should not be charged for
+     it. A chunk of nothing but particles is free. */
+  function readable(text){
+    return (text.paras || [text]).map(function(para){
+      return '<p class="para">' + chunks(para).map(function(c){
+        var ps = pieces(c.word);
+        var body = ps
+          ? '<button class="wd" type="button" data-w="' + esc(c.word) + '">'
+              + ruby(c.word) + '</button>'
+          : '<span class="wd off">' + ruby(c.word) + '</span>';
+        return esc(c.head) + body + '<span class="pt">' + esc(c.tail) + '</span>';
+      /* Andrew spaces Japanese at the phrase boundaries for this year
+         level, and the passage is stored that way. Joining the chunks
+         back up without the spaces would take that away and hand a
+         Year 8 an unbroken line to find the words in. */
+      }).join(" ") + '</p>';
+    }).join("");
+  }
+  function wireRead(scope, payKey){
+    each(scope, "[data-w]", function(b){
+      b.onclick = function(ev){
+        ev.stopPropagation();
+        var ps = pieces(b.dataset.w) || [];
+        each(scope, ".wd.lit", function(x){ x.classList.remove("lit"); });
+        b.classList.add("lit");
+        var meat = ps.filter(function(x){
+          return ["particle", "suffix", "ending"].indexOf(x.g.kind) < 0;
+        });
+        if (meat.length) once(payKey + ":" + plain(b.dataset.w), 1, "word meaning");
+        var tip = $("tip");
+        if (!tip) return;
+        tip.innerHTML = '<div class="gloss"><b>' + ruby(b.dataset.w) + '</b>'
+          + ps.map(function(x){
+              return '<div class="gl"><span class="jp">' + ruby(x.g.ja) + '</span>'
+                + '<span>' + esc(x.g.en)
+                + (x.g.note ? ' <i>' + esc(x.g.note) + '</i>' : '') + '</span></div>';
+            }).join("") + '</div>';
+      };
+    });
+  }
+  DRAW.yomu = function(){
+    var n = Y.texts.length;
+    if (!n){ $("main").innerHTML = '<div class="rule">No passages.</div>'; return; }
+    var i = dealt("yomu", n), t = Y.texts[i], p = null;
+    P.people.forEach(function(x){ if (x.id === t.who) p = x; });
+    var v = verify(p, claims(t).said);
+    var set = askSet(p, v.ok), answered = {}, won = 0;
+    $("main").innerHTML = ruleFor("yomu")
+      + '<div class="work"><div class="read" id="read">' + readable(t) + '</div>'
+      /* The how-to box folds itself away after ten seconds, so the task
+         has to say what it is without it. */
+      + '<p class="hint" style="margin-top:12px">Mark each sentence 〇 true '
+      + 'or × false.</p>'
+      + '<div class="ask" id="ask">' + set.map(function(s, k){
+          return '<div class="ox" data-k="' + k + '">'
+            + '<div class="jp st">' + readable({ paras: [s.ja] }) + '</div>'
+            + '<div class="ox-b">'
+            + '<button class="btn ghost sm" data-v="1" aria-label="true">〇</button>'
+            + '<button class="btn ghost sm" data-v="0" aria-label="false">×</button>'
+            + '</div></div>';
+        }).join("") + '</div>'
+      + '<div id="rev"></div></div>'
+      + '<div id="tip" class="tip"></div>'
+      + '<div class="foot"><span class="score"><b id="sc">0</b> of ' + set.length
+      + ' answered</span><span class="sp"></span>'
+      + '<button class="btn ghost sm" id="next">Another passage</button></div>';
+    wireRead($("main"), "yomu:w:" + t.id);
+    /* what is on screen, for tools/browser-check.js. Everything here is
+       in the page already — a student with the developer tools open can
+       read the answers off any of these steps — and a test that guessed
+       at 〇 and × would be a test of luck. */
+    window.HITO_YOMU_T.now = { text: t, person: p, set: set, ok: v.ok };
+    $("next").onclick = function(){ advance("yomu", n); draw(); };
+    each($("ask"), "[data-v]", function(b){
+      b.onclick = function(){
+        var row = b.closest(".ox"), k = +row.dataset.k, s = set[k];
+        if (answered[k]) return;
+        answered[k] = 1;
+        var got = b.dataset.v === "1", right = got === s.truth;
+        row.classList.add(right ? "yes" : "no");
+        each(row, "[data-v]", function(x){ x.disabled = true; });
+        row.insertAdjacentHTML("beforeend", '<div class="mark ' + (right ? "yes" : "no")
+          + '"><b>' + (right ? (s.truth ? "〇 true" : "× false") : "Not that one")
+          + '</b>' + (s.truth ? "The passage says this." : "The passage says otherwise.")
+          + '</div>');
+        if (right){ ninja(row); first("yomu:" + t.id + ":" + s.id, 2, "statement"); won++; }
+        else yokai(row);
+        $("sc").textContent = Object.keys(answered).length;
+        if (Object.keys(answered).length === set.length){
+          $("rev").innerHTML = '<div class="rev"><div class="pic">' + figure(p, 220)
+            + '<div class="jp" style="text-align:center">' + esc(p.name) + 'さん</div>'
+            + '</div><p>This is who the passage is about.</p></div>';
+          /* The step ticks when all six passages have been read right,
+             the way every other rung here ticks. Four answered is not
+             four right, and a bonus for tapping through would be a
+             bonus for not reading. */
+          if (won === set.length) gotRight("yomu", n, i, "yomu");
+          $("rev").scrollIntoView({ block: "nearest" });
+        }
+      };
+    });
+  };
+  /* A seam for tools/browser-check.js: the tokeniser, the reader and
+     the check, so a test can prove every chunk of every passage cuts
+     into pieces that have meanings and that no passage contradicts its
+     own figure. */
+  window.HITO_YOMU_T = { pieces: pieces, chunks: chunks, claims: claims,
+                         verify: verify, askSet: askSet, lexicon: lexicon,
+                         texts: function(){ return Y.texts; },
+                         person: function(id){
+                           var out = null;
+                           P.people.forEach(function(x){ if (x.id === id) out = x; });
+                           return out;
+                         } };
 
   /* ---- 9. ルーレット ----
      Andrew asked for a spinning wheel for random word practice. A wheel

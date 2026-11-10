@@ -258,6 +258,13 @@ window.HITO_PEOPLE = {
   },
   "rules": [
     {
+      "step": "yomu",
+      "title": "\u3088\u3080",
+      "title_en": "Read it",
+      "rule": "Read the passage about one of the six. Tap any word for its meaning: each new word costs 1 point. Then mark the four sentences \u3007 true or \u00d7 false. The picture stays hidden until you answer all four.",
+      "eg": []
+    },
+    {
       "step": "katch",
       "title_en": "Catch the word",
       "rule": "Read the word above the screen, then catch the one falling word that means it. Let the others fall. Catch the ninja for a bonus and keep away from the かさおばけ. Three mistakes and the game ends.",
