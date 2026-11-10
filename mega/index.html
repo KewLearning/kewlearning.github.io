@@ -612,13 +612,20 @@
      a word, a meaning, a kana or a picture: the grid is fixed so the
      board does not reflow as cards are taken, because remembering
      where a card was is the whole game. */
+  /* width:100% is load-bearing. The board is a flex item in a column
+     flex container, and `margin:0 auto` on a flex item stops it
+     stretching: it sizes to its content instead. With columns of
+     minmax(66px,1fr) and no width to share out, every 1fr resolved to
+     its 66px minimum, so a 1366px screen drew a 294px board of 66px
+     cards and the faces had to shrink to 9px to fit inside them. That
+     is what was really behind words spilling out of the cards. */
   .board{display:grid;grid-template-columns:repeat(4,minmax(66px,1fr));gap:10px;
-       max-width:min(680px,92vw);margin:0 auto}
+       width:100%;max-width:min(680px,92vw);margin:0 auto}
   .card{position:relative;aspect-ratio:1;border:0;background:none;padding:0;
        cursor:pointer;font-family:var(--font);perspective:600px}
   .card .back,.card .front{position:absolute;inset:0;display:flex;align-items:center;
        justify-content:center;border-radius:12px;border:1.5px solid var(--line);
-       padding:4px;text-align:center;line-height:1.25;
+       padding:4px;text-align:center;line-height:1.25;overflow:hidden;
        transition:opacity .18s, transform .18s}
   /* The back used to carry 日, for no reason beyond its being a simple
      symmetrical kanji. Every card showing the same one made the deck look
@@ -626,9 +633,16 @@
      青海波 now: a card back, which is what it is. */
   .card .back{background-color:var(--deep);color:#fff;font-family:var(--jp);font-size:26px;
        border-color:var(--deep)}
-  .card .front{background:var(--paper);font-size:15px;opacity:0;transform:scale(.94)}
-  .card .front.jp{font-family:var(--jp);font-size:23px}
-  .card .front.pic{font-size:40px}
+  .card .front{background:var(--paper);font-size:21px;opacity:0;transform:scale(.94)}
+  /* the face's own box: what the fitting measures, and the only thing in
+     the card that knows how tall the words actually are */
+  .card .front .fc{display:block;max-width:100%;word-break:break-word}
+  /* These are starting sizes for a full-size card, not final ones. The
+     page measures each face and brings it down until it fits the card it
+     is actually in, so a generous start costs nothing and a mean one
+     cannot be undone: the fitting only ever shrinks. */
+  .card .front.jp{font-family:var(--jp);font-size:30px}
+  .card .front.pic{font-size:46px}
   .card.up .back,.card.got .back{opacity:0}
   .card.up .front,.card.got .front{opacity:1;transform:none}
   .card.got .front{border-color:var(--ok);background:#eefaf0}
@@ -898,9 +912,9 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="data/mega.js?v=20261109b"></script>
-<script src="data/audio.js?v=20261109b"></script>
-<script src="app.js?v=20261109b"></script>
-<div class="build" aria-hidden="true">build 2026-11-09b</div>
+<script src="data/mega.js?v=20261109c"></script>
+<script src="data/audio.js?v=20261109c"></script>
+<script src="app.js?v=20261109c"></script>
+<div class="build" aria-hidden="true">build 2026-11-09c</div>
 </body>
 </html>

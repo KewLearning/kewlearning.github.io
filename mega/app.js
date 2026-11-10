@@ -2898,7 +2898,10 @@
 
      A card says its Japanese when it is turned over, so a pair that is
      missed is still a word heard twice. */
-  var PAIRS = { kind: "word", two: false, n: 12 };
+  /* Four by four. Twelve was the default and it reads as a board with a
+     row missing, which is what Andrew saw. The size button still goes
+     16, 20, 12 for a shorter game or a longer one. */
+  var PAIRS = { kind: "word", two: false, n: 16 };
   var KINDS = [
     { id: "word",  ja: "ことば・いみ",     en: "a word and its meaning" },
     { id: "kanji", ja: "かんじ・いみ",     en: "a kanji and its meaning" },
@@ -2909,8 +2912,10 @@
     var out = [];
     if (kind === "kana"){
       shuffle(M.kana || []).slice(0, n / 2).forEach(function(k, i){
-        out.push({ id: "k" + i, face: k.hira, say: k.hira, jp: true });
-        out.push({ id: "k" + i, face: k.kata, say: k.kata, jp: true });
+        out.push({ id: "k" + i, face: k.hira, say: k.hira, jp: true,
+                   len: k.hira.length });
+        out.push({ id: "k" + i, face: k.kata, say: k.kata, jp: true,
+                   len: k.kata.length });
       });
     } else if (kind === "kanji"){
       /* no two kanji on the board may share a meaning: a card reading
@@ -2922,20 +2927,26 @@
         if (seenEn[k.en]) return false;
         seenEn[k.en] = 1; return true;
       }).slice(0, n / 2).forEach(function(k, i){
-        out.push({ id: "j" + i, face: k.k, say: k.yomi[0], jp: true });
-        out.push({ id: "j" + i, face: k.en, say: k.yomi[0], jp: false });
+        out.push({ id: "j" + i, face: k.k, say: k.yomi[0], jp: true,
+                   len: plain(k.k).length });
+        out.push({ id: "j" + i, face: k.en, say: k.yomi[0], jp: false,
+                   len: k.en.length });
       });
     } else if (kind === "pic"){
       shuffle(W.filter(function(w){ return w.icon; })).slice(0, n / 2)
         .forEach(function(w, i){
-          out.push({ id: "p" + i, face: w.icon, say: w.ja, jp: false, pic: true });
-          out.push({ id: "p" + i, face: ruby(w.ja), say: w.ja, jp: true });
+          out.push({ id: "p" + i, face: w.icon, say: w.ja, jp: false, pic: true,
+                     len: 1 });
+          out.push({ id: "p" + i, face: ruby(w.ja), say: w.ja, jp: true,
+                     len: plain(w.ja).length });
         });
     } else {
       shuffle(W.filter(function(w){ return w.en; })).slice(0, n / 2)
         .forEach(function(w, i){
-          out.push({ id: "w" + i, face: ruby(w.ja), say: w.ja, jp: true });
-          out.push({ id: "w" + i, face: w.en, say: w.ja, jp: false });
+          out.push({ id: "w" + i, face: ruby(w.ja), say: w.ja, jp: true,
+                     len: plain(w.ja).length });
+          out.push({ id: "w" + i, face: w.en, say: w.ja, jp: false,
+                     len: w.en.length });
         });
     }
     return shuffle(out);
@@ -2959,14 +2970,15 @@
         }).join("")
         + '<span class="gapsm"></span>'
         + '<button class="btn sm ' + (PAIRS.two ? "" : "ghost") + '" id="two">ふたり</button>'
-        + '<button class="btn ghost sm" id="size">' + PAIRS.n + 'まい</button>'
+        + '<button class="btn ghost sm" id="size" title="How many cards: '
+        + 'tap to change">カード ' + PAIRS.n + 'まい</button>'
         + '<button class="btn ghost sm" id="again">もう一回[いっかい]</button>');
     each($("main"), "[data-kind]", function(b){
       b.onclick = function(){ PAIRS.kind = b.dataset.kind; DRAW.pairs(); };
     });
     $("two").onclick = function(){ PAIRS.two = !PAIRS.two; DRAW.pairs(); };
     $("size").onclick = function(){
-      PAIRS.n = PAIRS.n === 12 ? 16 : (PAIRS.n === 16 ? 20 : 12);
+      PAIRS.n = PAIRS.n === 16 ? 20 : (PAIRS.n === 20 ? 12 : 16);
       DRAW.pairs();
     };
     $("again").onclick = function(){ DRAW.pairs(); };
@@ -2978,14 +2990,99 @@
        and a student with the console open has bigger problems. */
     window.MEGA_PAIRS = deck.map(function(c){ return c.id; });
     $("board").innerHTML = deck.map(function(c, i){
+      /* No size class here. Stepping the type down by how many characters
+         a face has was a guess in both directions: it set "my big sister"
+         at 11px inside a 161px card, and it could not know that 日曜日
+         comes out wider than three characters because its ruby is five
+         kana. The face starts at a size that suits a full-size card and
+         the fitting below brings it down until it fits this one. */
       return '<button class="card" data-c="' + i + '" aria-label="card ' + (i + 1) + '">'
         + '<span class="back pat-sei"></span>'
         + '<span class="front' + (c.pic ? " pic" : "") + (c.jp ? " jp" : "")
-        + '">' + c.face + '</span></button>';
+        + '"><span class="fc">' + c.face + '</span></span></button>';
     }).join("");
     each($("board"), "[data-c]", function(b){
       b.onclick = function(){ flip(+b.dataset.c, b); };
     });
+
+    /* ---- make every face fit its card ----
+       Stepping the type down by how many characters a face has is a guess,
+       and it was wrong in both directions. 日曜日 is three characters and
+       overflowed sideways, because the ruby にちようび is five kana and
+       comes out wider than the kanji underneath it. 友だちのうち is six
+       and overflowed downwards by half a card. No character count predicts
+       either, because what matters is the ruby, the script, the card's
+       width at this viewport, and how the thing happens to wrap.
+
+       So the page stops guessing and measures. The face is laid out, asked
+       whether it fits, and shrunk a point at a time until it does. The
+       classes above stay as a first guess, which is only there to save a
+       few passes of this loop. */
+    function fitFaces(){
+      each($("board"), ".front", function(el){
+        /* The face sits in its own span, and that is what gets measured.
+           .front is absolutely positioned across the whole card, so its
+           scrollHeight is the card's height whatever it says, and an
+           earlier version compared THAT against the line height to count
+           lines. It was true for every card, so every face shrank to the
+           9px floor and sat tiny in the middle of a big card. */
+        var fc = el.querySelector(".fc");
+        if (!fc) return;
+        el.style.fontSize = "";
+        var size = parseFloat(window.getComputedStyle(el).fontSize) || 15;
+        var guard = 0;
+        function spills(){
+          return fc.scrollHeight > el.clientHeight - 6
+              || fc.scrollWidth > el.clientWidth - 6;
+        }
+        while (guard++ < 20 && size > 8 && spills()){
+          size -= size > 18 ? 2 : 1;
+          el.style.fontSize = size + "px";
+        }
+        /* Fitting is not the same as reading. 友だちのうち fitted at a
+           size that broke it over three ragged lines, with 友 alone on
+           the first. Two lines is the most a card holds and still reads
+           across a table, so anything needing three gives up a little
+           more. */
+        var line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
+        while (guard++ < 34 && size > 10 && fc.scrollHeight > line * 2.3){
+          size -= 1;
+          el.style.fontSize = size + "px";
+          line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
+        }
+        if (spills() && size > 8) el.style.fontSize = (size - 1) + "px";
+      });
+    }
+    /* ---- fit when the board has a size, not when a timer says so ----
+       Running this on the next frame was a guess about when layout
+       settles, and it was wrong: it measured 66px cards, shrank every
+       face to the 9px floor, and never ran again, so a 1366px screen
+       showed full-size cards with nine-point type in them. Watching the
+       board instead means it fits when the board first gets its width,
+       again when a phone turns sideways, and again if anything else
+       moves. Card size follows the board's width and not the type, so
+       re-fitting cannot set the observer off again. */
+    var fitting = false;
+    function refit(){
+      if (fitting) return;
+      fitting = true;
+      try { fitFaces(); } finally { fitting = false; }
+    }
+    if (window.ResizeObserver){
+      if (PAIRS.ro) PAIRS.ro.disconnect();
+      PAIRS.ro = new ResizeObserver(refit);
+      PAIRS.ro.observe($("board"));
+    } else {
+      if (window.requestAnimationFrame) requestAnimationFrame(refit);
+      else setTimeout(refit, 0);
+      if (PAIRS.fitting) window.removeEventListener("resize", PAIRS.fitting);
+      PAIRS.fitting = function(){
+        clearTimeout(PAIRS.fitT);
+        PAIRS.fitT = setTimeout(function(){ if ($("board")) refit(); }, 120);
+      };
+      window.addEventListener("resize", PAIRS.fitting);
+    }
+    window.MEGA_PAIRS_FIT = refit;
 
     function paintWho(){
       $("who").innerHTML = PAIRS.two
