@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>VCE漢字 · the prescribed kanji</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Crect x='18' y='20' width='28' height='4' fill='%23fff'/%3E%3Crect x='30' y='20' width='4' height='26' fill='%23fff'/%3E%3Crect x='18' y='33' width='28' height='4' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  /* The same shell as the rest of ジャプリ: one screen, one scrolling
+     region, the textbook font stack, and colour that carries meaning
+     rather than decorating. Built for a school laptop first, because
+     this is a Year 11 and 12 app and they sit at one. */
+  :root{
+    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
+    --line:#ccd5e0; --line-soft:#e3e9f0;
+    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
+    --on:#2b5f8c;           /* 音読み, everywhere, always */
+    --kun:#7a4a86;          /* 訓読み, everywhere, always */
+    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);
+       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
+       overflow:hidden}
+
+  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       background:var(--paper);border-bottom:1px solid var(--line);
+       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
+  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
+  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
+       font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--muted)}
+  .bar .sp{flex:1}
+  .tool{min-height:38px;padding:0 11px;border:2px solid var(--deep);
+        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
+        font-family:var(--font);font-size:13px;font-weight:700}
+  .tool.off{border-color:var(--line);color:var(--muted)}
+  .pts{min-height:38px;display:flex;align-items:center;gap:5px;padding:0 11px;
+       border:2px solid var(--warm);border-radius:9px;background:#fffdf4;
+       font-size:12px;font-weight:700;color:var(--warm)}
+  .pts b{font-size:17px;color:var(--ink)}
+  .pts i{font-style:normal;font-size:12px;font-weight:700}
+  .pts i.up{color:var(--ok)}
+  .pts i.down{color:var(--accent)}
+
+  .steps{flex:none;display:flex;background:var(--paper);
+       border-bottom:1px solid var(--line);overflow-x:auto}
+  .steps button{flex:1;min-width:104px;border:0;background:none;cursor:pointer;
+       padding:7px 10px;border-bottom:3px solid transparent;
+       font-family:var(--font);text-align:center}
+  .steps b{display:block;font-family:var(--jp);font-size:15px;color:var(--ink);
+       font-weight:700;line-height:1.2}
+  .steps i{display:block;font-style:normal;font-size:10.5px;
+       letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .steps .done{color:var(--ok);font-weight:700}
+  .steps button[aria-current]{border-bottom-color:var(--deep)}
+  .steps button[aria-current] i{color:var(--deep)}
+
+  main{flex:1;min-height:0;display:flex;flex-direction:column;
+       padding:10px 14px 12px;max-width:1180px;width:100%;margin:0 auto}
+  .rule{flex:none;background:#fffbe9;border:1px solid #e0cf9a;border-radius:9px;
+        padding:8px 11px;margin-bottom:9px;font-size:14px;line-height:1.45;
+        transition:opacity .4s}
+  .rule b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+        color:var(--warm);display:block;margin-bottom:2px}
+  .rule.fading{opacity:0}
+  .howto{flex:none;align-self:flex-start;margin-bottom:9px;min-height:26px;
+       padding:0 10px;border:1px solid #e0cf9a;border-radius:999px;
+       background:#fffbe9;color:var(--warm);font-family:var(--font);
+       font-size:11.5px;font-weight:700;cursor:pointer}
+  main.folded .rule{display:none}
+  .work{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+  .foot{flex:none;display:flex;align-items:center;gap:10px;margin-top:9px;
+        flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .foot .sp{flex:1}
+  .hint{font-size:12.5px;color:var(--muted)}
+  .btn{border:2px solid var(--deep);background:var(--deep);color:#fff;
+       border-radius:10px;min-height:40px;padding:0 14px;cursor:pointer;
+       font-family:var(--font);font-size:14.5px;font-weight:700}
+  .btn.ghost{background:#fff;color:var(--deep)}
+  .btn.sm{min-height:36px;font-size:13.5px;padding:0 11px}
+  .btn[disabled]{opacity:.4;cursor:default}
+  ruby rt{font-size:.5em;font-weight:400;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+  body:not(.showen) .en{display:none}
+
+  /* ---- さがす, the list ---- */
+  .find{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px}
+  .find input{flex:1;min-width:180px;font-family:var(--jp);font-size:17px;
+       border:2px solid var(--line);border-radius:10px;padding:7px 11px;
+       background:var(--paper);color:inherit}
+  .find input:focus{border-color:var(--deep);outline:none}
+  .cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .cats button{border:1.5px solid var(--line);border-radius:999px;background:#fff;
+       cursor:pointer;font-family:var(--jp);font-size:13px;padding:3px 11px;
+       color:var(--muted)}
+  .cats button.on{border-color:var(--deep);color:var(--deep);background:#eef3f9;
+       font-weight:700}
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));
+       gap:9px;align-content:start}
+  .kcard{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       padding:9px 11px 10px;text-align:left}
+  .kcard .top{display:flex;align-items:baseline;gap:10px}
+  .kcard .big{font-family:var(--jp);font-size:40px;line-height:1.1;color:var(--ink)}
+  .kcard .mean{font-size:13.5px;color:var(--muted);flex:1}
+  .kcard .rds{font-family:var(--jp);font-size:14px;margin-top:3px}
+  .kcard .rds s{text-decoration:none;display:inline-block;margin-right:9px}
+  .kcard .rds .o{color:var(--on)} .kcard .rds .k{color:var(--kun)}
+  .kcard .rds i{font-family:var(--font);font-style:normal;font-size:10px;
+       letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+       margin-right:4px}
+  .kcard .ws{margin-top:6px;border-top:1px solid var(--line-soft);padding-top:5px;
+       display:flex;flex-wrap:wrap;gap:4px 12px}
+  .kcard .ws span{font-family:var(--jp);font-size:17px;line-height:1.9}
+  .none{color:var(--muted);font-size:14px;padding:10px 2px}
+
+  /* ---- the question screens ---- */
+  .ask{max-width:620px;margin:0 auto;text-align:center}
+  .prompt{font-family:var(--jp);font-size:clamp(34px,7vw,56px);line-height:1.25;
+       margin:6px 0 2px}
+  .prompt.kana{font-size:clamp(26px,5vw,40px)}
+  .qtag{font-size:12.5px;color:var(--muted);letter-spacing:.06em;
+       text-transform:uppercase}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+       gap:9px;margin-top:14px}
+  .opt{border:2px solid var(--line);border-radius:12px;background:var(--paper);
+       padding:11px 9px;cursor:pointer;font-family:var(--jp);
+       font-size:23px;color:var(--ink);line-height:1.3}
+  .opt:hover{border-color:var(--deep)}
+  .opt.yes{border-color:var(--ok);background:#f1f8f2}
+  .opt.no{border-color:var(--accent);background:#fdf2f2}
+  .opt.gone{opacity:.45;pointer-events:none}
+  .typebox{display:flex;gap:9px;justify-content:center;margin-top:14px;
+       flex-wrap:wrap}
+  .typebox input{font-family:var(--jp);font-size:26px;text-align:center;
+       border:2px solid var(--line);border-radius:12px;padding:6px 12px;
+       width:min(300px,78vw);background:var(--paper);color:inherit}
+  .typebox input:focus{border-color:var(--deep);outline:none}
+  .mark{border-left:4px solid var(--line);padding:6px 11px;margin:12px auto 0;
+       font-size:14px;max-width:620px;text-align:left}
+  .mark.yes{border-color:var(--ok)} .mark.no{border-color:var(--accent)}
+  .mark.hm{border-color:#b8860b}
+  .mark b{display:block;font-size:11px;letter-spacing:.08em;
+       text-transform:uppercase;color:var(--muted)}
+  .mark .jp{font-family:var(--jp);font-size:19px}
+  .mark p{font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:4px}
+  .parts{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .part{border:1.5px solid var(--line-soft);border-radius:10px;background:var(--paper);
+       padding:6px 10px;text-align:center;min-width:76px}
+  .part .pk{font-family:var(--jp);font-size:28px;line-height:1.1}
+  .part .pe{font-size:11.5px;color:var(--muted)}
+  .part .pr{font-family:var(--jp);font-size:12px;color:var(--on)}
+
+  /* ---- にゅうりょく, the keyboard how-to, carries its own styles ---- */
+  .build{position:fixed;right:4px;bottom:2px;z-index:70;pointer-events:none;
+       font-size:9px;color:#9aa6b4;opacity:.85;font-family:var(--font)}
+  @media (max-width:760px){
+    .bar{padding:6px 10px} .tool{padding:0 8px;font-size:12px}
+    main{padding:8px 10px 10px}
+    .steps button{min-width:86px} .steps b{font-size:13.5px}
+    .kgrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+  }
+  @media (max-height:560px){
+    .rule{max-height:72px;overflow:auto}
+    .prompt{font-size:clamp(28px,6vw,40px)}
+  }
+</style>
+</head>
+<body class="showen">
+<div class="bar">
+  <h1>VCE漢字<span>the prescribed kanji · years 11 and 12</span></h1>
+  <div class="sp"></div>
+  <div class="pts" id="pts" title="Every support you use costs a point"><b id="ptsn">0</b> pts<i id="ptstip"></i></div>
+  <button class="tool" id="furiBtn">ふりがな</button>
+  <button class="tool" id="enBtn">EN</button>
+  <button class="tool" id="saveBtn" title="Save your score to show someone">Save</button>
+  <button class="tool" id="resetBtn">Reset</button>
+</div>
+<nav class="steps" id="steps"></nav>
+<main id="main"></main>
+<script src="tabs.js?v=20261111a"></script>
+<script src="nyuuryoku.js?v=20261111a"></script>
+<script src="data/kanji.js?v=20261111a"></script>
+<script src="app.js?v=20261111a"></script>
+<div class="build" aria-hidden="true">build 2026-11-11a</div>
+</body>
+</html>
