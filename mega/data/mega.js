@@ -282,7 +282,7 @@ window.MEGA = {
     { "step": "shiri", "title_en": "Chain the words",
       "rule": "Read the word and find the kana it ends on. Pick the word that starts with that kana. The long dash does not count, so スーパー ends on パ. Small ゃゅょっ count as やゆよつ. A word ending in ん ends the game." },
     { "step": "karuta", "title_en": "Hear it, grab it",
-      "rule": "Listen to the word. Tap the card it names. Tap the wrong card and the call plays again, and the card stays on the table. Pick one player or two: with two, press A or L to claim the call first, then grab." },
+      "rule": "Listen to the word. Tap the card it names. Tap the wrong card and the call plays again, and the card stays on the table. Pick how to play: on your own, taking turns, or racing. Racing, press your own Shift key to claim the word, then tap." },
     { "step": "kata",  "title_en": "Katakana",
       "rule": "Read the katakana. Every word here uses the ア to ハ lines only. In テスト say what the word is; in きく listen and pick the spelling, watching for ー and the small ッ." },
     { "step": "kanji", "title_en": "The kanji",

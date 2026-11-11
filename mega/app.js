@@ -2894,6 +2894,246 @@
     }
   };
 
+  /* ================= a board that fits the screen =================
+     Andrew, on the memory cards: "there should not be any scrolling. The
+     whole set should be visible in one place and fit the screen. It does
+     not matter if the writing is small." That is true of every board in
+     this app, so the fitting lives out here rather than inside one rung:
+     ペア deals sixteen cards and かるた nine, and both have to fit.
+
+     Two halves. shape() decides how many columns and how big a card can
+     be, from the room actually left under the board. fitFaces() then
+     brings each word down until it fits the card it is in. In that
+     order, always: the cards decide how much room a face has, never the
+     other way round.
+
+     The caller passes the object that holds this board's state, which is
+     where the observers and the one-off trim are kept, so two rungs can
+     each have a board without standing on each other. */
+  var MAXCARD = 170;   /* past this a card is big rather than readable */
+  function boardFit(board, n, state){
+    function fitFaces(){
+      each(board, ".front", function(el){
+        /* The face sits in its own span, and that is what gets measured.
+           .front is absolutely positioned across the whole card, so its
+           scrollHeight is the card's height whatever it says, and an
+           earlier version compared THAT against the line height to count
+           lines. It was true for every card, so every face shrank to the
+           9px floor and sat tiny in the middle of a big card. */
+        var fc = el.querySelector(".fc");
+        if (!fc) return;
+        el.style.fontSize = "";
+        var size = parseFloat(window.getComputedStyle(el).fontSize) || 15;
+        var guard = 0;
+        function spills(){
+          return fc.scrollHeight > el.clientHeight - 6
+              || fc.scrollWidth > el.clientWidth - 6;
+        }
+        /* Seven, not eight. On an older phone on its side the board gets
+           ninety pixels of height, which is a 39px card, and
+           フットボールのしあい hangs five pixels out of one at eight point.
+           Andrew, on the board fitting the screen: "it does not matter if
+           the writing is small." A word you can read with your nose on the
+           glass beats a word with its tail cut off. */
+        while (guard++ < 22 && size > 7 && spills()){
+          size -= size > 18 ? 2 : 1;
+          el.style.fontSize = size + "px";
+        }
+        /* Fitting is not the same as reading. 友だちのうち fitted at a
+           size that broke it over three ragged lines, with 友 alone on
+           the first. Two lines is the most a card holds and still reads
+           across a table, so anything needing three gives up a little
+           more. */
+        var line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
+        while (guard++ < 34 && size > 10 && fc.scrollHeight > line * 2.3){
+          size -= 1;
+          el.style.fontSize = size + "px";
+          line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
+        }
+        if (spills() && size > 7) el.style.fontSize = (size - 1) + "px";
+      });
+    }
+    /* ---- the whole deck on the screen at once ----
+       Andrew: "there should not be any scrolling. The whole set should be
+       visible in one place and fit the screen. It does not matter if the
+       writing is small."
+
+       A memory game you have to scroll is not a memory game. You cannot
+       hold where a card was if half the board is somewhere else, and on
+       a phone the half you cannot see is the half you keep forgetting.
+       So the deck is laid out to fit the room it has, rather than at a
+       fixed four columns and whatever height that comes to: twenty cards
+       at four columns is five rows of 162px, which is 810px of board on
+       a 740px phone.
+
+       The room is measured rather than assumed, because the rule box
+       folds itself away after ten seconds and hands back 70-odd pixels,
+       a phone can be turned sideways, and the result line appears under
+       the board when the game ends. Every column count is then tried and
+       the one that makes the biggest card wins, with a nudge towards
+       counts that divide the deck evenly: a full rectangle reads as a
+       board, and 6+6+6+2 reads as a mistake. */
+    function shape(){
+      if (!board) return;
+      var col = board.parentElement, main = document.querySelector("main");
+      if (!col || !main) return;
+      var cs = window.getComputedStyle(col);
+      var availW = col.clientWidth - (parseFloat(cs.paddingLeft) || 0)
+                                   - (parseFloat(cs.paddingRight) || 0);
+      /* Everything between the board and the bottom of the window, named
+         rather than guessed at: the row of buttons and the margin above
+         it, the page's own padding, the dashed box's padding and border,
+         and the result line when there is one. A fudge factor here is a
+         board that overflows by six pixels on one phone and not another. */
+      var foot = main.querySelector(".foot"), fcs = foot && window.getComputedStyle(foot);
+      var footH = foot ? foot.getBoundingClientRect().height
+                       + (parseFloat(fcs.marginTop) || 0) : 0;
+      var mcs = window.getComputedStyle(main);
+      var fb = document.getElementById("fb");
+      var reserve = fb ? fb.getBoundingClientRect().height : 0;
+      var top = board.getBoundingClientRect().top;
+      var availH = main.getBoundingClientRect().bottom
+                 - (parseFloat(mcs.paddingBottom) || 0)
+                 - footH - top - reserve
+                 - (parseFloat(cs.paddingBottom) || 0)
+                 - (parseFloat(cs.borderBottomWidth) || 0)
+                 - (state.trim || 0) - 1;
+      if (!(availW > 0)) return;
+      /* ---- the how-to box gets out of the way of the board ----
+         A phone turned sideways has 390px of height, and the bar, the
+         rung list and the open rule box take all of it: the room left
+         for the board came out negative, this gave up, and the board
+         fell back to four fixed columns and 880px of scrolling — the
+         very thing it is here to prevent. The box already folds itself
+         after ten seconds and leaves a chip where it stood, so when it
+         is in the way it is simply asked to do that now. Folding sends
+         a resize, which brings us back here with the room it gave up,
+         and the app remembers it as folded for this rung exactly as if
+         the student had folded it. */
+      var open = !main.classList.contains("folded") && main.querySelector(".howto");
+      if (availH <= 0 && open){ open.click(); return; }
+      /* and if it is still negative with the box gone, lay the board out
+         anyway: too small is bad, but not as bad as a fallback nobody
+         designed */
+      if (availH <= 0) availH = 60;
+
+      var best = null;
+      /* Two rows at least, once there are six cards or more. A single
+         row of twelve is a word list, not a memory board: there is
+         nothing to remember about up and down, and the cards it buys
+         are only a few pixels bigger than the grid it gives up. */
+      var most = n >= 6 ? Math.ceil(n / 2) : n;
+      function tryGap(gap){
+        best = null;
+        for (var c = 2; c <= most; c++){
+          var rows = Math.ceil(n / c);
+          var w = (availW - gap * (c - 1)) / c;
+          var h = (availH - gap * (rows - 1)) / rows;
+          /* capped here rather than at the end, or every layout that
+             reaches the cap scores the same as the one that sails past
+             it and the shape of the board stops mattering: nine cards
+             came out five-and-four on a big screen because 229px beat
+             160px, when both were about to become 170px anyway. */
+          var size = Math.min(w, h, MAXCARD);
+          if (size <= 0) continue;
+          /* A ragged last row costs two fifths of a card. Nine cards in
+             five and four fits bigger cards on a laptop than three by
+             three does — 170px against 121px — and looks like a
+             mistake: a board is a rectangle, and かるた has been a
+             rectangle for four hundred years. Only a layout that is a
+             great deal bigger is worth breaking that for, which is what
+             a 40% handicap means. */
+          var score = n % c === 0 ? size : size * 0.6;
+          if (!best || score > best.score) best = { c: c, size: size, score: score, gap: gap };
+        }
+      }
+      tryGap(10);
+      /* On a small board the gaps are a tenth of the width. Close them up
+         and everything gets bigger, which is the only direction that
+         helps here. */
+      if (best && best.size < 80) tryGap(6);
+      if (!best) return;
+      /* On a 320px phone twenty cards and the open rule box do not both
+         fit either, and the cards lose: 22px of card is too small to
+         tap, let alone read. Same answer. */
+      if (best.size < 46 && open){ open.click(); return; }
+      var side = Math.max(24, Math.floor(best.size));
+      board.style.gap = best.gap + "px";
+      board.style.maxWidth = "none";
+      board.style.justifyContent = "center";
+      board.style.gridTemplateColumns = "repeat(" + best.c + ", " + side + "px)";
+      window.MEGA_BOARD_BOX = { w: Math.round(availW), h: Math.round(availH),
+                                cols: best.c, side: side, gap: best.gap,
+                                col: col.clientWidth, top: Math.round(top) };
+    }
+
+    /* ---- fit when the board has a size, not when a timer says so ----
+       Running this on the next frame was a guess about when layout
+       settles, and it was wrong: it measured 66px cards, shrank every
+       face to the 9px floor, and never ran again, so a 1366px screen
+       showed full-size cards with nine-point type in them. Watching the
+       board instead means it fits when the board first gets its width,
+       again when a phone turns sideways, and again if anything else
+       moves. Card size follows the board's width and not the type, so
+       re-fitting cannot set the observer off again. */
+    var fitting = false;
+    function refit(){
+      if (fitting) return;
+      fitting = true;
+      /* the board first, then the words in it: the cards decide how much
+         room a face has, never the other way round */
+      try {
+        /* Measure from nothing every time. An earlier version carried the
+           correction from one pass to the next, and a dozen refits later
+           it had quietly eaten eighty pixels of board: a 320px phone that
+           should have shown 45px cards showed 37px ones. */
+        state.trim = 0;
+        shape(); fitFaces();
+        /* and then ask the page rather than trust the arithmetic. If
+           anything is still hanging below the fold — a scrollbar, a
+           scoreline that wrapped, something added later — the leftover is
+           measured and taken off, once. */
+        var work = board && board.closest(".work");
+        var over = work ? work.scrollHeight - work.clientHeight : 0;
+        if (over > 0){
+          state.trim = Math.min(60, over);
+          shape(); fitFaces();
+        }
+      } finally { fitting = false; }
+    }
+    /* ---- watch what decides the room, not only the board ----
+       Watching the board alone was not enough once the board started
+       sizing itself to the room. The things that take the room away all
+       settle AFTER the first measurement: on a 320px phone the row of
+       buttons wraps onto three lines, もう一回 gets its furigana put in
+       by hand a moment later, and the rule box folds itself away ten
+       seconds in and hands back seventy pixels. Each of those changes
+       main, the footer or the feedback slot rather than the board, so
+       each is watched, and the board is laid out again when any of them
+       moves. A board resize is an OUTPUT of that, so there is no loop. */
+    if (window.ResizeObserver){
+      if (state.ro) state.ro.disconnect();
+      state.ro = new ResizeObserver(refit);
+      [board, document.getElementById("fb"), document.querySelector("main"),
+       document.querySelector("main .foot"), document.querySelector("main .rule")]
+        .forEach(function(el){ if (el) state.ro.observe(el); });
+    } else {
+      if (window.requestAnimationFrame) requestAnimationFrame(refit);
+      else setTimeout(refit, 0);
+    }
+    /* and once more after a frame and after a beat, because a font
+       arriving changes how the buttons wrap and nothing reports that */
+    if (window.requestAnimationFrame) requestAnimationFrame(refit);
+    setTimeout(refit, 180);
+    if (state.fitting) window.removeEventListener("resize", state.fitting);
+    state.fitting = function(){
+      clearTimeout(state.fitT);
+      state.fitT = setTimeout(function(){ if (board) refit(); }, 120);
+    };
+    window.addEventListener("resize", state.fitting);
+    return refit;
+  }
+
   /* ================= ペア, the memory game =================
      Andrew: "games like memory where you have to flip over two random
      cards in a face-down set of cards and remember where the matching
@@ -3031,216 +3271,9 @@
        whether it fits, and shrunk a point at a time until it does. The
        classes above stay as a first guess, which is only there to save a
        few passes of this loop. */
-    function fitFaces(){
-      each($("board"), ".front", function(el){
-        /* The face sits in its own span, and that is what gets measured.
-           .front is absolutely positioned across the whole card, so its
-           scrollHeight is the card's height whatever it says, and an
-           earlier version compared THAT against the line height to count
-           lines. It was true for every card, so every face shrank to the
-           9px floor and sat tiny in the middle of a big card. */
-        var fc = el.querySelector(".fc");
-        if (!fc) return;
-        el.style.fontSize = "";
-        var size = parseFloat(window.getComputedStyle(el).fontSize) || 15;
-        var guard = 0;
-        function spills(){
-          return fc.scrollHeight > el.clientHeight - 6
-              || fc.scrollWidth > el.clientWidth - 6;
-        }
-        /* Seven, not eight. On an older phone on its side the board gets
-           ninety pixels of height, which is a 39px card, and
-           フットボールのしあい hangs five pixels out of one at eight point.
-           Andrew, on the board fitting the screen: "it does not matter if
-           the writing is small." A word you can read with your nose on the
-           glass beats a word with its tail cut off. */
-        while (guard++ < 22 && size > 7 && spills()){
-          size -= size > 18 ? 2 : 1;
-          el.style.fontSize = size + "px";
-        }
-        /* Fitting is not the same as reading. 友だちのうち fitted at a
-           size that broke it over three ragged lines, with 友 alone on
-           the first. Two lines is the most a card holds and still reads
-           across a table, so anything needing three gives up a little
-           more. */
-        var line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
-        while (guard++ < 34 && size > 10 && fc.scrollHeight > line * 2.3){
-          size -= 1;
-          el.style.fontSize = size + "px";
-          line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
-        }
-        if (spills() && size > 7) el.style.fontSize = (size - 1) + "px";
-      });
-    }
-    /* ---- the whole deck on the screen at once ----
-       Andrew: "there should not be any scrolling. The whole set should be
-       visible in one place and fit the screen. It does not matter if the
-       writing is small."
-
-       A memory game you have to scroll is not a memory game. You cannot
-       hold where a card was if half the board is somewhere else, and on
-       a phone the half you cannot see is the half you keep forgetting.
-       So the deck is laid out to fit the room it has, rather than at a
-       fixed four columns and whatever height that comes to: twenty cards
-       at four columns is five rows of 162px, which is 810px of board on
-       a 740px phone.
-
-       The room is measured rather than assumed, because the rule box
-       folds itself away after ten seconds and hands back 70-odd pixels,
-       a phone can be turned sideways, and the result line appears under
-       the board when the game ends. Every column count is then tried and
-       the one that makes the biggest card wins, with a nudge towards
-       counts that divide the deck evenly: a full rectangle reads as a
-       board, and 6+6+6+2 reads as a mistake. */
-    function shape(){
-      var board = $("board");
-      if (!board) return;
-      var col = board.parentElement, main = document.querySelector("main");
-      if (!col || !main) return;
-      var cs = window.getComputedStyle(col);
-      var availW = col.clientWidth - (parseFloat(cs.paddingLeft) || 0)
-                                   - (parseFloat(cs.paddingRight) || 0);
-      /* Everything between the board and the bottom of the window, named
-         rather than guessed at: the row of buttons and the margin above
-         it, the page's own padding, the dashed box's padding and border,
-         and the result line when there is one. A fudge factor here is a
-         board that overflows by six pixels on one phone and not another. */
-      var foot = main.querySelector(".foot"), fcs = foot && window.getComputedStyle(foot);
-      var footH = foot ? foot.getBoundingClientRect().height
-                       + (parseFloat(fcs.marginTop) || 0) : 0;
-      var mcs = window.getComputedStyle(main);
-      var fb = $("fb");
-      var reserve = fb ? fb.getBoundingClientRect().height : 0;
-      var top = board.getBoundingClientRect().top;
-      var availH = main.getBoundingClientRect().bottom
-                 - (parseFloat(mcs.paddingBottom) || 0)
-                 - footH - top - reserve
-                 - (parseFloat(cs.paddingBottom) || 0)
-                 - (parseFloat(cs.borderBottomWidth) || 0)
-                 - (PAIRS.trim || 0) - 1;
-      if (!(availW > 0)) return;
-      /* ---- the how-to box gets out of the way of the board ----
-         A phone turned sideways has 390px of height, and the bar, the
-         rung list and the open rule box take all of it: the room left
-         for the board came out negative, this gave up, and the board
-         fell back to four fixed columns and 880px of scrolling — the
-         very thing it is here to prevent. The box already folds itself
-         after ten seconds and leaves a chip where it stood, so when it
-         is in the way it is simply asked to do that now. Folding sends
-         a resize, which brings us back here with the room it gave up,
-         and the app remembers it as folded for this rung exactly as if
-         the student had folded it. */
-      var open = !main.classList.contains("folded") && main.querySelector(".howto");
-      if (availH <= 0 && open){ open.click(); return; }
-      /* and if it is still negative with the box gone, lay the board out
-         anyway: too small is bad, but not as bad as a fallback nobody
-         designed */
-      if (availH <= 0) availH = 60;
-
-      var n = deck.length, best = null;
-      /* Two rows at least, once there are six cards or more. A single
-         row of twelve is a word list, not a memory board: there is
-         nothing to remember about up and down, and the cards it buys
-         are only a few pixels bigger than the grid it gives up. */
-      var most = n >= 6 ? Math.ceil(n / 2) : n;
-      function tryGap(gap){
-        best = null;
-        for (var c = 2; c <= most; c++){
-          var rows = Math.ceil(n / c);
-          var w = (availW - gap * (c - 1)) / c;
-          var h = (availH - gap * (rows - 1)) / rows;
-          var size = Math.min(w, h);
-          if (size <= 0) continue;
-          /* a ragged last row is worth about eight per cent of a card */
-          var score = n % c === 0 ? size : size * 0.92;
-          if (!best || score > best.score) best = { c: c, size: size, score: score, gap: gap };
-        }
-      }
-      tryGap(10);
-      /* On a small board the gaps are a tenth of the width. Close them up
-         and everything gets bigger, which is the only direction that
-         helps here. */
-      if (best && best.size < 80) tryGap(6);
-      if (!best) return;
-      /* On a 320px phone twenty cards and the open rule box do not both
-         fit either, and the cards lose: 22px of card is too small to
-         tap, let alone read. Same answer. */
-      if (best.size < 46 && open){ open.click(); return; }
-      var side = Math.max(24, Math.floor(Math.min(best.size, 170)));
-      board.style.gap = best.gap + "px";
-      board.style.maxWidth = "none";
-      board.style.justifyContent = "center";
-      board.style.gridTemplateColumns = "repeat(" + best.c + ", " + side + "px)";
-      window.MEGA_PAIRS_BOX = { w: Math.round(availW), h: Math.round(availH),
-                                cols: best.c, side: side, gap: best.gap,
-                                col: col.clientWidth, top: Math.round(top) };
-    }
-
-    /* ---- fit when the board has a size, not when a timer says so ----
-       Running this on the next frame was a guess about when layout
-       settles, and it was wrong: it measured 66px cards, shrank every
-       face to the 9px floor, and never ran again, so a 1366px screen
-       showed full-size cards with nine-point type in them. Watching the
-       board instead means it fits when the board first gets its width,
-       again when a phone turns sideways, and again if anything else
-       moves. Card size follows the board's width and not the type, so
-       re-fitting cannot set the observer off again. */
-    var fitting = false;
-    function refit(){
-      if (fitting) return;
-      fitting = true;
-      /* the board first, then the words in it: the cards decide how much
-         room a face has, never the other way round */
-      try {
-        /* Measure from nothing every time. An earlier version carried the
-           correction from one pass to the next, and a dozen refits later
-           it had quietly eaten eighty pixels of board: a 320px phone that
-           should have shown 45px cards showed 37px ones. */
-        PAIRS.trim = 0;
-        shape(); fitFaces();
-        /* and then ask the page rather than trust the arithmetic. If
-           anything is still hanging below the fold — a scrollbar, a
-           scoreline that wrapped, something added later — the leftover is
-           measured and taken off, once. */
-        var work = $("board") && $("board").closest(".work");
-        var over = work ? work.scrollHeight - work.clientHeight : 0;
-        if (over > 0){
-          PAIRS.trim = Math.min(60, over);
-          shape(); fitFaces();
-        }
-      } finally { fitting = false; }
-    }
-    /* ---- watch what decides the room, not only the board ----
-       Watching the board alone was not enough once the board started
-       sizing itself to the room. The things that take the room away all
-       settle AFTER the first measurement: on a 320px phone the row of
-       buttons wraps onto three lines, もう一回 gets its furigana put in
-       by hand a moment later, and the rule box folds itself away ten
-       seconds in and hands back seventy pixels. Each of those changes
-       main, the footer or the feedback slot rather than the board, so
-       each is watched, and the board is laid out again when any of them
-       moves. A board resize is an OUTPUT of that, so there is no loop. */
-    if (window.ResizeObserver){
-      if (PAIRS.ro) PAIRS.ro.disconnect();
-      PAIRS.ro = new ResizeObserver(refit);
-      [$("board"), $("fb"), document.querySelector("main"),
-       document.querySelector("main .foot"), document.querySelector("main .rule")]
-        .forEach(function(el){ if (el) PAIRS.ro.observe(el); });
-    } else {
-      if (window.requestAnimationFrame) requestAnimationFrame(refit);
-      else setTimeout(refit, 0);
-    }
-    /* and once more after a frame and after a beat, because a font
-       arriving changes how the buttons wrap and nothing reports that */
-    if (window.requestAnimationFrame) requestAnimationFrame(refit);
-    setTimeout(refit, 180);
-    if (PAIRS.fitting) window.removeEventListener("resize", PAIRS.fitting);
-    PAIRS.fitting = function(){
-      clearTimeout(PAIRS.fitT);
-      PAIRS.fitT = setTimeout(function(){ if ($("board")) refit(); }, 120);
-    };
-    window.addEventListener("resize", PAIRS.fitting);
-    window.MEGA_PAIRS_FIT = refit;
+    /* The board sizes itself to the room it has and the faces to the
+       cards; both live outside this rung, because かるた needs them too. */
+    window.MEGA_PAIRS_FIT = boardFit($("board"), deck.length, PAIRS);
 
     function paintWho(){
       $("who").innerHTML = PAIRS.two
@@ -4036,7 +4069,27 @@
 
      Alone, it is the clock: clear the board, and the app remembers
      your best time for that set and that many cards. */
-  var KARUTA = { kind: "pic", two: false, n: 9 };
+  var KARUTA = { kind: "pic", mode: "solo", n: 9, trim: 0 };
+  /* ---- the three ways to play, named on the screen ----
+     Andrew: claiming the call before grabbing is confusing for students,
+     so keep it and offer taking turns as well. All three are buttons
+     rather than a toggle, so a class can see what the choices are
+     without pressing anything, and `how` is the sentence that says what
+     the one you are in actually does. */
+  var KMODES = [
+    { id: "solo",  ja: "ひとり",       en: "On your own",
+      how: "Clear the table as fast as you can." },
+    { id: "turns", ja: "かわりばんこ", en: "Take turns",
+      how: "Take turns: the app says whose go it is. Listen, then tap." },
+    { id: "race",  ja: "きょうそう",   en: "Race for it",
+      how: "Race: press your own Shift key to claim the word, then tap." }
+  ];
+  /* The two players, in the colours and patterns the team quiz uses, so
+     a student who has played that one already knows which side is which. */
+  var KTEAMS = [
+    { id: 0, ja: "ひだり", hex: "#165e83", pat: "sei",  key: "left Shift" },
+    { id: 1, ja: "みぎ",   hex: "#c9171e", pat: "ichi", key: "right Shift" }
+  ];
   var KSETS = [
     { id: "pic",   ja: "え",       en: "hear a word, tap the picture" },
     { id: "word",  ja: "ことば",   en: "hear a word, tap the Japanese" },
@@ -4069,21 +4122,18 @@
   DRAW.karuta = function(){
     var deck = shuffle(karutaDeck(KARUTA.kind, KARUTA.n));
     var left = deck.slice(), call = null, score = [0, 0], claim = null,
-        tried = {}, began = 0, overYet = false;
-    var setName = "";
+        tried = {}, began = 0, overYet = false, turn = 0;
+    var setName = "", two = KARUTA.mode !== "solo";
     KSETS.forEach(function(k){ if (k.id === KARUTA.kind) setName = k.en; });
+    var P0 = KTEAMS[0], P1 = KTEAMS[1];
 
     $("main").innerHTML = ruleFor("karuta", "tight")
-      + '<div class="work fit"><div class="col">'
-      + '<div class="scoreline" id="who"></div>'
+      + '<div class="work fit"><div class="col kar">'
+      + '<div id="who"></div>'
       + '<div class="callbar"><button class="btn" id="again2">'
       + 'もう一度[いちど] <span class="en">Play it again</span></button>'
       + '<span class="callnote" id="note"></span></div>'
       + '<div class="board tori" id="board"></div>'
-      + '<div class="buzz" id="buzz" hidden>'
-      + '<button class="bz" data-p="0"><b>ひだり</b><i>press A</i></button>'
-      + '<button class="bz" data-p="1"><b>みぎ</b><i>press L</i></button>'
-      + '</div>'
       + '<div id="fb" class="fbslot"></div>'
       + '</div></div>'
       + foot(KSETS.map(function(k){
@@ -4091,95 +4141,158 @@
             + '" data-set="' + k.id + '" title="' + esc(k.en) + '">' + k.ja + '</button>';
         }).join("")
         + '<span class="gapsm"></span>'
-        + '<button class="btn sm ' + (KARUTA.two ? "" : "ghost") + '" id="two2">ふたり</button>'
+        /* ---- how to play, named rather than hidden in a toggle ----
+           Andrew: claiming the call before you grab is confusing, so
+           keep it and offer turns as well — "how will you give this
+           option so that it is very easy to understand?"
+
+           Three buttons, not a switch. All three ways to play are on
+           the screen at once with their own names, the one you are in
+           is filled, and the line beside them says in a sentence what
+           it means. A toggle would hide two thirds of that. */
+        + KMODES.map(function(m){
+            return '<button class="btn sm ' + (m.id === KARUTA.mode ? "" : "ghost")
+              + '" data-mode="' + m.id + '" title="' + esc(m.en) + '">'
+              + ruby(m.ja) + '</button>';
+          }).join("")
+        + '<span class="gapsm"></span>'
         + '<button class="btn ghost sm" id="size2">' + KARUTA.n + 'まい</button>'
-        + '<button class="btn ghost sm" id="deal">はじめ</button>');
+        + '<button class="btn ghost sm" id="deal">はじめ</button>'
+        + '<span class="hint" id="howto2"></span>');
     $("again2").innerHTML = ruby("もう一度[いちど]") + ' <span class="en">Play it again</span>';
 
     each($("main"), "[data-set]", function(b){
       b.onclick = function(){ KARUTA.kind = b.dataset.set; DRAW.karuta(); };
     });
-    $("two2").onclick = function(){ KARUTA.two = !KARUTA.two; DRAW.karuta(); };
+    each($("main"), "[data-mode]", function(b){
+      b.onclick = function(){ KARUTA.mode = b.dataset.mode; DRAW.karuta(); };
+    });
     $("size2").onclick = function(){
       KARUTA.n = KARUTA.n === 9 ? 12 : (KARUTA.n === 12 ? 6 : 9);
       DRAW.karuta();
     };
     $("deal").onclick = function(){ DRAW.karuta(); };
     $("again2").onclick = function(){ if (call) say(call.say, null, true); };
+    KMODES.forEach(function(m){
+      if (m.id === KARUTA.mode) $("howto2").textContent = m.how;
+    });
 
     $("board").innerHTML = deck.map(function(c, i){
       return '<button class="card up" data-c="' + i + '">'
         + '<span class="front' + (c.pic ? " pic" : "") + (c.jp ? " jp" : "")
-        + '">' + c.face + '</span></button>';
+        + '"><span class="fc">' + c.face + '</span></span></button>';
     }).join("");
     each($("board"), "[data-c]", function(b){
       b.onclick = function(){ grab(+b.dataset.c, b); };
     });
-    $("buzz").hidden = !KARUTA.two;
-    each($("buzz"), "[data-p]", function(b){
-      b.onclick = function(){ buzz(+b.dataset.p); };
-    });
-    /* the keys matter more than the buttons: two students reaching for
-       the same screen knock each other off it, and two keys at opposite
-       ends of the keyboard are a fair race */
+    /* the same fitting ペア uses: the table sizes itself to the room
+       under it, and a bigger scoreboard simply means smaller cards,
+       which is the trade Andrew asked for */
+    window.MEGA_KARUTA_FIT = boardFit($("board"), deck.length, KARUTA);
+
+    /* ---- the two keys ----
+       A and L were arbitrary and Andrew said so. The two Shift keys are
+       not: each player presses the one on their own side of the
+       keyboard, so there is nothing to remember and nothing to tell
+       them apart by except where they are sitting. Both are still a
+       fair race, at opposite ends of the board, and a tablet with no
+       keyboard still has the two buttons on the screen. */
     function onKey(e){
-      if (!KARUTA.two || overYet) return;
-      var k = (e.key || "").toLowerCase();
-      if (k === "a") buzz(0); else if (k === "l") buzz(1);
+      if (KARUTA.mode !== "race" || overYet || e.repeat) return;
+      if (e.code === "ShiftLeft") buzz(0);
+      else if (e.code === "ShiftRight") buzz(1);
     }
     document.addEventListener("keydown", onKey);
     if (KEYOFF) document.removeEventListener("keydown", KEYOFF);
     KEYOFF = onKey;
 
-    /* a seam for the check: what is on the table, and what is being
-       asked for right now */
+    /* a seam for the check: what is on the table, what is being asked
+       for right now, who may take it and whose go it is */
     window.MEGA_KARUTA = {
       cards: function(){ return deck.map(function(c){ return c.id; }); },
       call: function(){ return call ? call.id : null; },
-      claim: function(){ return claim; }
+      claim: function(){ return claim; },
+      turn: function(){ return two ? turn : null; },
+      mode: function(){ return KARUTA.mode; }
     };
 
     paintWho();
     next();
 
+    /* ---- the scoreboard ----
+       Andrew: "make the score cards bigger and a striking colour. The
+       game cards can be slightly smaller if needed."
+
+       So it is the quiz's scoreboard: the panel carries the colour, the
+       pattern and a number big enough to read across a table, and it is
+       also where the game tells you what to do. In かわりばんこ the
+       player whose go it is lights up and says so; in きょうそう both
+       panels carry their own buzzer and the key beside it. One place to
+       look, whichever way you are playing. */
     function paintWho(){
-      $("who").innerHTML = KARUTA.two
-        ? '<span class="pl' + (claim === 0 ? " on" : "") + '">ひだり <b>'
-          + score[0] + '</b></span>'
-          + '<span class="pl' + (claim === 1 ? " on" : "") + '">みぎ <b>'
-          + score[1] + '</b></span>'
-        : '<span class="pl on">' + esc(setName) + '</span>';
+      var w = $("who");
+      if (!two){
+        w.className = "scoreline";
+        w.innerHTML = '<span class="pl on">' + esc(setName) + '</span>';
+      } else {
+        w.className = "kteams";
+        w.innerHTML = [P0, P1].map(function(t, i){
+          var mine = KARUTA.mode === "turns" ? turn === i : claim === i;
+          var dim = KARUTA.mode === "turns" && turn !== i;
+          return '<div class="kteam pat-' + t.pat + (mine ? " turn" : "")
+            + (dim ? " off" : "") + '" style="--tc:' + t.hex + '" data-p="' + i + '">'
+            + '<span class="nm">' + esc(t.ja) + '</span>'
+            + '<span class="pt">' + score[i] + '</span>'
+            + (KARUTA.mode === "turns"
+                ? '<span class="go">' + (turn === i ? "きみのばん" : "まって")
+                  + '<i>' + (turn === i ? "your turn" : "wait") + '</i></span>'
+                : '<button class="bz" data-p="' + i + '">とる'
+                  + '<i>' + esc(t.key) + '</i></button>')
+            + '</div>';
+        }).join("");
+        each(w, ".bz", function(b){
+          b.onclick = function(){ buzz(+b.dataset.p); };
+        });
+      }
       var key = "karuta:" + KARUTA.kind + KARUTA.n;
-      $("sc").innerHTML = KARUTA.two
+      $("sc").innerHTML = two
         ? '<b>' + (score[0] + score[1]) + '</b> of ' + deck.length + ' taken'
         : '<b>' + (deck.length - left.length) + '</b> of ' + deck.length
           + (S.best && S.best[key] ? ' · best ' + S.best[key] + 's' : '');
-      $("note").textContent = !KARUTA.two ? ""
-        : (claim === null ? "Press A or L to claim it."
-                          : (claim === 0 ? "ひだり, grab it." : "みぎ, grab it."));
+      $("note").textContent =
+          KARUTA.mode === "race"
+            ? (claim === null ? "Press your Shift key first."
+                              : (claim === 0 ? P0.ja + ", take it." : P1.ja + ", take it."))
+        : KARUTA.mode === "turns"
+            ? "Listen, then tap your card."
+        : "";
     }
     function next(){
       if (!left.length) return over();
-      claim = null; tried = {};
+      tried = {};
+      /* In かわりばんこ the call already belongs to somebody, which is
+         the whole point of it: nothing to press, just listen and tap. */
+      claim = KARUTA.mode === "turns" ? turn : null;
       call = left[Math.floor(Math.random() * left.length)];
       if (!began) began = Date.now();
       paintWho();
       say(call.say, null, true);
     }
     function buzz(p){
-      if (claim !== null || tried[p] || !call) return;
+      if (KARUTA.mode !== "race" || claim !== null || tried[p] || !call) return;
       claim = p; paintWho();
     }
     function grab(i, btn){
       var c = deck[i];
       if (!call || btn.classList.contains("got")) return;
-      if (KARUTA.two && claim === null) return;          /* claim it first */
-      var who = KARUTA.two ? claim : 0;
+      if (two && claim === null) return;          /* claim it first */
+      var who = two ? claim : 0;
       if (c.id === call.id){
         btn.classList.add("got");
         left = left.filter(function(x){ return x.id !== c.id; });
         score[who]++;
-        if (!KARUTA.two) first("karuta:" + c.id, 1, "taken");
+        if (!two) first("karuta:" + c.id, 1, "taken");
+        if (KARUTA.mode === "turns") turn = 1 - turn;
         paintWho();
         setTimeout(next, 420);
         return;
@@ -4190,21 +4303,37 @@
       btn.classList.add("miss");
       setTimeout(function(){ btn.classList.remove("miss"); }, 420);
       CLICK.clunk();
-      if (KARUTA.two){
-        tried[who] = 1;
-        claim = tried[1 - who] ? null : 1 - who;
-        paintWho();
-        if (claim === null) setTimeout(function(){ say(call.say, null, true); }, 450);
-      } else {
+      if (!two){
         setTimeout(function(){ say(call.say, null, true); }, 450);
+        return;
+      }
+      tried[who] = 1;
+      if (!tried[1 - who]){
+        /* the other player gets a free go at the same call, in both
+           two-player games: that is how it is settled at a real table */
+        claim = 1 - who;
+        paintWho();
+        setTimeout(function(){ say(call.say, null, true); }, 450);
+        return;
+      }
+      /* both have missed it. In きょうそう the call is thrown open
+         again; in かわりばんこ the go passes and a new word is called,
+         because a word nobody could find should not hold up the game. */
+      if (KARUTA.mode === "race"){
+        claim = null;
+        paintWho();
+        setTimeout(function(){ say(call.say, null, true); }, 450);
+      } else {
+        turn = 1 - turn;
+        setTimeout(next, 620);
       }
     }
     function over(){
       overYet = true;
       ninja($("fb"));
-      if (KARUTA.two){
+      if (two){
         var win = score[0] === score[1] ? "ひきわけ"
-          : (score[0] > score[1] ? "ひだりのかち" : "みぎのかち");
+          : (score[0] > score[1] ? P0.ja + "のかち" : P1.ja + "のかち");
         $("fb").innerHTML = '<div class="mark yes"><b>' + esc(win) + '</b>'
           + score[0] + ' : ' + score[1] + '</div>';
       } else {
