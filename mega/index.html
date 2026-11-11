@@ -621,7 +621,14 @@
      is what was really behind words spilling out of the cards. */
   .board{display:grid;grid-template-columns:repeat(4,minmax(66px,1fr));gap:10px;
        width:100%;max-width:min(680px,92vw);margin:0 auto}
+  /* min-width:0 is load-bearing. A grid item will not shrink below its own
+     min-content width unless it is told it may, so a column set to 38px on
+     a small phone still drew a 52px card: the widest word inside it held
+     the card open and the whole board overflowed. The words are measured
+     and shrunk to fit the card, so the card must be free to be as small as
+     the board needs. */
   .card{position:relative;aspect-ratio:1;border:0;background:none;padding:0;
+       min-width:0;min-height:0;
        cursor:pointer;font-family:var(--font);perspective:600px}
   .card .back,.card .front{position:absolute;inset:0;display:flex;align-items:center;
        justify-content:center;border-radius:12px;border:1.5px solid var(--line);
@@ -636,7 +643,14 @@
   .card .front{background:var(--paper);font-size:21px;opacity:0;transform:scale(.94)}
   /* the face's own box: what the fitting measures, and the only thing in
      the card that knows how tall the words actually are */
-  .card .front .fc{display:block;max-width:100%;word-break:break-word}
+  /* No breaking inside a word. "Wednesday" split across two lines as
+     "Wednesda / y" reads as a typo, and a student matching words should
+     not have to work out which one they are looking at. An English word
+     that will not fit on a line overflows instead, which the fitting
+     sees and answers by making the type smaller until the word fits.
+     Japanese needs nothing here: it breaks between characters anyway. */
+  .card .front .fc{display:block;max-width:100%;
+       word-break:normal;overflow-wrap:normal}
   /* These are starting sizes for a full-size card, not final ones. The
      page measures each face and brings it down until it fits the card it
      is actually in, so a generous start costs nothing and a mean one
@@ -659,6 +673,21 @@
     .board{grid-template-columns:repeat(4,minmax(58px,1fr));gap:6px}
     .card .front{font-size:12.5px}
     .card .front.jp{font-size:17px}
+  }
+  /* ---- a phone turned sideways ----
+     390px of height, and the bar, the rung list, the scoreline and three
+     wrapped rows of buttons leave about fifty pixels for the board: one
+     row of cards, which is not a memory game. None of that furniture
+     needs to be full size on a screen this short, and every pixel it
+     gives back is a pixel of card. */
+  @media (max-height:500px){
+    main{padding:6px 10px 8px}
+    .scoreline{margin-bottom:4px}
+    .pl{font-size:12px;padding:1px 9px}
+    .pl b{font-size:14px}
+    .foot{margin-top:5px;gap:6px}
+    .foot .btn.sm{min-height:30px;font-size:12px;padding:0 8px}
+    .work.fit > .col{padding:4px}
   }
   /* ---- クイズ, the projector quiz ----
      Sized for the back row of a classroom, not for a laptop at arm's
@@ -912,10 +941,10 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261110a"></script>
-<script src="data/mega.js?v=20261110a"></script>
-<script src="data/audio.js?v=20261110a"></script>
-<script src="app.js?v=20261110a"></script>
-<div class="build" aria-hidden="true">build 2026-11-10a</div>
+<script src="tabs.js?v=20261111a"></script>
+<script src="data/mega.js?v=20261111a"></script>
+<script src="data/audio.js?v=20261111a"></script>
+<script src="app.js?v=20261111a"></script>
+<div class="build" aria-hidden="true">build 2026-11-11a</div>
 </body>
 </html>
