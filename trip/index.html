@@ -758,6 +758,7 @@
   <div class="kmore"><button id="kanaMore">＋ だくてん・ようおん<span class="en"></span></button></div>
 </div>
 
+<script src="tabs.js"></script>
 <script src="map.js"></script>
 <script src="data.js"></script>
 <script>
@@ -1819,7 +1820,7 @@
   function closeSheet(){ $("sheet").className = ""; }
 
   /* ================= navigation ================= */
-  var BUILD = "Version 80, 29 September 2026";
+  var BUILD = "Version 81, 10 November 2026";
   /* The number on its own. Students compare these across a table to work out
      who has not updated, so it has to be somewhere glanceable rather than
      only at the foot of the itinerary. Derived from BUILD so there is one
@@ -1874,6 +1875,7 @@
     return c ? c.dataset.go : "places";
   }
   var APP = ["日本研修旅行", "Japan Study Tour 2026  \u00b7  v" + VER];
+  var TABKEY = "jtTab-v1";
   function showTab(name){
     closeSheet();
     // Walking away from a page should not leave it playing behind you.
@@ -1894,6 +1896,12 @@
       if (on) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
+    /* Remember the tab, so the app opens where it was left, and keep the
+       open tab on the screen if the bar ever has to scroll. The module is
+       reached as window.TABS because this file has a TABS of its own,
+       which is the list of tabs. */
+    window.TABS.keep(TABKEY, name);
+    window.TABS.inview(document.querySelector("nav"));
   }
   // Draws whatever is on top of the stack, or the current tab if it is empty,
   // and puts a labelled way back at the end of the page.
@@ -2224,7 +2232,18 @@
      back and the new photos get saved too. Keep in step with CACHE in sw.js. */
   try { if (localStorage.getItem(SAVED_KEY)) markSaved("Saved. This app works with no signal."); }
   catch(err){}
-  goTab("places");
+  /* Where the app opens: the tab a link asked for (?tab=phrases), then
+     the tab this phone was last on, then the places list. On a trip this
+     is the difference between a student finding the phrases again in one
+     tap and hunting for them at a train barrier.
+
+     Places rather than the first tab, because that is where this app has
+     always opened: the itinerary is the first tab but the places list is
+     the front door, and a student who has never opened the app should
+     still land where they always did. */
+  var TABIDS = Object.keys(TABS);
+  goTab(window.TABS.own(TABKEY, TABIDS,
+    window.TABS.last(TABKEY, TABIDS) || "places"));
 })();
 </script>
 </body>

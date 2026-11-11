@@ -11,7 +11,7 @@
      単元の道 v2 — the whole 7-12 spine. Every unit walks the same
      road, with a gap check at the gate:
 
-       0 Before you start  five quick checks; misses become a PLAN
+       0 はじめるまえに  five quick checks; misses become a PLAN
                         with deep links into the Grammar Hub and
                         the Vocab Hub (identify gaps, plan help)
        1 ことば          the unit's words, every part glossed
@@ -23,14 +23,10 @@
                         in the word its box is a positional FRAME
                         fused from radicals on the spot, role colours
                         flashing as it forms
-       3 問答            answer aloud, tick what your answer had (list
-                        derived from the model answer), model on request
+       3 問答            reveal-and-self-mark conversation practice
        4 文法            the patterns the unit leans on, deep-linked
-       5 クラフト        worked example beside a deck of slides: three
-                        edits (options shuffled, explanations in plain
-                        words), then model sentences rebuilt from tiles
-                        with one decoy; then an EXTENSION task with a
-                        self-check list
+       5 クラフト        worked example, named moves, editing, then
+                        an EXTENSION task with a self-check list
 
      GENERATED FILE — edit tools/walk-template.html and the JSON
      under data/units/, then run tools/gen-units.js. Do not edit
@@ -40,14 +36,12 @@
     /* ---- typography: two scripts, two faces ----
        Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
        UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
-       handwriting models, which is why it is the classroom default rather
-       than a gothic. Both are already on the school machines, so nothing is
-       downloaded and nothing breaks offline.
+       handwriting models, which is why it is the classroom default. Both
+       fonts are already installed on the school machines (Windows/Office),
+       so nothing is downloaded and nothing breaks offline.
        One stack does both jobs because the browser falls back per character:
        Latin resolves inside --font-en, kana and kanji fall straight through
-       to --font-jp. The Japanese list puts every textbook face it can ahead
-       of any gothic, so a machine without the UD family still gets kyokasho
-       stroke shapes. Never write a font name outside this block. */
+       to --font-jp. Never write a font name outside this block. */
     --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
     --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
     --font:var(--font-en),var(--font-jp),sans-serif;
@@ -63,8 +57,7 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:var(--font);background:var(--bg);color:var(--ink);
        line-height:1.5;min-height:100vh;padding:16px}
-  .wrap{max-width:min(calc(100vw - 170px),1500px);margin:0 auto}  /* leaves room for the page lever */
-  @media (max-width:1100px){.wrap{max-width:96vw}}
+  .wrap{max-width:1000px;margin:0 auto}
   .container{background:var(--paper);border:1px solid var(--line);border-radius:12px;
        padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
   h1{text-align:center;font-size:22px;font-family:var(--font);letter-spacing:.5px}
@@ -103,7 +96,7 @@
   .uhead{text-align:center;margin-bottom:4px}
   .uhead .ut{font-family:var(--font);font-size:19px}
   .uhead .utheme{font-size:11.5px;color:var(--muted)}
-  .uhead .ublurb{font-size:13px;color:var(--muted);max-width:820px;margin:4px auto 0}
+  .uhead .ublurb{font-size:13px;color:var(--muted);max-width:640px;margin:4px auto 0}
   .gapcard{display:flex;align-items:center;gap:14px;text-align:left;border:1px dashed var(--amber);
        border-radius:10px;background:#faf6ea;padding:11px 14px;cursor:pointer;margin:16px 0 0}
   .gapcard:hover{border-style:solid}
@@ -113,11 +106,9 @@
   .gapcard .ss{font-size:12px;color:var(--muted)}
   .gapcard .stag{margin-left:auto;font-size:11.5px;font-weight:700;white-space:nowrap;color:var(--amber)}
   .gapcard.ok .stag{color:var(--correct)}
-  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:10px 0}
-  .stepcard{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;border:1px solid var(--line);
-       border-radius:10px;background:var(--paper);padding:12px 14px;cursor:pointer}
-  .stepcard .stag{margin-left:0;min-height:1em}
-  .stja{font-family:var(--font);font-size:.8em;color:var(--muted);font-weight:400;margin-left:4px}
+  .steps{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+  .stepcard{display:flex;align-items:center;gap:14px;text-align:left;border:1px solid var(--line);
+       border-radius:10px;background:var(--paper);padding:11px 14px;cursor:pointer}
   .stepcard:hover{border-color:var(--accent)}
   .stepcard .sn{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);color:var(--muted);
        display:grid;place-items:center;font-weight:800;font-size:15px;flex:none}
@@ -137,7 +128,7 @@
   .prog{font-size:12px;color:var(--muted);font-weight:700}
 
   /* ---- step 0: gap check ---- */
-  .gapbox{border:1px solid var(--line-soft);border-radius:12px;background:var(--paper);padding:18px 16px;max-width:820px;margin:0 auto}
+  .gapbox{border:1px solid var(--line-soft);border-radius:12px;background:var(--paper);padding:18px 16px;max-width:640px;margin:0 auto}
   .gapopts{display:flex;flex-direction:column;gap:7px;margin-top:12px}
   .planrow{border:1px solid var(--line-soft);border-left:4px solid var(--amber);border-radius:8px;
        background:var(--paper);padding:10px 14px;margin-bottom:8px;font-size:13px}
@@ -146,8 +137,7 @@
   .planrow .plink{margin-top:4px}
 
   /* ---- step 1: study table ---- */
-  .wtable{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:8px;align-items:start}
-  .wtable .wlegend{grid-column:1/-1}
+  .wtable{display:flex;flex-direction:column;gap:8px}
   .wrow{display:flex;align-items:center;gap:14px;border:1px solid var(--line-soft);border-radius:10px;
        background:var(--paper);padding:9px 12px}
   .wrow .wk{font-family:var(--font);font-size:27px;min-width:96px;text-align:center}
@@ -158,39 +148,6 @@
        padding:3px 8px;background:var(--bg);min-width:44px}
   .pchip .pk{font-family:var(--font);font-size:17px;line-height:1.2}
   .pchip .pg{font-size:8.5px;color:var(--muted);white-space:nowrap}
-
-  /* ---- step 1, kanji units: the purple-lab word card ----
-     The same card the Kanji Factory and the English word builders use.
-     Word large and serif, reading beside it, meaning under it, a dashed
-     rule, then the parts as serif code with their glosses joined by
-     " + ", then, for each of the unit's key kanji, the radicals it is
-     written with — coloured by the job each one does IN THAT CHARACTER,
-     with the radical's Japanese name, which is the vocabulary students
-     are taught to say aloud.
-     The colour is on the radicals and nowhere else, because that is the
-     only place this file's data states a role. The word's own kanji stay
-     neutral, and so does the parts bank in step 2: a part has no job
-     until there is a character for it to do the job in. */
-  .wcard{border:1px solid var(--line-soft);border-radius:10px;background:var(--paper);padding:13px 15px}
-  .wcard .w{font-family:var(--font);font-size:30px;font-weight:700;line-height:1.2;vertical-align:middle}
-  .wcard .wr{font-size:12.5px;color:var(--muted);font-style:italic;margin-left:9px}
-  .wcard .wdef{display:block;font-size:13.5px;margin:6px 0;line-height:1.5}
-  .wcard .comp{font-size:13.5px;color:var(--muted);line-height:1.8;border-top:1px dashed var(--line-soft);
-       padding-top:6px;margin-top:6px}
-  .wcard .comp b,.wcard .comp i{color:var(--ink)}
-  .wcard .comp code{font-family:var(--font);font-weight:700;font-size:20px;vertical-align:-1px}
-  .wcard .comp code.c-sense{color:var(--sense)} .wcard .comp code.c-sound{color:var(--sound)}
-  .wcard .comp code.c-both{color:var(--both)} .wcard .comp code.c-none{color:var(--muted)}
-  .wcard .rad{font-size:11px;font-weight:700;color:var(--muted)}
-  .wcard .kn{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:6px}
-  .wcard .kn .kc{font-family:var(--font);font-size:19px;font-weight:700;color:var(--ink);vertical-align:-1px}
-  .wcard .kn .kc .kglyph{vertical-align:middle;margin:-3px 0}
-  .kvgnote{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:14px;text-align:left}
-  .wcard .kn .hk{display:block;font-size:12px;margin-top:1px}
-  .wlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;
-       border:1px solid var(--line-soft);border-radius:8px;padding:9px 13px;background:var(--bg)}
-  .wlegend .c-sense{color:var(--sense)} .wlegend .c-sound{color:var(--sound)} .wlegend .c-both{color:var(--both)}
-  .wlegend .note{font-weight:400;color:var(--muted)}
   .kpchip{border:1px dashed var(--line);border-radius:8px;padding:3px 10px;background:var(--bg);
        font-family:var(--font);font-size:16px;color:var(--muted)}
   .kpchip small{display:block;font-family:var(--font);font-size:8.5px}
@@ -287,15 +244,7 @@
        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* ---- step 3: QA ---- */
-  .qabox{border:1px solid var(--line-soft);border-radius:12px;background:var(--paper);padding:18px 20px;max-width:1100px;margin:0 auto}
-  .qagrid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}
-  @media (max-width:760px){.qagrid{grid-template-columns:1fr}}
-  .qacheck{border-left:1px dashed var(--line);padding-left:20px;display:flex;flex-direction:column;gap:7px}
-  .qacheck .xrow{display:flex;gap:9px;align-items:flex-start;font-size:13.5px}
-  .qacheck .xtick{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--line);background:var(--paper);
-       cursor:pointer;font-size:13px;color:var(--correct);font-weight:800;line-height:1}
-  .qacheck .xrow.ok .xtick{border-color:var(--correct);background:var(--okbg)}
-  .qacheck .qamarks{justify-content:space-between;align-items:center}
+  .qabox{border:1px solid var(--line-soft);border-radius:12px;background:var(--paper);padding:18px 16px;max-width:640px;margin:0 auto}
   .qaq{margin-bottom:12px}
   .jp{font-family:var(--font);font-size:19px;line-height:1.7}
   .jp .sub{display:block;font-family:var(--font);font-size:12.5px;color:var(--muted)}
@@ -307,8 +256,7 @@
   .qadonep .big{font-size:34px}
 
   /* ---- step 4: grammar ---- */
-  .gramrows{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin:0 auto}
-  .gramrows .gramintro{grid-column:1/-1;margin-bottom:0}
+  .gramrows{display:flex;flex-direction:column;gap:10px;max-width:680px;margin:0 auto}
   .gramrow{border:1px solid var(--line-soft);border-radius:10px;background:var(--paper);padding:12px 14px;
        display:flex;gap:12px;align-items:flex-start}
   .gramrow .gt{font-weight:700;font-size:14px}
@@ -321,32 +269,12 @@
   .hublink:hover{border-color:var(--accent)}
 
   /* ---- step 5: craft + extension ---- */
-  .craftintro{font-size:13px;color:var(--muted);text-align:center;max-width:820px;margin:0 auto 14px}
-  .craftgrid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.25fr);gap:22px;align-items:start}
-  @media (max-width:860px){.craftgrid{grid-template-columns:1fr}}
-  .model{margin:0;display:flex;flex-direction:column;gap:8px;position:sticky;top:12px}
+  .craftintro{font-size:13px;color:var(--muted);text-align:center;max-width:620px;margin:0 auto 14px}
+  .model{max-width:680px;margin:0 auto 20px;display:flex;flex-direction:column;gap:9px}
   .msent{border:1px solid var(--line-soft);border-radius:10px;background:var(--paper);padding:10px 14px;position:relative}
   .msent .move{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
        color:#fff;background:var(--amber);border-radius:8px;padding:1px 8px;margin-bottom:4px}
-  .edits{margin:0;display:flex;flex-direction:column;gap:12px}
-  .olet{display:inline-block;min-width:1.4em;font-family:var(--font);font-size:11px;font-weight:800;color:var(--muted);
-       border:1px solid var(--line);border-radius:6px;padding:1px 4px;text-align:center;margin-right:4px;vertical-align:2px}
-  .olet.good{color:var(--correct);border-color:var(--correct);background:var(--okbg)}
-  .whyline{padding:4px 0;border-bottom:1px dotted var(--line-soft)}
-  .whyline:last-child{border-bottom:none}
-  .decknav{display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .dots{display:flex;gap:6px}
-  .dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);background:var(--bg);cursor:pointer;padding:0}
-  .dot.done{background:var(--correct);border-color:var(--correct)}
-  .dot.cur{box-shadow:0 0 0 3px rgba(168,50,50,.25);border-color:var(--accent)}
-  .rebuild .order-line{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:58px;
-       padding:10px;border:2px dashed var(--line);border-radius:10px;background:var(--bg);margin:8px 0 12px}
-  .rebuild .order-line.ok{border-style:solid;border-color:var(--correct);background:var(--okbg)}
-  .rebuild .order-ph{color:var(--muted);font-size:13px;font-weight:600}
-  .rebuild .ktile{cursor:pointer;font-size:19px}
-  .rebuild .ktile.ord{border-color:var(--accent);background:#faf5f0}
-  .rebuild .ktile.used{opacity:.25}
-  .rebuild .why.good{color:var(--correct)}
+  .edits{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
   .edit{border:1px solid var(--line-soft);border-radius:10px;background:var(--paper);padding:14px}
   .edit .weaklab{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--wrong);margin-bottom:3px}
   .edit .opts{display:flex;flex-direction:column;gap:7px;margin-top:10px}
@@ -356,9 +284,9 @@
   .optbtn.good{border-color:var(--correct);background:var(--okbg);color:var(--correct)}
   .optbtn.bad{border-color:var(--wrong);background:var(--badbg);animation:shake .4s}
   .edit .why{font-size:12.5px;color:var(--muted);margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
-  .payoff{max-width:820px;margin:16px auto 0;border:1px solid var(--line);border-left:4px solid var(--correct);
+  .payoff{max-width:620px;margin:16px auto 0;border:1px solid var(--line);border-left:4px solid var(--correct);
        border-radius:8px;background:var(--okbg);padding:12px 16px;font-size:13.5px}
-  .stretch{max-width:820px;margin:14px auto 0;border:1px solid var(--line);border-left:4px solid var(--amber);
+  .stretch{max-width:620px;margin:14px auto 0;border:1px solid var(--line);border-left:4px solid var(--amber);
        border-radius:8px;background:#faf6ea;padding:12px 16px}
   .stretch .xh{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
   .stretch .xcheck{margin-top:10px;display:flex;flex-direction:column;gap:6px}
@@ -413,10 +341,6 @@
       <div class="studytools"><button class="btn btn-ghost" id="hideBtn"></button></div>
       <div class="wtable" id="study-table"></div>
       <div class="vocablink" id="study-vocab"></div>
-      <p class="kvgnote">Characters are drawn from
-        <a href="https://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a> stroke data by Ulrich Apel,
-        used under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>,
-        so each part can be coloured separately. Which job a part does in a character is this app's own claim, not KanjiVG's.</p>
       <div class="stepfoot"><span class="prog" id="study-prog"></span>
         <button class="btn btn-primary" id="study-next"></button></div>
     </section>
@@ -455,23 +379,20 @@
         <span id="craftLever" data-scope="#scr-craft"></span></div>
       <div class="stephead" id="craft-head"></div>
       <p class="craftintro" id="craft-intro"></p>
-      <div class="craftgrid">
-        <div class="model" id="craft-model"></div>
-        <div>
-          <div class="stephead"><div class="sh" id="craft-edith"></div><div class="shs" id="craft-edsub"></div></div>
-          <div class="edits" id="craft-edits"></div>
-        </div>
-      </div>
+      <div class="model" id="craft-model"></div>
+      <div class="stephead"><div class="sh" id="craft-edith"></div>
+        <div class="shs">One is genuinely better. The other two are flat, or hide a common error.</div></div>
+      <div class="edits" id="craft-edits"></div>
       <div id="craft-payoff"></div>
       <div id="craft-stretch"></div>
       <div class="stepfoot"><span class="prog" id="craft-prog"></span><span></span></div>
     </section>
 
-    <div class="buildtag">単元の道 build 2026-09-02b · PoC · generated by tools/gen-units.js</div>
+    <div class="buildtag">単元の道 build 2026-08-20 · PoC · generated by tools/gen-units.js</div>
   </div>
 </div>
 
-<script src="../kanji-strokes.js"></script>
+<script src="tabs.js"></script>
 <script src="lever.js"></script>
 <script>
 "use strict";
@@ -11311,7 +11232,6 @@ const S = {
   screen:"home", unit:null,
   done:{}, first:{}, built:{},
   qa:{}, gram:{}, edits:{}, xticks:{},
-  craftI:{}, craftOrder:{}, craftBad:{}, rebuild:{},   // craft deck: slide, shuffled options, misses, rebuilds
   gapState:{},   // key -> {i, answers:[idx...], done:bool}
   hide:false,
 };
@@ -11336,11 +11256,22 @@ const tiles = (w)=>[...w];
 /* ============================================================
    NAVIGATION + PAINT
    ============================================================ */
+/* Where this app opens. It is a map rather than a tab bar: every screen
+   below the unit list belongs to one unit, so the unit is remembered with
+   the screen and a link carries both — ?unit=u12&tab=build. A screen whose
+   unit is missing falls back to the map rather than painting nothing. */
+const WKEY = "walk-v1";
+const SCREENS = ["home","unit","gap","study","build","qa","gram","craft"];
+function rememberWalk(){
+  TABS.keep(WKEY, S.screen);
+  try { localStorage.setItem(WKEY+":unit", S.unit || ""); } catch(e){}
+}
 function go(screen){
   S.screen=screen;
   document.querySelectorAll(".screen").forEach((el)=>el.classList.remove("active"));
   $("scr-"+screen).classList.add("active");
   paint();
+  rememberWalk();
   window.scrollTo({top:0});
 }
 function paint(){
@@ -11353,7 +11284,7 @@ function paintHome(){
   $("themes").innerHTML = GROUPS.map((g)=>{
     const us=UNITS.filter((u)=>u.grp===g.grp);
     if(!us.length)return "";
-    return '<div class="themehead"><b>'+esc(g.en)+'</b> '+esc(g.ja)+'</div>'+
+    return '<div class="themehead"><b>'+esc(g.ja)+'</b> '+esc(g.en)+'</div>'+
       '<div class="unitgrid">'+us.map((u)=>{
         const d=doneOf(u.key);
         return '<button class="ucard" data-unit="'+u.key+'">'+
@@ -11399,10 +11330,10 @@ function paintUnit(){
     const misses=gs&&gs.done? gap.items.filter((it,i)=>gs.answers[i]!==it.answer).length : null;
     $("gap-gate").innerHTML='<button class="gapcard'+(gs&&gs.done&&misses===0?" ok":"")+'" id="gapBtn">'+
       '<span class="sn">?</span>'+
-      '<span><span class="st">Before you start</span><br>'+
+      '<span><span class="st">はじめるまえに · before you start</span><br>'+
       '<span class="ss">Five quick checks on what this unit stands on. Misses become a plan, not a mark.</span></span>'+
-      '<span class="stag">'+(gs&&gs.done?(misses===0?"all solid ✓":misses+" to shore up"):"not checked yet")+'</span></button>';
-    $("gapBtn").onclick=()=>{ if(!S.gapState[u.key])S.gapState[u.key]={i:0,answers:[],done:false}; go("gap"); };
+      '<span class="stag">'+(gs&&gs.done?(misses===0?"みちはひらいている ✓":misses+" to shore up"):"not checked yet")+'</span></button>';
+    $("gapBtn").onclick=()=>{ enterStep("gap"); };
   }else{
     $("gap-gate").innerHTML="";
   }
@@ -11411,7 +11342,7 @@ function paintUnit(){
     const s=(st.k==="build")?(u.mode==="kana"?KANA_BUILD_S:KANJI_BUILD_S):st.s;
     return '<button class="stepcard'+(d[st.k]?" done":"")+'" data-step="'+st.k+'">'+
       '<span class="sn">'+(d[st.k]?"✓":i+1)+'</span>'+
-      '<span><span class="st">'+esc(t[3])+' <small class="stja">'+esc(t[0])+'</small></span><br><span class="ss">'+esc(s[3])+'</span></span>'+
+      '<span><span class="st">'+esc(tF(t))+'</span><br><span class="ss">'+esc(tF(s))+'</span></span>'+
       '<span class="stag">'+esc(stepTag(st.k))+'</span>'+
     '</button>';}).join("");
   $("steps").querySelectorAll("[data-step]").forEach((b)=>{
@@ -11419,16 +11350,16 @@ function paintUnit(){
   });
   const any=STEPS.some((st)=>d[st.k]);
   $("report-row").innerHTML = any?
-    '<button class="btn btn-ghost" id="repBtn">Report</button><div id="rep-out"></div>':"";
+    '<button class="btn btn-ghost" id="repBtn">通信簿 · report</button><div id="rep-out"></div>':"";
   if (any) $("repBtn").onclick=showReport;
 }
 function showReport(){
   const u=unit(), d=doneOf(u.key);
-  const lines=["Unit Walk · "+u.title, (u.grp==="VCE"?u.themeJa+" · ":"Year "+u.year+" · ")+u.topic, ""];
+  const lines=["単元の道 · "+u.title, (u.grp==="VCE"?u.themeJa+" · ":"Year "+u.year+" · ")+u.topic, ""];
   const gap=content(u.key).gap, gs=S.gapState[u.key];
   if(gap&&gs&&gs.done){
     const miss=gap.items.filter((it,i)=>gs.answers[i]!==it.answer).length;
-    lines.push("0 Check    "+(gap.items.length-miss)+"/"+gap.items.length+" solid"+(miss?", plan made for "+miss:""));
+    lines.push("0 チェック  "+(gap.items.length-miss)+"/"+gap.items.length+" solid"+(miss?", plan made for "+miss:""));
   }
   const bGot=u.words.filter((w)=>S.built[u.key+":w:"+w.w]).length,
         bAll=u.words.length,
@@ -11438,11 +11369,11 @@ function showReport(){
   const eAll=(content(u.key).craft||{}).edits||[],
         eGot=eAll.filter((e,i)=>S.edits[u.key+":"+i]).length,
         eFt=eAll.filter((e,i)=>S.first["e:"+u.key+":"+i]===true).length;
-  lines.push("1 Words    studied: "+(d.study?"yes":"not yet"));
-  lines.push("2 Build    built: "+bGot+"/"+bAll+" (first try "+bFt+")");
-  lines.push("3 Q and A  answered: "+marks.length+"/"+(content(u.key).qa||[]).length+" (○ "+maru+")");
-  lines.push("4 Grammar  ticked: "+(GMAP[u.key]||[]).filter((g)=>S.gram[u.key+":"+g.id]).length+"/"+(GMAP[u.key]||[]).length);
-  lines.push("5 Craft    edits: "+eGot+"/"+eAll.length+" (first try "+eFt+")");
+  lines.push("1 ことば   studied: "+(d.study?"yes":"not yet"));
+  lines.push("2 組み立て  built: "+bGot+"/"+bAll+" (first try "+bFt+")");
+  lines.push("3 問答    answered: "+marks.length+"/"+(content(u.key).qa||[]).length+" (○ "+maru+")");
+  lines.push("4 文法    ticked: "+(GMAP[u.key]||[]).filter((g)=>S.gram[u.key+":"+g.id]).length+"/"+(GMAP[u.key]||[]).length);
+  lines.push("5 クラフト  edits: "+eGot+"/"+eAll.length+" (first try "+eFt+")");
   const txt=lines.join("\n");
   $("rep-out").innerHTML='<pre class="report">'+esc(txt)+'</pre>'+
     '<button class="btn btn-ghost" id="copyBtn">copy</button>';
@@ -11451,8 +11382,13 @@ function showReport(){
     $("copyBtn").textContent="copied ✓";
   };
 }
+/* The one door into a step. Each one needs its own state dealt before it
+   can be painted, and a link that lands on a step has to come through the
+   same door as the button on the unit page: ?tab=qa used to open a screen
+   whose answers did not exist yet and the page threw. */
 function enterStep(k){
-  if (k==="qa" && !S.qa[S.unit]) S.qa[S.unit]={i:0,revealed:false,marks:{},ticks:{}};
+  if (k==="gap" && !S.gapState[S.unit]) S.gapState[S.unit]={i:0,answers:[],done:false};
+  if (k==="qa" && !S.qa[S.unit]) S.qa[S.unit]={i:0,revealed:false,marks:{}};
   if (k==="build" && (W.unit!==S.unit)) { W.unit=null; W.wi=null; W.boxes=null; W.sel=null; K.sel=null; K.placed={}; }
   go(k);
 }
@@ -11460,13 +11396,13 @@ function stepHead(el,k){
   const u=unit();
   const st=STEPS.find((s)=>s.k===k);
   const t=(k==="build"&&u.mode==="kana")?KANA_BUILD_T:(st?st.t:["","","",""]);
-  $(el).innerHTML='<div class="sh">'+esc(t[3])+' <small class="stja">'+esc(t[0])+'</small></div><div class="shs">'+esc(u.title)+'</div>';
+  $(el).innerHTML='<div class="sh">'+esc(tF(t))+'</div><div class="shs">'+esc(u.title)+'</div>';
 }
 
 /* ---------------- STEP 0 · GAP CHECK ---------------- */
 function paintGap(){
   const u=unit(), gap=content(u.key).gap, gs=S.gapState[u.key];
-  $("gap-head").innerHTML='<div class="sh">Before you start</div><div class="shs">'+esc(u.title)+'</div>';
+  $("gap-head").innerHTML='<div class="sh">はじめるまえに · before you start</div><div class="shs">'+esc(u.title)+'</div>';
   if(!gap){ $("gap-area").innerHTML=""; return; }
   $("gap-prog").textContent=Math.min(gs.i,gap.items.length)+"/"+gap.items.length;
   if(gs.i>=gap.items.length){
@@ -11475,30 +11411,30 @@ function paintGap(){
       const ok=gs.answers[i]===it.answer;
       let link="";
       if(!ok){
-        if(it.skill) link='<a class="hublink" href="../grammar/#'+esc(it.skill)+'" target="_blank" rel="noopener">Fix this in the Grammar Hub →</a>';
+        if(it.skill) link='<a class="hublink" href="../grammar/#'+esc(it.skill)+'" target="_blank" rel="noopener">文法ホームで直す · shore this up in the Grammar Hub →</a>';
         else if(it.priorUnit){
           const pu=UNITS.find((x)=>x.key===it.priorUnit);
-          link='<a class="hublink" href="../vocab/#unit:'+esc(it.priorUnit)+'" target="_blank" rel="noopener">Review '+(pu?esc(pu.title):"the earlier words")+' in the Vocab Hub →</a>';
+          link='<a class="hublink" href="../vocab/#unit:'+esc(it.priorUnit)+'" target="_blank" rel="noopener">ことばのホームでふくしゅう · review '+(pu?esc(pu.title):"the earlier words")+' →</a>';
         }
       }
       return '<div class="planrow'+(ok?" ok":"")+'"><span class="pw">'+(ok?"✓":"→")+' '+esc(it.about)+'</span>'+
         (ok?"":'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+esc(it.why)+'</div><div class="plink">'+link+'</div>')+'</div>';
     }).join("");
     const miss=gap.items.filter((it,i)=>gs.answers[i]!==it.answer).length;
-    $("gap-area").innerHTML='<div class="gapbox"><div class="qalab">Your plan</div>'+
+    $("gap-area").innerHTML='<div class="gapbox"><div class="qalab">けっか · your plan</div>'+
       '<p class="intro" style="text-align:left;margin:4px 0 12px">'+
       (miss===0?"All five are solid. The road is open; walk on.":
        miss+" of five wobbled. That is not a mark, it is a plan: the links below drop you exactly where each one lives. Shore them up, then walk the unit.")+'</p>'+
       rows+
-      '<p style="text-align:center;margin-top:12px"><button class="btn btn-ghost" id="gap-again">Check again</button> '+
-      '<button class="btn btn-primary" id="gap-on">Start the unit →</button></p></div>';
+      '<p style="text-align:center;margin-top:12px"><button class="btn btn-ghost" id="gap-again">もういちど · check again</button> '+
+      '<button class="btn btn-primary" id="gap-on">ことばへ · start the unit →</button></p></div>';
     $("gap-again").onclick=()=>{ S.gapState[u.key]={i:0,answers:[],done:false}; paintGap(); };
     $("gap-on").onclick=()=>enterStep("study");
     return;
   }
   const it=gap.items[gs.i];
   $("gap-area").innerHTML='<div class="gapbox">'+
-    '<div class="qalab">Check '+(gs.i+1)+'/'+gap.items.length+'</div>'+
+    '<div class="qalab">チェック '+(gs.i+1)+'/'+gap.items.length+'</div>'+
     jpBlock(it.q)+
     '<div class="gapopts">'+it.options.map((o,j)=>
       '<button class="optbtn" data-o="'+j+'">'+esc(o)+'</button>').join("")+'</div></div>';
@@ -11507,80 +11443,29 @@ function paintGap(){
   });
 }
 
-/* ---------------- STEP 1 · STUDY ----------------
-   Purple Lab's word card, ported. An English word can be coloured
-   letter by letter because its morphemes are letters; a Japanese word
-   cannot, because a kanji's parts are strokes inside one glyph and CSS
-   colours whole characters only. So the breakdown gets its own lines
-   underneath: the word's kanji with their glosses, and under each key
-   kanji the radicals it is written with.
-
-   Nothing here is inferred. The kanji glosses come from KANJI, the
-   splits and roles from BUILDS, the radical glosses and Japanese names
-   from PARTS. A part with no gloss in PARTS renders without one rather
-   than borrowing a guess from somewhere else. Colour is only ever on a
-   radical inside a named character, because that is the only place the
-   data states a job; the word's own kanji stay neutral. */
-function radLine(b){
-  return b.parts.map((pt)=>{
-    const info=PARTS[pt.p]||{};
-    return '<code class="c-'+esc(pt.role)+'">'+esc(pt.p)+'</code>'+
-      (info.g?' <i>'+esc(info.g)+'</i>':"")+
-      (info.n?' <span class="rad">'+esc(info.n)+'</span>':"")+
-      (pt.role==="sound"&&pt.sound?' <b>'+esc(pt.sound)+'</b>':"");
-  }).join(" + ");
-}
-/* The character drawn stroke by stroke, so each radical takes its own
-   colour inside the glyph — what the English word builders get for free
-   when they colour "pan" and "sexual" inside Pansexual. It goes on the
-   individual kanji being broken down, never on the whole word, because
-   the split and the roles are stated per character. Falls back to the
-   plain character where no stroke data is bundled. */
-function kglyph(b){
-  if(window.KanjiGlyph&&KanjiGlyph.has(b.ch))return KanjiGlyph.svg(b.ch,b.parts,{size:38,weight:5});
-  return esc(b.ch);
-}
-function wordCard(u,w){
-  const parts=w.parts||[];
-  const builds=BUILDS[u.key]||[];
-  /* a one-kanji word whose only part is itself needs no parts line:
-     the headword already is it, and the radicals below carry the work */
-  const selfOnly=parts.length===1&&parts[0]===w.w;
-  const kline=(selfOnly?[]:parts).map((p)=>{
-    const k=KANJI[p]||{};
-    return '<code class="c-none">'+esc(p)+'</code>'+(k.g?' <i>'+esc(k.g)+'</i>':"");
-  }).join(" + ");
-  const splits=parts.map((p)=>{
-    const b=builds.find((x)=>x.ch===p);
-    if(!b)return "";
-    return '<div class="kn"><span class="kc">'+kglyph(b)+'</span> = '+radLine(b)+
-      (b.hook?'<span class="hk">'+esc(b.hook)+'</span>':"")+'</div>';
-  }).join("");
-  const comp=(kline||splits)?'<div class="comp">'+kline+splits+'</div>':"";
-  return '<div class="wcard"><span class="w">'+esc(w.w)+'</span><span class="wr">'+esc(w.r)+'</span>'+
-    '<span class="wdef">'+esc(w.def)+'</span>'+comp+'</div>';
-}
+/* ---------------- STEP 1 · STUDY ---------------- */
 function paintStudy(){
   const u=unit();
   stepHead("study-head","study");
   document.body.classList.toggle("hidehelp",S.hide);
-  $("hideBtn").textContent=S.hide?"Show the help":"Hide the help and self-test";
+  $("hideBtn").textContent=S.hide?"見せて · show the help":"かくして · hide the help and self-test";
   $("study-table").innerHTML=u.words.map((w)=>{
     if(u.mode==="kana"){
       return '<div class="wrow"><span class="wk">'+esc(w.w)+'</span>'+
         '<span class="wdef">'+esc(w.def)+'</span>'+
-        (w.kp?'<span class="kpchip">'+esc(w.kp)+'<small>the kanji you will meet later</small></span>':"")+
+        (w.kp?'<span class="kpchip">'+esc(w.kp)+'<small>あとで会う漢字 · the kanji you will meet later</small></span>':"")+
         '</div>';
     }
-    return wordCard(u,w);
+    return '<div class="wrow"><span class="wk">'+esc(w.w)+'</span><span class="wr">'+esc(w.r)+'</span>'+
+    '<span class="wdef">'+esc(w.def)+'</span>'+
+    '<span class="wparts">'+(w.parts||[]).map((p)=>{
+      const k=KANJI[p]||{};
+      return '<span class="pchip"><span class="pk">'+esc(p)+'</span><span class="pg">'+esc(k.g||"")+'</span></span>';
+    }).join("")+'</span></div>';
   }).join("");
-  if(u.mode!=="kana")$("study-table").insertAdjacentHTML("afterbegin",
-    '<div class="wlegend"><span class="c-sense">いみ meaning</span>'+
-    '<span class="c-sound">おと sound</span><span class="c-both">りょうほう both</span>'+
-    '<span class="note">— the job a radical does in <i>that</i> character, not everywhere</span></div>');
-  $("study-vocab").innerHTML='<a href="../vocab/#unit:'+esc(u.key)+'" target="_blank" rel="noopener">See these words in the Vocab Hub →</a>';
+  $("study-vocab").innerHTML='<a href="../vocab/#unit:'+esc(u.key)+'" target="_blank" rel="noopener">この単元のことばを、ことばのホームでも → see these words in the Vocab Hub</a>';
   $("study-prog").textContent=u.words.length+" words"+(u.mode==="kana"?"":" · every kanji part labelled");
-  $("study-next").textContent="I know these, walk on →";
+  $("study-next").textContent="つぎへ · I know these, walk on →";
   $("study-next").onclick=()=>{ doneOf(u.key).study=true; enterStep("build"); };
   $("hideBtn").onclick=()=>{ S.hide=!S.hide; paintStudy(); };
 }
@@ -11618,8 +11503,8 @@ function paintBuildWords(){
   const bank=kanaBank(u);
   const got=u.words.filter((w)=>S.built[u.key+":w:"+w.w]).length;
   $("build-area").innerHTML=
-    '<p class="intro">Say each word, then build it from the tiles. Every small kana and every ー is its own tile.</p>'+
-    '<div class="kbankwrap"><div class="bankhead">Tiles</div>'+
+    '<p class="intro">Each meaning below is one of the unit\'s words. Say it, then build its sound from the tiles: every small かな and every ー is its own tile, on purpose.</p>'+
+    '<div class="kbankwrap"><div class="bankhead">かなタイル · the tiles</div>'+
     '<div class="kbank">'+bank.map((t)=>'<button class="ktile" data-t="'+esc(t)+'" draggable="true">'+esc(t)+'</button>').join("")+'</div></div>'+
     '<div class="krows">'+u.words.map((w,wi)=>{
       const done=S.built[u.key+":w:"+w.w];
@@ -11641,7 +11526,7 @@ function buildFoot(allDone){
   const u=unit();
   $("build-next").style.display=allDone?"":"none";
   if(allDone){ doneOf(u.key).build=true;
-    $("build-next").textContent="Walk on →";
+    $("build-next").textContent="つぎへ · walk on →";
     $("build-next").onclick=()=>enterStep("qa"); }
 }
 function wireKana(){
@@ -11714,7 +11599,7 @@ function paintBuildFuse(){
   }
   const banks=fuseBanks(u);
   $("build-area").innerHTML=
-    '<p class="intro">Rebuild each word from its meaning. Plain boxes take tiles. A framed box is a key kanji: build it from its parts, in position.</p>'+
+    '<p class="intro">You studied these words with their parts showing; now each meaning is rebuilt from scratch. Plain boxes take tiles. A framed box is one of the unit\'s key kanji: fuse it from its parts, in position, right where it lives in the word.</p>'+
     '<div class="queue" id="queue">'+u.words.map((w,wi)=>{
       const done=S.built[u.key+":w:"+w.w];
       if(done)return '<div class="qcard built">'+esc(w.w)+'</div>';
@@ -11730,7 +11615,7 @@ function paintBuildFuse(){
 }
 function paintFuseBench(banks){
   const u=unit();
-  if(W.wi===null){ $("bench").innerHTML='<p class="intro" style="margin:0">All built.</p>'; return; }
+  if(W.wi===null){ $("bench").innerHTML='<p class="intro" style="margin:0">ぜんぶできた！ All built.</p>'; return; }
   const w=u.words[W.wi];
   const usedRad=new Set(), usedTile=new Set();
   W.boxes.forEach((bx)=>{
@@ -11741,7 +11626,7 @@ function paintFuseBench(banks){
   const strip=W.boxes.map((bx,bi)=>{
     if(bx.type==="frame"){
       if(bx.fused)return '<div class="wframe fusedframe">'+esc(bx.c)+'</div>';
-      return '<div class="wframe '+bx.b.pos+'" data-b="'+bi+'"><span class="wflab">from parts</span>'+
+      return '<div class="wframe '+bx.b.pos+'" data-b="'+bi+'"><span class="wflab">部品から · from parts</span>'+
         bx.b.parts.map((pt,si)=>{
           const p=bx.placed[si];
           return '<span class="wsub'+(p?" filled":"")+'" data-b="'+bi+'" data-s="'+si+'">'+(p?esc(p):"")+'</span>';
@@ -11750,18 +11635,18 @@ function paintFuseBench(banks){
     return '<span class="wbox'+(bx.val?" filled":"")+'" data-b="'+bi+'">'+(bx.val?esc(bx.val):"")+'</span>';
   }).join("");
   $("bench").innerHTML=
-    '<div class="prompt">Hint: <b>'+esc(w.def)+'</b></div>'+
+    '<div class="prompt">つくって: <b>'+esc(w.def)+'</b></div>'+
     '<div class="wordstrip" id="wordstrip">'+strip+'</div>'+
     '<div class="hookline" id="hookline"></div>'+
     (W.boxes.some((bx)=>bx.type==="frame")?
-    '<div class="bankhead">Parts of the framed kanji</div>'+
+    '<div class="bankhead">部品 · the parts of the framed kanji</div>'+
     '<div class="bank">'+banks.rad.map((p)=>{
       const info=PARTS[p]||{g:"",n:""};
       return '<button class="piece'+(usedRad.has(p)?" used":"")+'" data-kind="rad" data-v="'+esc(p)+'" draggable="true">'+
         '<span class="pc">'+esc(p)+'</span><span class="pg">'+esc(info.g)+'</span>'+
         (info.n?'<span class="pn">'+esc(info.n)+'</span>':"")+'</button>';
     }).join("")+'</div>':"")+
-    '<div class="bankhead">Kanji and kana tiles</div>'+
+    '<div class="bankhead">タイル · kanji and kana tiles</div>'+
     '<div class="kbank">'+banks.kj.map((c)=>{
       const k=KANJI[c];
       return '<button class="ktile kt-kanji'+(usedTile.has(c)?" used":"")+'" data-kind="tile" data-v="'+esc(c)+'" draggable="true">'+esc(c)+
@@ -11864,43 +11749,7 @@ function wireFuse(banks){
   });
 }
 
-/* ---------------- STEP 3 · QA ----------------
-   Bone Sparrow "voice fingerprint" shape: the student answers aloud,
-   then ticks what their answer had. The list is DERIVED from the model
-   answer (its grammar, the unit's words, its shape), so nothing is
-   authored twice. The model itself stays one click away. */
-const QA_RULES = [
-  ["Said what you want with 〜たい", /たいです|たいと|たかった|たくない|たいから|たいので/],
-  ["Gave a reason with から／ので", /(?:^|[^か])ので|から(?!.*まで)/],
-  ["Framed the route with から…まで", /から.*まで/],
-  ["Gave an opinion with と思います", /と思/],
-  ["Said what you can do with ことができる", /ことができ/],
-  ["Talked about experience with たことがある", /たことが(?:あ|な)/],
-  ["Turned a verb into a noun with の／こと", /(?:の|こと)(?:が|は)(?:好き|大切|苦手|得意|楽し|難し|上手|下手|いい)/],
-  ["Invited with ませんか／ましょう", /ませんか|ましょう/],
-  ["Asked politely with 〜てください", /てください|でください/],
-  ["Joined actions with the て-form", /(?:[てで](?:、|から|います|いる|いて|みた|しまい|も)|って、|んで、)/],
-  ["Used たら／ば for if or when", /たら|れば|けば|えば|せば|ければ/],
-  ["Said when with 時／とき", /時に|時は|時、|とき/],
-  ["Compared with より／ほうが", /より|ほうが/],
-  ["Used そうです", /そうです|そうだ/],
-  ["Linked ideas with それに／でも／だから", /それに|そして|でも|しかし|それから|だから|それで|なぜなら/],
-  ["Number + counter", /[〇一二三四五六七八九十百千0-9０-９]+(?:人|つ|本|枚|匹|冊|台|回|分|時間|時|年|歳|才|円|日|か月|ヶ月|週間|度|杯|個|着)/],
-  ["Past tense", /ました|でした|かった|だった/],
-  ["Negative form", /ません|ない|くない|じゃない/],
-  ["Softened the end with ね／よ", /(?:ね|よ)。?$/],
-  ["Ended politely with です／ます", /(?:です|ます|ました|でした|ません|ましょう|ください|ませんか|ですか|ますか)[。！？!?]?$/],
-];
-function qaChecks(u,item){
-  const a0=item.a[0]||"", a1=(item.a[1]||"").replace(/[\s　]/g,"");
-  const out=[];
-  const words=u.words.map((w)=>w.w).filter((w)=>w.length>1&&(a0.includes(w)||a1.includes(w))).slice(0,4);
-  out.push("Answered the question that was asked");
-  if(words.length) out.push("Used the unit's words: "+words.join("、"));
-  QA_RULES.forEach(([label,re])=>{ if(out.length<6&&(re.test(a0)||re.test(a1))) out.push(label); });
-  if(out.length<3) out.push("Said it as a full sentence");
-  return out;
-}
+/* ---------------- STEP 3 · QA ---------------- */
 function paintQa(){
   const u=unit(), qa=content(u.key).qa||[], q=S.qa[u.key];
   stepHead("qa-head","qa");
@@ -11911,37 +11760,33 @@ function paintQa(){
     const maru=Object.values(q.marks).filter((m)=>m==="maru").length;
     $("qa-area").innerHTML='<div class="qabox qadonep"><div class="big">'+
       (maru===qa.length?"◎":"○")+'</div>'+
-      '<p>'+maru+' of '+qa.length+' had everything on the list. '+
+      '<p>'+maru+' of '+qa.length+' felt solid. '+
       (maru<qa.length?'The △ ones are the ones to ask again tomorrow.':'Ask them again tomorrow anyway; that is how they stick.')+'</p>'+
-      '<p style="margin-top:10px"><button class="btn btn-ghost" id="qa-again">Run them again</button> '+
-      '<button class="btn btn-primary" id="qa-on">Walk on →</button></p></div>';
-    $("qa-again").onclick=()=>{ S.qa[u.key]={i:0,revealed:false,marks:{},ticks:{}}; paintQa(); };
+      '<p style="margin-top:10px"><button class="btn btn-ghost" id="qa-again">もういちど · run them again</button> '+
+      '<button class="btn btn-primary" id="qa-on">つぎへ · walk on →</button></p></div>';
+    $("qa-again").onclick=()=>{ S.qa[u.key]={i:0,revealed:false,marks:{}}; paintQa(); };
     $("qa-on").onclick=()=>enterStep("gram");
     return;
   }
   const item=qa[q.i];
-  const checks=qaChecks(u,item);
-  if(!q.ticks) q.ticks={};
-  const ticks=q.ticks[q.i]||(q.ticks[q.i]={});
-  const nT=checks.filter((c,i)=>ticks[i]).length;
-  $("qa-area").innerHTML='<div class="qabox qagrid">'+
-    '<div class="qaq"><div class="qalab">Question '+(q.i+1)+'/'+qa.length+'</div>'+jpBlock(item.q)+
-      '<p class="intro" style="margin:12px 0 0;text-align:left">Answer out loud. Then tick what your answer had.</p>'+
-      (q.revealed?
-        '<div class="qaa"><div class="qalab">One good answer</div>'+jpBlock(item.a)+
-        '<div class="qatip">'+esc(item.tip)+'</div></div>'
-        :'<p style="margin-top:12px"><button class="btn btn-ghost" id="qa-reveal">Show a model answer</button></p>')+
-    '</div>'+
-    '<div class="qacheck"><div class="qalab">My answer had…</div>'+
-      checks.map((c,i)=>'<div class="xrow'+(ticks[i]?" ok":"")+'"><button class="xtick" data-t="'+i+'">'+(ticks[i]?"✓":"")+'</button><span>'+esc(c)+'</span></div>').join("")+
-      '<div class="qamarks"><span class="prog">'+nT+'/'+checks.length+'</span>'+
-      '<button class="btn btn-primary" id="qa-next">'+(nT===checks.length?"○ All there · next →":nT?"△ Some · next →":"Next →")+'</button></div>'+
-    '</div></div>';
-  $("qa-area").querySelectorAll(".xtick").forEach((b)=>{
-    b.onclick=()=>{ const i=+b.dataset.t; ticks[i]=!ticks[i]; paintQa(); };
-  });
-  $("qa-next").onclick=()=>{ q.marks[q.i]=(nT===checks.length)?"maru":"later"; q.i++; q.revealed=false; paintQa(); };
-  if(!q.revealed) $("qa-reveal").onclick=()=>{ q.revealed=true; paintQa(); };
+  $("qa-area").innerHTML='<div class="qabox">'+
+    '<div class="qaq"><div class="qalab">しつもん · question '+(q.i+1)+'/'+qa.length+'</div>'+jpBlock(item.q)+'</div>'+
+    (q.revealed?
+      '<div class="qaa"><div class="qalab">モデルのこたえ · one good answer</div>'+jpBlock(item.a)+
+      '<div class="qatip">'+esc(item.tip)+'</div>'+
+      '<div class="qamarks"><button class="btn" id="qa-maru">○ こたえられた · I had it</button>'+
+      '<button class="btn btn-ghost" id="qa-later">△ まだ · not yet</button></div></div>'
+      :
+      '<p class="intro" style="margin:0 0 10px">Say your answer out loud, or in your head. Then check.</p>'+
+      '<p style="text-align:center"><button class="btn btn-primary" id="qa-reveal">見せて · show a good answer</button></p>')+
+    '</div>';
+  if(q.revealed){
+    const mark=(m)=>{ q.marks[q.i]=m; q.i++; q.revealed=false; paintQa(); };
+    $("qa-maru").onclick=()=>mark("maru");
+    $("qa-later").onclick=()=>mark("later");
+  }else{
+    $("qa-reveal").onclick=()=>{ q.revealed=true; paintQa(); };
+  }
 }
 
 /* ---------------- STEP 4 · GRAMMAR ---------------- */
@@ -11949,13 +11794,13 @@ function paintGram(){
   const u=unit(), rows=GMAP[u.key]||[];
   stepHead("gram-head","gram");
   $("gram-rows").innerHTML=
-    '<p class="intro gramintro">Tick the patterns you are sure of. The link takes you to the Grammar Hub for the shaky ones.</p>'+
+    '<p class="intro" style="margin-bottom:2px">This unit stands on three patterns. If one feels shaky, the link drops you on its exact shelf in the Grammar Hub. Tick what you are sure of.</p>'+
     rows.map((g)=>{
       const ok=S.gram[u.key+":"+g.id];
       return '<div class="gramrow'+(ok?" ok":"")+'">'+
         '<button class="gtick" data-g="'+esc(g.id)+'">'+(ok?"✓":"")+'</button>'+
         '<div><div class="gt">'+esc(g.label)+'</div><div class="gw">'+esc(g.why)+'</div>'+
-        '<a class="hublink" href="../grammar/#'+esc(g.id)+'" target="_blank" rel="noopener">Revise in the Grammar Hub →</a></div></div>';
+        '<a class="hublink" href="../grammar/#'+esc(g.id)+'" target="_blank" rel="noopener">文法ホームで練習 · revise in the Grammar Hub →</a></div></div>';
     }).join("");
   $("gram-rows").querySelectorAll("[data-g]").forEach((b)=>{
     b.onclick=()=>{ const k=u.key+":"+b.dataset.g; S.gram[k]=!S.gram[k];
@@ -11964,204 +11809,49 @@ function paintGram(){
   });
   const n=rows.filter((g)=>S.gram[u.key+":"+g.id]).length;
   $("gram-prog").textContent=n+"/"+rows.length+" ticked";
-  $("gram-next").textContent="Walk on →";
+  $("gram-next").textContent="つぎへ · walk on →";
   $("gram-next").onclick=()=>{ enterStep("craft"); };
 }
 
-/* ---------------- STEP 5 · CRAFT + EXTENSION ----------------
-   One slide at a time: three edits, then up to three model sentences
-   to rebuild from tiles (the Bone Sparrow sentence-builder shape, with
-   one decoy tile). The model stays on screen beside the deck. */
-
-/* The authored explanations name options by letter. Junior units letter
-   them in display order; the VCE units letter the CORRECT option A and
-   the two wrong ones B and C in display order. Resolved here so the
-   letters on screen always match the option they describe. */
-function whyLetterMap(u,e){
-  const map={};
-  if(/^u\d/.test(u.key)){ "ABC".split("").forEach((L,j)=>map[L]=j); return map; }
-  const wrong=[0,1,2].filter((j)=>j!==e.answer);
-  map.A=e.answer; map.B=wrong[0]; map.C=wrong[1];
-  return map;
-}
-const PLAIN_WORDS=[
-  [/\btautology\b/gi,"saying the same thing twice"],[/\btautological\b/gi,"saying the same thing twice"],
-  [/\bnonsensical\b/gi,"meaningless"],[/\bintensifier\b/gi,"'very' word"],[/\bintensifies\b/gi,"adds a 'very' word to"],
-  [/\bcircular\b/gi,"going in a circle"],[/\bsupplies\b/gi,"gives"],[/\bgenuine\b/gi,"real"],[/\bmerely\b/gi,"only"],
-  [/\bconcrete\b/gi,"specific"],[/\bconjugates\b/gi,"changes the ending of"],[/\bbolts\b/gi,"sticks"],[/\bbolted\b/gi,"stuck"],
-  [/\bgrammatically (?:fine|correct|sound)\b/gi,"correct Japanese"],[/\bis grammatical\b/gi,"is correct Japanese"],
-  [/\bawkward\b/gi,"odd"],[/\bregister\b/gi,"politeness level"],[/\btransitive verb\b/gi,"verb that takes を"],
-  [/\bhedges\b/gi,"softens"],[/\bredundant\b/gi,"unneeded"],[/\brestates\b/gi,"repeats"],[/\brestatement\b/gi,"repeat"],
-  [/\bcontrastive\b/gi,"contrasting"],[/\bhonorific\b/gi,"extra-polite"],[/\banchors\b/gi,"fixes"],[/\bpads\b/gi,"stuffs"],
-  [/\bsubstance\b/gi,"real content"],[/\bdevelops\b/gi,"builds on"],
-];
-function plainWhy(u,e,order){
-  const map=whyLetterMap(u,e);
-  const disp=(j)=>"ABC"[order.indexOf(j)];
-  return e.why.split(/(?<=[.!?;])\s+/).map((s)=>{
-    let t=s.trim(); if(!t) return "";
-    let badge="";
-    const m=t.match(/^Option ([ABC])\b[:,]?\s*/);
-    if(m){ const j=map[m[1]]; badge='<b class="olet'+(j===e.answer?" good":"")+'">'+disp(j)+'</b> '; t=t.slice(m[0].length); }
-    t=t.replace(/\boption ([ABC])\b/g,(x,L)=>"option "+disp(map[L]));
-    PLAIN_WORDS.forEach(([re,w])=>{ t=t.replace(re,w); });
-    return '<div class="whyline">'+badge+esc(t)+'</div>';
-  }).join("");
-}
-/* ---- sentence rebuild: chunking and the decoy ---- */
-const P2=["から","まで","より","ので","のに","けど","のが","のは","のを","には","では","とは","にも"], P1="はがをにでへともし";
-const NO_DECOY=/^(とても|でも|では|だから|それに|それで|それから|そして|なぜなら|まず|しかし)/;
-function chunkJa(s){
-  s=s.replace(/[\s　]+/g,"");
-  const out=[]; let cur="";
-  for(let i=0;i<s.length;i++){
-    const c=s[i], nx=s[i+1]||"", pv=s[i-1]||"";
-    if(c==="、"||c==="。"||c==="！"||c==="？"){ cur+=c; if(cur){out.push(cur);cur="";} continue; }
-    let cut=false;
-    const two=s.slice(i,i+2);
-    if(P2.includes(two)){ cur+=two; i++; cut=true; }
-    else{
-      cur+=c;
-      if(P1.includes(c)&&cur.length>1){
-        cut=true;
-        if(c==="の"&&(/[こそあど]/.test(pv)&&cur.length===2||/[でにが]/.test(nx))) cut=false;
-        if(c==="と"&&(pv==="こ"||/[思言いかてりるっれ]/.test(nx))) cut=false;
-        if(c==="が"&&/[りるっれらろ]/.test(nx)) cut=false;
-        if(c==="で"&&/[すしきもい]/.test(nx)) cut=false;
-        if(c==="も"&&nx==="し") cut=false;
-        if(c==="し"&&nx!=="、") cut=false;
-        if(c==="は"&&/[いじな]/.test(nx)) cut=false;
-        if(c==="に"&&/[ちん]/.test(nx)) cut=false;
-      }
-    }
-    const after=s[i+1]||"";
-    if(cut&&after&&!/[、。！？]/.test(after)){ out.push(cur); cur=""; }
-  }
-  if(cur) out.push(cur);
-  // one-character crumbs join the chunk before them
-  const merged=[];
-  out.forEach((ch)=>{ if(ch.replace(/[、。]/g,"").length<=1&&merged.length) merged[merged.length-1]+=ch; else merged.push(ch); });
-  return merged;
-}
-const SWAP={"は":"が","が":"は","を":"が","に":"で","で":"に","から":"まで","まで":"から","も":"は","へ":"に","と":"も"};
-function decoyFor(chunks){
-  for(const ch of chunks){
-    if(NO_DECOY.test(ch)) continue;
-    const m=ch.match(/(から|まで|は|が|を|に|で|へ|と|も)(、)?$/);
-    if(m&&SWAP[m[1]]){ const d=ch.slice(0,-(m[0].length))+SWAP[m[1]]+(m[2]||""); if(!chunks.includes(d)) return {tile:d,orig:ch,rule:"particle"}; }
-  }
-  const last=chunks[chunks.length-1]||"";
-  if(/ます。?$/.test(last)) return {tile:last.replace(/ます(。?)$/,"ました$1"),orig:last,rule:"tense"};
-  if(/です。?$/.test(last)) return {tile:last.replace(/です(。?)$/,"でした$1"),orig:last,rule:"tense"};
-  return null;
-}
-function rebuildTargets(u,c){
-  const f=(u.mode==="kana")?1:0;
-  const all=(c.model||[]).map((m,k)=>({k,text:m.jp[f],chunks:(u.mode==="kana"&&/[\s　]/.test(m.jp[1]))?m.jp[1].trim().split(/[\s　]+/):chunkJa(m.jp[f])}))
-    .filter((t)=>t.chunks.length>=3);
-  if(all.length<=3) return all;
-  return [all[0],all[Math.floor(all.length/2)],all[all.length-1]];
-}
-function rebState(u,t){
-  const key=u.key+":"+t.k;
-  if(!S.rebuild[key]){
-    const decoy=decoyFor(t.chunks);
-    const bank=t.chunks.map((ch,i)=>({id:"c"+i,text:ch})); if(decoy) bank.push({id:"d",text:decoy.tile});
-    shuffleArr(bank);
-    S.rebuild[key]={placed:[],bank,decoy,done:false,msg:""};
-  }
-  return S.rebuild[key];
-}
-function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function judgeRebuild(u,t,r){
-  const id="r:"+u.key+":"+t.k;
-  const got=r.placed.map((pid)=>r.bank.find((b)=>b.id===pid).text);
-  if(got.length<t.chunks.length){ r.msg=(t.chunks.length-got.length)+" more tile"+(t.chunks.length-got.length===1?"":"s")+" to place."; return; }
-  const dIdx=r.placed.indexOf("d");
-  if(dIdx>-1){ firstTry(id,false);
-    r.msg="「"+r.decoy.tile+"」 is the odd tile out. The model uses 「"+r.decoy.orig+"」: "+(r.decoy.rule==="particle"?"check the particle.":"check the tense.");
-    return; }
-  const wrongAt=got.findIndex((g,i)=>g!==t.chunks[i]);
-  if(wrongAt>-1){ firstTry(id,false);
-    const last=t.chunks[t.chunks.length-1];
-    r.msg=(got[got.length-1]!==last)?"The verb or です ends the sentence: 「"+last+"」 goes last.":
-      "Tile "+(wrongAt+1)+": the model has 「"+t.chunks[wrongAt]+"」 here, not 「"+got[wrongAt]+"」.";
-    return; }
-  firstTry(id,true); r.done=true; r.msg="✓ That is the model sentence.";
-}
+/* ---------------- STEP 5 · CRAFT + EXTENSION ---------------- */
 function paintCraft(){
   const u=unit(), c=content(u.key).craft||{model:[],edits:[]};
   stepHead("craft-head","craft");
   $("craft-intro").textContent=c.intro||"";
   $("craft-model").innerHTML=(c.model||[]).map((m)=>
     '<div class="msent">'+(m.note?'<span class="move">'+esc(m.note)+'</span><br>':"")+jpBlock(m.jp)+'</div>').join("");
-  const edits=c.edits||[], targets=rebuildTargets(u,c);
-  const deck=edits.map((e,i)=>({type:"edit",i,e})).concat(targets.map((t)=>({type:"rebuild",t})));
-  if(!(u.key in S.craftI)) S.craftI[u.key]=0;
-  const cur=Math.min(S.craftI[u.key],deck.length-1);
-  const sl=deck[cur];
-  const gotN=edits.filter((e,i)=>S.edits[u.key+":"+i]).length;
-  const rebN=targets.filter((t)=>S.rebuild[u.key+":"+t.k]&&S.rebuild[u.key+":"+t.k].done).length;
-  $("craft-edith").textContent=sl&&sl.type==="edit"?"Edit "+(sl.i+1)+" of "+edits.length+": pick the better rewrite":"Rebuild the model sentence";
-  $("craft-edsub").textContent=sl&&sl.type==="edit"?"One is better. The other two are flat, or hide a common mistake.":"Tap the tiles in order. One tile does not belong.";
-  let body="";
-  if(sl&&sl.type==="edit"){
-    const e=sl.e, i=sl.i, got=S.edits[u.key+":"+i];
-    const ok=u.key+":"+i;
-    if(!S.craftOrder[ok]) S.craftOrder[ok]=shuffleArr([0,1,2]);
-    const order=S.craftOrder[ok];
-    body='<div class="edit" data-e="'+i+'"><div class="weaklab">A flat draft</div>'+jpBlock(e.weak)+
-      '<div class="opts">'+order.map((j,pos)=>
-        '<button class="optbtn'+(got&&j===e.answer?" good":"")+(S.craftBad[ok+":"+j]?" bad":"")+'" data-o="'+j+'" '+(got||S.craftBad[ok+":"+j]?"disabled":"")+'>'+
-        '<b class="olet">'+"ABC"[pos]+'</b> '+esc(e.options[j])+'</button>').join("")+'</div>'+
-      (got?'<div class="why">'+plainWhy(u,e,order)+'</div>':"")+'</div>';
-  }else if(sl){
-    const t=sl.t, r=rebState(u,t);
-    body='<div class="edit rebuild"><div class="weaklab">Model sentence '+(t.k+1)+'</div>'+
-      '<div class="order-line'+(r.done?" ok":"")+'">'+(r.placed.length?r.placed.map((pid)=>{const b=r.bank.find((x)=>x.id===pid);
-        return '<button class="ktile ord" data-un="'+pid+'" '+(r.done?"disabled":"")+'>'+esc(b.text)+'</button>';}).join(""):'<span class="order-ph">tap tiles below</span>')+'</div>'+
-      '<div class="kbank">'+r.bank.map((b)=>'<button class="ktile'+(r.placed.includes(b.id)?" used":"")+'" data-pl="'+b.id+'" '+(r.done||r.placed.includes(b.id)?"disabled":"")+'>'+esc(b.text)+'</button>').join("")+'</div>'+
-      (r.msg?'<div class="why'+(r.done?" good":"")+'">'+esc(r.msg)+'</div>':"")+
-      (r.done?"":'<p style="text-align:center;margin-top:10px"><button class="btn btn-ghost" id="reb-clear">Clear</button> <button class="btn btn-primary" id="reb-check">Check</button></p>')+
+  $("craft-edith").textContent="なおして · now edit: pick the stronger rewrite";
+  $("craft-edits").innerHTML=(c.edits||[]).map((e,i)=>{
+    const got=S.edits[u.key+":"+i];
+    return '<div class="edit" data-e="'+i+'">'+
+      '<div class="weaklab">よわい文 · a flat draft</div>'+jpBlock(e.weak)+
+      '<div class="opts">'+e.options.map((o,j)=>
+        '<button class="optbtn'+(got&&j===e.answer?" good":"")+'" data-o="'+j+'" '+(got?"disabled":"")+'>'+esc(o)+'</button>').join("")+'</div>'+
+      (got?'<div class="why">'+esc(e.why)+'</div>':"")+
       '</div>';
-  }
-  $("craft-edits").innerHTML=body+
-    '<div class="decknav"><button class="btn btn-ghost" id="deck-prev" '+(cur===0?"disabled":"")+'>← Back</button>'+
-    '<span class="dots">'+deck.map((d,k)=>{
-      const done=d.type==="edit"?S.edits[u.key+":"+d.i]:(S.rebuild[u.key+":"+d.t.k]||{}).done;
-      return '<button class="dot'+(k===cur?" cur":"")+(done?" done":"")+'" data-k="'+k+'" title="'+(d.type==="edit"?"Edit "+(d.i+1):"Rebuild "+(d.t.k+1))+'"></button>';}).join("")+'</span>'+
-    '<button class="btn btn-ghost" id="deck-next" '+(cur>=deck.length-1?"disabled":"")+'>Next →</button></div>';
-  $("deck-prev").onclick=()=>{ S.craftI[u.key]=Math.max(0,cur-1); paintCraft(); };
-  $("deck-next").onclick=()=>{ S.craftI[u.key]=Math.min(deck.length-1,cur+1); paintCraft(); };
-  $("craft-edits").querySelectorAll(".dot").forEach((d)=>{ d.onclick=()=>{ S.craftI[u.key]=+d.dataset.k; paintCraft(); }; });
-  if(sl&&sl.type==="edit"){
-    const e=sl.e, i=sl.i, ok=u.key+":"+i;
-    $("craft-edits").querySelectorAll(".optbtn").forEach((ob)=>{
+  }).join("");
+  $("craft-edits").querySelectorAll(".edit").forEach((box)=>{
+    const i=+box.dataset.e, e=c.edits[i];
+    box.querySelectorAll(".optbtn").forEach((ob)=>{
       ob.onclick=()=>{
         const j=+ob.dataset.o, id="e:"+u.key+":"+i;
-        if(j===e.answer){ firstTry(id,true); S.edits[ok]=true;
-          if(edits.every((x,k)=>S.edits[u.key+":"+k])) doneOf(u.key).craft=true;
-        }else{ firstTry(id,false); S.craftBad[ok+":"+j]=true; }
-        paintCraft();
+        if(j===e.answer){ firstTry(id,true); S.edits[u.key+":"+i]=true;
+          if(c.edits.every((x,k)=>S.edits[u.key+":"+k])) doneOf(u.key).craft=true;
+          paintCraft();
+        }else{ firstTry(id,false); ob.classList.add("bad"); ob.disabled=true; }
       };
     });
-  }else if(sl){
-    const t=sl.t, r=rebState(u,t);
-    $("craft-edits").querySelectorAll("[data-pl]").forEach((b)=>{ b.onclick=()=>{ r.placed.push(b.dataset.pl); r.msg=""; paintCraft(); }; });
-    $("craft-edits").querySelectorAll("[data-un]").forEach((b)=>{ b.onclick=()=>{ r.placed=r.placed.filter((x)=>x!==b.dataset.un); r.msg=""; paintCraft(); }; });
-    const cl=$("reb-clear"), ck=$("reb-check");
-    if(cl) cl.onclick=()=>{ r.placed=[]; r.msg=""; paintCraft(); };
-    if(ck) ck.onclick=()=>{ judgeRebuild(u,t,r); paintCraft(); };
-  }
-  $("craft-prog").textContent=gotN+"/"+edits.length+" edits"+(targets.length?" · "+rebN+"/"+targets.length+" rebuilt":"");
-  const finished=gotN===edits.length&&edits.length>0;
+  });
+  const got=(c.edits||[]).filter((e,i)=>S.edits[u.key+":"+i]).length;
+  $("craft-prog").textContent=got+"/"+(c.edits||[]).length+" edits";
+  const finished=got===(c.edits||[]).length&&(c.edits||[]).length>0;
   $("craft-payoff").innerHTML = finished?
-    '<div class="payoff">You walked the whole unit: words, building, talk, grammar, craft. '+
-    'The report on the unit page shows the walk. Tomorrow, walk it again.</div>':"";
+    '<div class="payoff">この単元、あるいた。You walked the whole unit: words, building, talk, grammar, craft. '+
+    'The report on the unit page shows the walk. あしたも、もういちど。</div>':"";
   /* extension: the stretch, once the floor is walked */
   const x=content(u.key).extension;
   $("craft-stretch").innerHTML = (finished&&x)?
-    '<div class="stretch"><div class="xh">Extension: now make it yours</div>'+
+    '<div class="stretch"><div class="xh">のばす · extension: now make it yours</div>'+
     jpBlock(x.task)+
     '<div class="xcheck">'+x.checklist.map((ck,i)=>{
       const ok=S.xticks[u.key+":"+i];
@@ -12185,7 +11875,23 @@ function applyHash(){
   return false;
 }
 window.addEventListener("hashchange",applyHash);
-if(!applyHash()) paint();
+/* A link first (?unit=u12&tab=build, or the older #unit:u12), then where
+   this device was left, then the map. */
+function applyStart(){
+  if(applyHash()) return;
+  const mu=/[?&]unit=([a-z0-9]+)/.exec(location.search||"");
+  let u=mu?mu[1]:null;
+  if(!u){ try { u=localStorage.getItem(WKEY+":unit")||null; } catch(e){} }
+  if(u&&UNITS.some((x)=>x.key===u)) S.unit=u;
+  let want=TABS.startId(WKEY,SCREENS);
+  if(want!=="home"&&!unit()) want="home";
+  if(want==="home"||want==="unit") go(want); else enterStep(want);
+}
+applyStart();
+/* A seam for tools/tab-check.js. Every screen but the map belongs to a
+   unit, so a checker driving the links has to know a real unit key, and
+   UNITS is a const rather than a window property. */
+window.WALK_APP = { units: ()=>UNITS.map((u)=>u.key), now: ()=>[S.unit,S.screen] };
 </script>
 </body>
 </html>

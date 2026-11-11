@@ -174,6 +174,7 @@
           pts:0, spent:0, arcade:0, hard:false,
           done:{}, best:{}, wrote:{}, howto:{} };
     try { localStorage.removeItem(KEY); } catch(e){}
+    TABS.forget(TABKEY);
     draw();
   };
   /* Nothing is recorded anywhere, so the only way to show somebody is to
@@ -1750,7 +1751,13 @@
     { id:"jibun",  ja:"じぶんで", en:"Write your own", whole:true },
     { id:"kuraberu", ja:"くらべる", en:"All six", whole:true }
   ];
-  var at = 0, who = 0, DRAW = {};
+  /* Where the app opens: the tab a worksheet link asked for, then the one
+     this device was last on, then the first. The order of the bar is set
+     and does not move — see tabs.js for why — so this is the only thing
+     that decides where a student lands. */
+  var TABKEY = "jinbutsu-v1";
+  var at = TABS.start(TABKEY, STEPS.map(function(s){ return s.id; })),
+      who = 0, DRAW = {};
   function P(){ return K.people[who % K.people.length]; }
   function tag(){ return STEPS[at].id + ":" + P().id; }
 
@@ -1857,6 +1864,12 @@
     /* the rung tints the page: see the colour block in index.html */
     document.body.dataset.rung = STEPS[at].id;
     paintToggles(); paintSteps();
+    /* Remember the tab, and keep it on the screen: the bar scrolls
+       sideways on a phone, and a tab the app has just opened could sit
+       off the right-hand edge with nothing to say it was there. */
+    TABS.keep(TABKEY, STEPS[at].id);
+    TABS.inview($("steps"));
+
     /* The game runs on its own clock and its own audio. Leaving the rung
        has to stop both, or さくらさくら follows you round the app. */
     if (GAME){ GAME.stop(); GAME = null; }

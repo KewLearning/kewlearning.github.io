@@ -582,6 +582,7 @@
 <script src="data/errors.js"></script>
 <script src="data/topics.js"></script>
 <script src="data/flow.js"></script>
+<script src="tabs.js"></script>
 <script src="data/qwords.js"></script>
 <script src="data/particles.js"></script>
 <script>
@@ -1586,6 +1587,12 @@
     SAY.stop(); REEL.cancel();
     stopClock();
     paintNav();
+    /* Remember which tab, so the app opens where it was left, and keep
+       the open tab on the screen if the bar ever has to scroll. The
+       module is reached as window.TABS because this file has a TABS of
+       its own, which is the list of tabs. */
+    window.TABS.keep(KEY, tabOf(route));
+    window.TABS.inview($("nav"));
     var fn = RENDER[tabOf(route)] || RENDER.home;
     $("main").innerHTML = "";
     fn(route.split(":").slice(1));
@@ -3601,6 +3608,7 @@
       if (!confirm("Clear everything this app has saved on this phone, including "
                  + "your image and your notes?")) return;
       try { localStorage.removeItem(KEY); } catch (e){}
+      window.TABS.forget(KEY);
       S = { furi:true, rate:1, voice:"clips", notes:{}, assess:{}, disc:{},
             weak:{}, seen:{} };
       paintFuri(); paintRate(); RENDER.me([]);
@@ -3801,7 +3809,12 @@
   /* ================= start ================= */
   paintFuri(); paintRate(); paintClick();
   $("homeBtn").onclick = function(){ SAY.stop(); go("home"); };
-  route = (location.hash || "#home").slice(1) || "home";
+  /* Where the app opens, in this order: the tab a worksheet link asked
+     for (?tab=drill), then a route already in the address, then the tab
+     this device was last on, then home. */
+  var TABIDS = ["home"].concat(TABS.map(function(t){ return t.id; }));
+  route = window.TABS.own(KEY, TABIDS,
+    (location.hash || "").slice(1) || window.TABS.last(KEY, TABIDS) || "home");
   go(route, true);
 })();
 </script>

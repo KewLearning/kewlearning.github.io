@@ -213,6 +213,7 @@
   $("resetBtn").onclick = function(){
     if (!confirm("Clear your score, your ticks and anything typed on this device?")) return;
     S.pts = 0; S.spent = 0; S.best = 0; S.done = {}; S.won = {}; S.wrote = {};
+    TABS.forget(KEY);
     save(); draw();
   };
   /* Nothing is recorded anywhere, so the only way to show somebody is to
@@ -1893,7 +1894,11 @@
     { id:"katch", ja:"ことばキャッチ", en:"Catch the word" },
     { id:"write", ja:"かいて",     en:"Write it" }
   ];
-  var at = 0, DRAW = {};
+  /* Where the app opens: the tab a worksheet link asked for, then the one
+     this device was last on, then the first. The order of the bar is set
+     and does not move — see tabs.js for why — so this is the only thing
+     that decides where a student lands. */
+  var at = TABS.start(KEY, STEPS.map(function(s){ return s.id; })), DRAW = {};
 
   function ruleFor(id, cls){
     var r = null;
@@ -1987,6 +1992,11 @@
 
   function draw(){
     paintToggles(); paintSteps();
+    /* Remember the tab, and keep it on the screen: twelve rungs scroll
+       sideways on a phone, and one the app has just opened could sit off
+       the right-hand edge with nothing to say it was there. */
+    TABS.keep(KEY, STEPS[at].id);
+    TABS.inview($("steps"));
     /* The game runs on its own clock and its own audio. Leaving the rung
        has to stop both, or the chiptune follows you round the app. */
     if (GAME){ GAME.stop(); GAME = null; }

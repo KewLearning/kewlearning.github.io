@@ -1374,6 +1374,11 @@
 
   function draw(){
     if (!DRAW[S.step]) S.step = "bunpou";
+    /* This app has kept its own tab in its own saved state since before
+       tabs.js existed, so tabs.js is only told what the tab is. What it
+       adds here is the worksheet link and keeping the bar scrolled to
+       the open tab. */
+    TABS.note(S.step);
     $("steps").innerHTML = STEPS.map(function(st){
       return '<button data-s="' + st.id + '"'
         + (st.id === S.step ? ' aria-current="true"' : '') + '>'
@@ -1386,9 +1391,14 @@
       };
     });
     if (S.step !== "kikitori") document.body.classList.remove("hidescript");
+    TABS.inview($("steps"));
     DRAW[S.step]();
     paintToggles();
   }
+
+  /* A worksheet link can open one tab: ?tab=kikitori. The bar stays where
+     it is and the student can go anywhere, as everywhere else here. */
+  S.step = TABS.own(KEY, STEPS.map(function(s){ return s.id; }), S.step);
 
   paintToggles();
   draw();

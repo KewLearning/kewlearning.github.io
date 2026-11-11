@@ -22,14 +22,12 @@
     /* ---- typography: two scripts, two faces ----
        Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
        UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
-       handwriting models, which is why it is the classroom default rather
-       than a gothic. Both are already on the school machines, so nothing is
-       downloaded and nothing breaks offline.
+       handwriting models, which is why it is the classroom default. Both
+       fonts are already installed on the school machines (Windows/Office),
+       so nothing is downloaded and nothing breaks offline.
        One stack does both jobs because the browser falls back per character:
        Latin resolves inside --font-en, kana and kanji fall straight through
-       to --font-jp. The Japanese list puts every textbook face it can ahead
-       of any gothic, so a machine without the UD family still gets kyokasho
-       stroke shapes. Never write a font name outside this block. */
+       to --font-jp. Never write a font name outside this block. */
     --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
     --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
     --font:var(--font-en),var(--font-jp),sans-serif;
@@ -161,33 +159,6 @@
        padding:1px 7px;text-transform:uppercase;vertical-align:middle;margin-left:5px}
   .role-sense{color:var(--s1);border:1px solid var(--s1)}
   .role-sound{color:var(--s3);border:1px solid var(--s3)}
-
-  /* ---- the character card: the purple-lab word card, ported ----
-     The same shape the English word builders use for their word list,
-     and the same shape kanji/ (Kanji Factory) uses: the character large
-     and serif, the meaning under it, a dashed rule, then the parts as
-     coloured serif with their glosses, then the note.
-     The colours are this file's own step colours, the ones .role-sense
-     and .role-sound already use, so the card and the tag agree.
-     Colour only ever appears here, on a character that has been put
-     together — a part has no job until there is a character for it to
-     do the job in, so the bank of tiles above stays neutral. */
-  .klegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;margin:0 0 10px;
-       border:1px solid var(--line-soft);border-radius:8px;padding:9px 13px;background:var(--bg)}
-  .klegend .c-sense{color:var(--s1)} .klegend .c-sound{color:var(--s3)}
-  .klegend .note{font-weight:400;color:var(--muted)}
-  .kcard{border:1px solid var(--line-soft);border-radius:10px;padding:14px 16px;background:var(--paper);text-align:left}
-  .kcard .w{font-family:var(--font);font-size:38px;font-weight:700;line-height:1.15;vertical-align:middle}
-  .kcard .w .kglyph{vertical-align:middle;margin:-4px 0}
-  .kcard .rd{font-size:12px;color:var(--muted);font-style:italic;margin-left:8px}
-  .kcard .meaning{font-size:14px;margin:6px 0;line-height:1.5}
-  .kcard .comp{font-size:13.5px;color:var(--muted);line-height:1.8;border-top:1px dashed var(--line-soft);
-       padding-top:6px;margin-top:6px}
-  .kcard .comp b,.kcard .comp i{color:var(--ink)}
-  .kcard .comp code{font-family:var(--font);font-weight:700;font-size:21px;vertical-align:-1px}
-  .kcard .comp code.c-sense{color:var(--s1)} .kcard .comp code.c-sound{color:var(--s3)}
-  .kcard .comp .eq{font-family:var(--font);font-size:19px;color:var(--ink);margin-left:4px}
-  .kcard .hook{margin-top:9px}
   .hook{background:var(--band);border:1px solid var(--line-soft);border-left:4px solid var(--s2);
        border-radius:9px;padding:11px 14px;font-size:13px;line-height:1.6;margin-top:10px}
   .hook .lab{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--s2);text-transform:uppercase;display:block;margin-bottom:3px}
@@ -307,10 +278,6 @@
       <button class="btn btn-primary" id="kanji-check" data-jt="check" disabled>チェック</button>
       <button class="btn btn-primary" id="kanji-next" data-jt="next" style="display:none">つぎへ</button>
     </div>
-    <p class="privacy" style="margin-top:16px">Characters are drawn from
-      <a href="https://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a> stroke data by Ulrich Apel,
-      used under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>,
-      so each part can be coloured separately. Which job a part does in a character is this app's own claim, not KanjiVG's.</p>
   </section>
 
   <!-- ============ GRAMMAR GYM ============ -->
@@ -374,8 +341,8 @@
 
 </div>
 </div>
-<div class="build-tag">Unit10 PoC 2026-09-06</div>
-<script src="../kanji-strokes.js"></script>
+<div class="build-tag">Unit10 PoC 2026-08-18</div>
+<script src="tabs.js"></script>
 <script src="lever.js"></script>
 <script>
 /* ============================================================
@@ -732,7 +699,22 @@ const UI_RUBY = {
     $("scr-" + name).classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (window.HubLever) window.HubLever.apply();
+    TABS.keep(TABKEY, name);
   }
+  /* Opening a screen is not the same as showing it: each one has a way in
+     that deals its tasks and resets its counters, which is why the home
+     cards call these rather than go() on their own. A link and the
+     remembered screen have to use the same doors. */
+  const ENTER = {
+    home:   () => { drawHome(); go("home"); },
+    study:  () => { drawStudy(); go("study"); },
+    vocab:  () => startVocab(),
+    kanji:  () => startKanji(),
+    gram:   () => { gram.stage = GRAM.findIndex((g) => !S.done.gram[g.key]);
+                    if (gram.stage < 0) gram.stage = 0; startGram(); },
+    read:   () => startRead(),
+    report: () => { drawReport(); go("report"); }
+  };
   document.querySelectorAll("[data-go]").forEach((b) =>
     b.addEventListener("click", () => { const n = b.dataset.go; if (n === "home") drawHome(); go(n); }));
 
@@ -977,10 +959,10 @@ const UI_RUBY = {
       '<div class="kgloss">' + esc(k.gloss) + "</div>" +
       '<div class="kread">' + esc(k.kun) + " · " + esc(k.on) + "</div>";
     if (!k.parts.length) {
-      // a piece to know, not a puzzle: no score attached, nothing to get wrong.
-      // No parts in the data means no component line on the card — an empty
-      // breakdown would be a claim, and this character does not come apart.
-      $("kanji-area").innerHTML = kcard(k, "");
+      // a piece to know, not a puzzle: no score attached, nothing to get wrong
+      $("kanji-area").innerHTML = head +
+        '<div class="hook"><span class="lab">おぼえかた · memory hook</span>' + esc(k.hook) + "</div>" +
+        '<div class="inwords">This unit: ' + k.words.map(esc).join("、") + "</div>";
       $("kanji-check").style.display = "none";
       $("kanji-next").style.display = "";
       return;
@@ -1001,49 +983,6 @@ const UI_RUBY = {
       $("kanji-check").disabled = kanji.picked.length !== k.parts.length;
     }));
   }
-  /* ---------------- THE CHARACTER CARD ----------------
-     Purple Lab's word card, ported to kanji, the same way kanji/
-     (Kanji Factory) ports it. An English word can be coloured letter
-     by letter because its morphemes are letters; a kanji cannot,
-     because its parts are strokes inside one glyph and CSS colours
-     whole characters only. So the parts take their colours on their
-     own line underneath: each one a coloured serif <code>, its gloss
-     in italics, joined by " + ", then the note.
-     Everything on the card comes from U10_KANJI. Nothing is inferred:
-     a character with no `parts` gets no component line at all, and the
-     hook keeps its "memory hook, not history" label, because a good
-     mnemonic is not an etymology and this file says so. */
-  /* The character drawn stroke by stroke, so each component takes its own
-     colour inside the glyph — the same move the English word builders make
-     when they colour "pan" and "sexual" inside Pansexual. The colours are
-     this file's own step colours, the ones the component line already uses.
-     A character with no parts has no jobs to show, so it is drawn in one
-     ink colour. Falls back to the plain character where no stroke data is
-     bundled, so a headword can never come out blank. */
-  function glyph(k) {
-    if (window.KanjiGlyph && KanjiGlyph.has(k.ch)) {
-      return KanjiGlyph.svg(k.ch, k.parts, {
-        size: 52,
-        colors: { sense: "var(--s1)", sound: "var(--s3)" },
-        mono: k.parts.length ? null : "var(--ink)"
-      });
-    }
-    return k.ch;
-  }
-  function kcard(k, tail) {
-    const line = k.parts.length
-      ? k.parts.map((p) =>
-          '<code class="c-' + p.role + '">' + esc(p.p) + "</code> <i>" + esc(p.g) + "</i>" +
-          (p.role === "sound" && p.sound ? ' <b>' + esc(p.sound) + "</b>" : "")
-        ).join(" + ") + tail
-      : "";
-    const comp = '<div class="comp">' + line +
-      '<div class="hook"><span class="lab">おぼえかた · memory hook, not history</span>' + esc(k.hook) + "</div>" +
-      '<div class="inwords">This unit: ' + k.words.map(esc).join("、") + "</div>" + "</div>";
-    return '<div class="kcard"><span class="w">' + glyph(k) + '</span>' +
-      '<span class="rd">' + esc(k.kun) + " · " + esc(k.on) + "</span>" +
-      '<div class="meaning">' + esc(k.gloss) + "</div>" + comp + "</div>";
-  }
   $("kanji-check").addEventListener("click", () => {
     if (kanji.graded) return; kanji.graded = true;
     const k = kanji.queue[kanji.i];
@@ -1057,14 +996,16 @@ const UI_RUBY = {
       t.disabled = true;
       if (kanji.picked.indexOf(t.dataset.c) > -1 && want.indexOf(t.dataset.c) < 0) t.classList.add("wrongpart");
     });
+    const eq = k.parts.map((p) =>
+      p.p + '<span class="role role-' + p.role + '">' + (p.role === "sound" ? "sound " + esc(p.sound || "") : "meaning") + "</span>")
+      .join('<span class="op">+</span>') + '<span class="op">=</span>' + k.ch;
     const fb = $("kanji-fb");
     fb.className = "feedback " + (ok ? "good" : "bad");
-    fb.innerHTML = (ok ? "✓ " : "✗ Not quite. ") +
-      '<div class="klegend"><span class="c-sense">いみ meaning</span>' +
-      '<span class="c-sound">おと sound</span>' +
-      '<span class="note">— the job a part does in <i>that</i> character, not everywhere</span></div>' +
-      kcard(k, ' <span class="eq">= ' + k.ch + "</span>") +
-      (ok ? "" : "<br>This one will come back around.");
+    fb.innerHTML = (ok ? "✓ " : "✗ Not quite. ") + '<div class="equation">' + eq + "</div>" +
+      k.parts.map((p) => "<b>" + p.p + "</b> " + esc(p.g)).join(" &nbsp;·&nbsp; ") +
+      '<div class="hook"><span class="lab">おぼえかた · memory hook, not history</span>' + esc(k.hook) + "</div>" +
+      '<div class="inwords">This unit: ' + k.words.map(esc).join("、") + "</div>" +
+      (ok ? "" : " <br>This one will come back around.");
     $("kanji-check").style.display = "none";
     $("kanji-next").style.display = ""; $("kanji-next").focus();
   });
@@ -1297,8 +1238,13 @@ const UI_RUBY = {
   $("rep-print").addEventListener("click", () => window.print());
 
   /* ---------------- boot ---------------- */
+  /* Where the hub opens: the screen a worksheet link asked for
+     (?tab=kanji), then the screen this device was last on, then home.
+     Home is still the map and every screen has its way back to it. */
+  const TABKEY = "unit10-v1";
   drawHome();
   window.HubLever.init({ strings: UI, ruby: UI_RUBY });
+  (ENTER[TABS.startId(TABKEY, Object.keys(ENTER))] || ENTER.home)();
 })();
 </script>
 </body>

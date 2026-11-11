@@ -20,7 +20,12 @@
   var J = window.JOSHI || { panels: [], ok: "" };
   var PANELS = J.panels, OK = J.ok;
 
-  var panelAt = 0, mode = "table", furi = true, showEn = true, sfx = true;
+  /* Where the app opens: the panel a worksheet link asked for, then the
+     one this device was last on, then the first. The order of the panels
+     is set and does not move — see tabs.js for why. */
+  var TABKEY = "joshi-v1";
+  var panelAt = TABS.start(TABKEY, PANELS.map(function(p){ return p.id; }));
+  var mode = "table", furi = true, showEn = true, sfx = true;
   /* The table sits in the first position and hands over the answers, so
      the drill is no test for a student who flips back to it. かくす
      empties the meaning column, and a card gives up its own line when it
@@ -133,6 +138,11 @@
       return '<button data-p="' + i + '" class="' + (i === panelAt ? "on" : "")
         + '">' + esc(p.ja) + '<i>' + esc(p.en) + '</i></button>';
     }).join("");
+    /* Remember the panel, and keep it on the screen: the bar scrolls
+       sideways on a phone, and a panel the app has just opened could sit
+       off the right-hand edge with nothing to say it was there. */
+    TABS.keep(TABKEY, PANELS[panelAt].id);
+    TABS.inview($("panels"));
   }
 
   function drawModes(){

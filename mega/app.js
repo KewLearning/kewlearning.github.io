@@ -330,6 +330,7 @@
   $("resetBtn").onclick = function(){
     if (!confirm("Clear your score, your ticks and anything typed on this device?")) return;
     S.pts = 0; S.spent = 0; S.best = 0; S.done = {}; S.won = {}; S.wrote = {};
+    TABS.forget(TABKEY);
     save(); draw();
   };
   /* Nothing is recorded anywhere, so the only way to show somebody is to
@@ -1843,7 +1844,12 @@
     { id:"fast",  ja:"はやく",         en:"Read it fast" },
     { id:"quiz",  ja:"クイズ",         en:"Team quiz" }
   ];
-  var at = 0, DRAW = {};
+  /* Where the app opens: the tab a worksheet link asked for, then the one
+     this device was last on, then the first. The order of the bar is set
+     and does not move — see tabs.js for why — so this is the only thing
+     that decides where a student lands. */
+  var TABKEY = "mega-v1";
+  var at = TABS.start(TABKEY, STEPS.map(function(s){ return s.id; })), DRAW = {};
   /* かるた listens on the document for its two buzzer keys, so the
      listener has to come off when another rung is drawn */
   var KEYOFF = null;
@@ -1950,6 +1956,12 @@
   }
   function draw(){
     paintToggles(); paintSteps();
+    /* Remember the tab, and keep it on the screen: the bar scrolls
+       sideways on a phone, and a tab the app has just opened could sit
+       off the right-hand edge with nothing to say it was there. */
+    TABS.keep(TABKEY, STEPS[at].id);
+    TABS.inview($("steps"));
+
     /* The game runs on its own clock and its own audio. Leaving the rung
        has to stop both, or the chiptune follows you round the app. */
     if (GAME){ GAME.stop(); GAME = null; }

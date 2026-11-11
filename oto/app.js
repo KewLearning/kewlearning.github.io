@@ -26,7 +26,10 @@
   "use strict";
 
   var O = window.OTO;
-  var at = 0;                /* which investigation */
+  /* Which investigation, and where it opens: the one a worksheet link
+     asked for, then the one this device was last on, then the first. */
+  var TABKEY = "oto-v1";
+  var at = TABS.start(TABKEY, O.investigations.map(function(I){ return I.id; }));
   var stage = "data";
   var rule = {}, exceptions = [], extra = [], result = null;
   var sorted = false, phase = "main";   /* main | transfer | anomaly */
@@ -252,6 +255,9 @@
              : stage === "rule" ? drawRule(I)
              : drawTest(I);
     $("main").innerHTML = tabs() + steps() + '<div class="wrap">' + body + '</div>';
+    /* Remember the investigation, and keep its tab on the screen. */
+    TABS.keep(TABKEY, O.investigations[at].id);
+    TABS.inview($("main").querySelector(".invs"));
   }
 
   /* ---- what the student does ---- */

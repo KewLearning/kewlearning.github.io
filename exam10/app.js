@@ -125,6 +125,7 @@
   $("resetBtn").onclick = function(){
     if (!confirm("Clear your score, your ticks and anything typed on this device?")) return;
     S.pts = 0; S.spent = 0; S.best = 0; S.done = {}; S.won = {}; S.wrote = {};
+    TABS.forget(TABKEY);
     save(); draw();
   };
   /* Nothing is recorded anywhere, so the only way to show somebody is to
@@ -303,6 +304,9 @@
      met all six, in whatever order the deck handed them over. */
   var TALLY = {};
 
+  /* The tabs are built at the bottom of this file, out of the paper this
+     app was given, so where to open is settled down there too. */
+  var TABKEY = "shiken10-v1";
   var at = 0, DRAW = {};
   function ruleFor(id, cls){
     var r = null;
@@ -401,6 +405,11 @@
   }
   function draw(){
     paintToggles(); paintSteps();
+    /* Remember the tab, and keep it on the screen: the bar scrolls
+       sideways on a phone, and a tab the app has just opened could sit
+       off the right-hand edge with nothing to say it was there. */
+    TABS.keep(TABKEY, STEPS[at].id);
+    TABS.inview($("steps"));
     $("main").innerHTML = "";
     DRAW[STEPS[at].id]();
     paintEn();
@@ -1285,6 +1294,12 @@
   var STEPS = ORDER
     .filter(function(id){ return TAB[id] && TAB[id].has(); })
     .map(function(id){ return { id: id, ja: TAB[id].ja, en: TAB[id].en }; });
+
+  /* Where the app opens: the tab a worksheet link asked for, then the
+     one this device was last on, then the first. Year 10 and Year 11 keep
+     their tab under their own name, because the two share a storage key
+     for everything else and sit on the same site. */
+  at = TABS.start(TABKEY, STEPS.map(function(s){ return s.id; }));
 
   $("sub").textContent = (X.year || "") + " · " + (X.title_en || "");
   document.title = (X.title_ja || "しけん") + " · " + (X.year || "");
