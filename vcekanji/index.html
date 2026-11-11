@@ -22,6 +22,11 @@
     --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  /* A display: rule beats the hidden attribute, and .opts and .typebox
+     both set one. Without this line a box the app has hidden stays on
+     the screen, which is how かく showed its four choices before anybody
+     asked for them. */
+  [hidden]{display:none !important}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--font);
        font-size:16px;line-height:1.5;display:flex;flex-direction:column;
@@ -96,18 +101,34 @@
   .find input:focus{border-color:var(--deep);outline:none}
   .cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
   .cats button{border:1.5px solid var(--line);border-radius:999px;background:#fff;
-       cursor:pointer;font-family:var(--jp);font-size:13px;padding:3px 11px;
-       color:var(--muted)}
+       cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:600;
+       padding:4px 12px;color:var(--muted)}
   .cats button.on{border-color:var(--deep);color:var(--deep);background:#eef3f9;
        font-weight:700}
+  .cats button span{font-family:var(--jp);font-weight:400;color:var(--muted);
+       margin-left:5px;font-size:12.5px}
+  .cats button.on span{color:var(--deep)}
+  /* The cards grow when you point at one or tap it, the way the dock
+     does: the grid keeps its place and only the card under the pointer
+     changes size, so nothing reflows and nothing jumps. The 12px of
+     padding on the grid is the room that growth needs, because .work
+     clips anything outside it. */
   .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));
-       gap:9px;align-content:start}
+       gap:9px;align-content:start;padding:12px}
   .kcard{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
-       padding:9px 11px 10px;text-align:left}
+       padding:9px 11px 10px;text-align:left;display:block;width:100%;
+       font-family:inherit;color:inherit;cursor:pointer;
+       transition:transform .14s ease-out,box-shadow .14s ease-out,
+                  border-color .14s ease-out}
+  .kcard:hover,.kcard:focus-visible,.kcard.open{transform:scale(1.08);
+       z-index:4;position:relative;border-color:var(--deep);
+       box-shadow:0 10px 26px rgba(16,40,70,.17);outline:none}
+  .kcard.open{box-shadow:0 10px 26px rgba(16,40,70,.24)}
+  @media (prefers-reduced-motion:reduce){ .kcard{transition:none} }
   .kcard .top{display:flex;align-items:baseline;gap:10px}
-  .kcard .big{font-family:var(--jp);font-size:40px;line-height:1.1;color:var(--ink)}
-  .kcard .mean{font-size:13.5px;color:var(--muted);flex:1}
-  .kcard .rds{font-family:var(--jp);font-size:14px;margin-top:3px}
+  .kcard .big{font-family:var(--jp);font-size:48px;line-height:1.1;color:var(--ink)}
+  .kcard .mean{font-size:15px;color:var(--muted);flex:1}
+  .kcard .rds{font-family:var(--jp);font-size:15.5px;margin-top:3px}
   .kcard .rds s{text-decoration:none;display:inline-block;margin-right:9px}
   .kcard .rds .o{color:var(--on)} .kcard .rds .k{color:var(--kun)}
   .kcard .rds i{font-family:var(--font);font-style:normal;font-size:10px;
@@ -115,8 +136,56 @@
        margin-right:4px}
   .kcard .ws{margin-top:6px;border-top:1px solid var(--line-soft);padding-top:5px;
        display:flex;flex-wrap:wrap;gap:4px 12px}
-  .kcard .ws span{font-family:var(--jp);font-size:17px;line-height:1.9}
+  .kcard .ws span{font-family:var(--jp);font-size:19px;line-height:1.9}
   .none{color:var(--muted);font-size:14px;padding:10px 2px}
+
+  /* ---- よむ, reading for meaning ----
+     A reading screen is a column: the passage and its questions scroll,
+     the gloss panel does not. The gloss sits between the scroller and
+     the footer, the same place it sits in ひと, so a tapped word never
+     covers the sentence it came from. */
+  .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+       gap:10px;align-content:start;padding:2px}
+  .pcard{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       padding:10px 12px 11px;text-align:left;display:block;width:100%;
+       cursor:pointer;font-family:inherit;color:inherit;
+       transition:border-color .14s,box-shadow .14s}
+  .pcard:hover,.pcard:focus-visible{border-color:var(--deep);outline:none;
+       box-shadow:0 6px 16px rgba(16,40,70,.12)}
+  .pcard b{display:block;font-family:var(--jp);font-size:21px;line-height:1.3}
+  .pcard .pe{font-size:14px;color:var(--ink);margin-top:1px}
+  .pcard .pt2{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+       color:var(--muted);margin-top:5px}
+  .pcard .pq{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:4px}
+  .pcard .pq.all{color:var(--ok)}
+  .read{font-family:var(--jp);font-size:clamp(20px,2.6vw,25px);line-height:2.1;
+       max-width:980px}
+  #ask{max-width:980px}
+  .read p{margin-bottom:5px}
+  .wd{font:inherit;color:inherit;background:none;border:0;padding:0 1px;
+       border-bottom:2px dotted #b9c6d6;cursor:pointer;border-radius:3px}
+  .wd:hover{background:#eef3f9;border-bottom-color:var(--deep)}
+  .wd.lit{background:#e6eef8;border-bottom-color:var(--deep)}
+  .tip{flex:none;max-height:30vh;overflow:auto;margin-top:8px}
+  .tip:empty{display:none}
+  .gloss{border:2px solid var(--deep);border-radius:10px;background:var(--paper);
+       padding:8px 11px}
+  .gloss>b{display:block;font-family:var(--jp);font-size:22px;line-height:1.6}
+  .gloss>b u{font-family:var(--jp);text-decoration:none;font-size:16px;
+       font-weight:400;color:var(--muted);margin-left:9px}
+  .gloss>b i{font-family:var(--font);font-style:normal;font-size:15px;
+       font-weight:600;color:var(--ink);margin-left:9px}
+  .gloss .bits{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;
+       border-top:1px solid var(--line-soft);padding-top:6px}
+  .gloss .bit{font-size:12px;color:var(--muted)}
+  .gloss .bit s{text-decoration:none;font-family:var(--jp);font-size:20px;
+       color:var(--ink);margin-right:4px}
+  .qbox{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       padding:10px 12px 12px;margin-top:10px}
+  .qbox .qn{font-size:15px;font-weight:700;margin-bottom:2px}
+  .qbox .opts{margin-top:8px}
+  .opt.en{font-family:var(--font);font-size:15.5px;font-weight:600;
+       padding:9px 10px;line-height:1.35}
 
   /* ---- the question screens ---- */
   .ask{max-width:620px;margin:0 auto;text-align:center}
@@ -140,6 +209,7 @@
        border:2px solid var(--line);border-radius:12px;padding:6px 12px;
        width:min(300px,78vw);background:var(--paper);color:inherit}
   .typebox input:focus{border-color:var(--deep);outline:none}
+  .help{display:flex;justify-content:center;margin-top:11px}
   .mark{border-left:4px solid var(--line);padding:6px 11px;margin:12px auto 0;
        font-size:14px;max-width:620px;text-align:left}
   .mark.yes{border-color:var(--ok)} .mark.no{border-color:var(--accent)}
@@ -182,10 +252,11 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261111a"></script>
-<script src="nyuuryoku.js?v=20261111a"></script>
-<script src="data/kanji.js?v=20261111a"></script>
-<script src="app.js?v=20261111a"></script>
-<div class="build" aria-hidden="true">build 2026-11-11a</div>
+<script src="tabs.js?v=20261111b"></script>
+<script src="nyuuryoku.js?v=20261111b"></script>
+<script src="data/kanji.js?v=20261111b"></script>
+<script src="data/yomu.js?v=20261111b"></script>
+<script src="app.js?v=20261111b"></script>
+<div class="build" aria-hidden="true">build 2026-11-11b</div>
 </body>
 </html>
