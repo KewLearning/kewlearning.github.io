@@ -4081,7 +4081,7 @@
       how: "Clear the table as fast as you can." },
     { id: "turns", ja: "かわりばんこ", en: "Take turns",
       how: "Take turns: the app says whose go it is. Listen, then tap." },
-    { id: "race",  ja: "きょうそう",   en: "Race for it",
+    { id: "race",  ja: "はやいものがち", en: "Race for it",
       how: "Race: press your own Shift key to claim the word, then tap." }
   ];
   /* The two players, in the colours and patterns the team quiz uses, so
