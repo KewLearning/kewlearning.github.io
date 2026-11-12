@@ -966,6 +966,7 @@
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
+          + meaning(word)
           + '</div>' + breakdown(word);
         paintScore();
         $("skip").textContent = "Next word";
@@ -979,10 +980,17 @@
       if (got >= WORDS.length) done("yomi");
     }
   };
+  /* Andrew, on かく: you can get the word right from the kana and still
+     not know what it means. So a marked answer carries the meaning —
+     except where the meaning was the question, which would be handing
+     back the prompt. The gloss is the drafted one, and it says so, because
+     a meaning nobody has checked should not pass for his. */
+  function meaning(word){
+    if (!word.en) return "";
+    return '<em class="gl">' + esc(word.en) + '<i>drafted meaning</i></em>';
+  }
   /* What the word is made of, in the list's own terms: each kanji, what
-     it means, and the readings it owns. No English for the word itself,
-     because the list does not gloss the words and this app does not
-     invent. */
+     it means, and the readings it owns. */
   function breakdown(word){
     var ps = partsOf(word.w);
     if (!ps.length) return "";
@@ -1135,6 +1143,7 @@
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "That is the one" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
+          + (inEnglish ? "" : meaning(word))
           + '<p>Type it as well if you have the keyboard on. It pays '
           + 'nothing now the word is on the screen, and it is still the '
           + 'thing the examination asks you to do.</p></div>'
@@ -1157,7 +1166,8 @@
         else { S.won["kaku:type:" + word.w] = 1; save();
                first("kaku:pick:" + word.w, 1, "typed with help"); }
         $("fb").innerHTML = '<div class="mark yes"><b>Typed</b>'
-          + '<span class="jp">' + ruby(word.w, word.y) + '</span></div>'
+          + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
+          + (inEnglish ? "" : meaning(word)) + '</div>'
           + breakdown(word);
         $("skip").textContent = "Next word";
         $("helprow").hidden = true;
