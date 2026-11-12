@@ -216,6 +216,30 @@
   .tick.on b{background:var(--deep);border-color:var(--deep)}
   .tick span{font-family:var(--jp);font-weight:400;color:var(--muted);
        font-size:13px;margin-left:auto}
+  /* ---- the two long lists fold away ---- */
+  .fold{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       margin-bottom:10px}
+  .fold>summary{cursor:pointer;list-style:none;padding:11px 13px;
+       font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:9px}
+  .fold>summary::-webkit-details-marker{display:none}
+  .fold>summary::before{content:"▸";color:var(--muted);font-size:13px;
+       transition:transform .14s}
+  .fold[open]>summary::before{transform:rotate(90deg)}
+  .fold[open]>summary{border-bottom:1px solid var(--line-soft)}
+  .fold>summary i{font-style:normal;margin-left:auto;font-size:12px;
+       font-weight:700;color:var(--deep)}
+  .fold>summary:hover{color:var(--deep)}
+  .fold .cats,.fold .chips{padding:10px 13px 13px;margin:0}
+  .quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+       gap:8px}
+  .quick button{border:2px solid var(--deep);border-radius:11px;
+       background:var(--paper);color:var(--deep);cursor:pointer;
+       padding:9px 10px;font-family:var(--font);text-align:center}
+  .quick button:hover{background:color-mix(in srgb, var(--deep) 8%, var(--paper))}
+  .quick b{display:block;font-size:15px;font-weight:700}
+  .quick span{display:block;font-family:var(--jp);font-size:12.5px;
+       color:var(--muted);margin-top:1px}
+  .panel .hint{margin-top:9px}
   .chips{display:flex;flex-wrap:wrap;gap:5px;max-height:34vh;overflow:auto;
        padding:2px}
   .chip{font-family:var(--jp);font-size:20px;line-height:1;width:40px;height:40px;
@@ -414,12 +438,12 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261112d"></script>
-<script src="nyuuryoku.js?v=20261112d"></script>
-<script src="data/kanji.js?v=20261112d"></script>
-<script src="data/words-en.js?v=20261112d"></script>
-<script src="data/yomu.js?v=20261112d"></script>
-<script src="app.js?v=20261112d"></script>
-<div class="build" aria-hidden="true">build 2026-11-12d</div>
+<script src="tabs.js?v=20261112e"></script>
+<script src="nyuuryoku.js?v=20261112e"></script>
+<script src="data/kanji.js?v=20261112e"></script>
+<script src="data/words-en.js?v=20261112e"></script>
+<script src="data/yomu.js?v=20261112e"></script>
+<script src="app.js?v=20261112e"></script>
+<div class="build" aria-hidden="true">build 2026-11-12e</div>
 </body>
 </html>
