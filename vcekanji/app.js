@@ -204,10 +204,11 @@
     yomu: "Read the passage. Tap any word for its reading and its meaning, "
         + "free and as often as you like. Then answer the three questions. "
         + "There is no furigana: working the reading out is the task.",
-    cards: "Tick the kanji you want, then tick what goes on the front of "
-         + "the card and what goes on the back. Flip each card to check "
-         + "yourself. The spinner tests you on the set at the end. The word "
-         + "meanings are a draft, not from the kanji list.",
+    cards: "Tap a Quick start, or open a list and tick your own. Then tick "
+         + "what goes on the front of the card and what goes on the back. "
+         + "Flip each card to check yourself, and the spinner tests you on "
+         + "the set at the end. The word meanings are a draft, not from the "
+         + "kanji list.",
     find: "Search the whole list: type a kanji, a reading, a meaning or a "
         + "word. Filter by group with the buttons. Keep this open while you "
         + "write.",
@@ -696,8 +697,46 @@
     if (!S.cards.pick) S.cards.pick = {};
     if (!S.cards.front) S.cards.front = { kanji:1 };
     if (!S.cards.back) S.cards.back = { mean:1, on:1, kun:1 };
+    if (!S.cards.open) S.cards.open = {};
     return S.cards;
   }
+  /* ---- what the app means by hard ----
+     His list carries no difficulty column, and difficulty is his call, not
+     this app's. So the bands are built from the only thing his data
+     measures: how much there is to keep straight about a kanji — the
+     readings it takes plus the words it turns up in. By that measure 日,
+     生 and 分 are hard and 勉 and 族 are easy, which is a claim about load
+     and not about strokes. The page says so in those words, and Q34 asks
+     him whether he wants it some other way.
+
+     Inside a band, the ones a student has not yet answered right on the
+     spinner come first, so Quick start aims at what is left. */
+  function loadOf(k){ return k.on.length + k.kun.length + k.words.length; }
+  function bands(){
+    var all = K.kanji.slice().sort(function(a, b){
+      return loadOf(a) - loadOf(b) || a.k.localeCompare(b.k);
+    });
+    var third = Math.floor(all.length / 3);
+    return { easy: all.slice(0, third),
+             medium: all.slice(third, third * 2),
+             hard: all.slice(third * 2) };
+  }
+  function quickPick(band, n){
+    var pool = band ? bands()[band] : K.kanji.slice();
+    var fresh = pool.filter(function(k){ return !S.won["cards:test:" + k.k]; });
+    var out = shuffle(fresh.slice()).slice(0, n);
+    if (out.length < n){
+      shuffle(pool.filter(function(k){ return out.indexOf(k) < 0; }))
+        .slice(0, n - out.length).forEach(function(k){ out.push(k); });
+    }
+    return out;
+  }
+  var QUICK = [
+    { id:"any",    en:"Any 20",        ja:"どれでも 20",  n:20, band:null },
+    { id:"hard",   en:"10 hard ones",  ja:"むずかしい 10", n:10, band:"hard" },
+    { id:"medium", en:"10 medium ones", ja:"ふつう 10",   n:10, band:"medium" },
+    { id:"easy",   en:"10 easy ones",  ja:"やさしい 10",  n:10, band:"easy" }
+  ];
   function picked(){
     var C = cardsState();
     return K.kanji.filter(function(k){ return C.pick[k.k]; });
@@ -748,15 +787,31 @@
     /* ---- the two tick-box panels ---- */
     function setUp(){
       var C = cardsState();
+      /* Andrew: most of a sitting is spent scrolling past two hundred
+         chips to reach the faces. So the two long panels fold away and
+         Quick start is first, because a student who just wants twenty
+         cards should never have to open either of them. */
       $("main").innerHTML = ruleFor("cards")
         + '<div class="work">'
-        + '<div class="panel"><h2>1. Choose the kanji</h2>'
-        + '<div class="cats" id="ccats"></div>'
-        + '<div class="chips" id="cchips"></div></div>'
+        + '<div class="panel"><h2>Quick start</h2>'
+        + '<div class="quick" id="cquick">' + QUICK.map(function(q){
+            return '<button data-q="' + esc(q.id) + '"><b>' + esc(q.en)
+              + '</b><span>' + esc(q.ja) + '</span></button>';
+          }).join("") + '</div>'
+        + '<p class="hint">Hard here means the most to keep straight: the '
+        + 'readings a kanji takes and the words it turns up in. By that '
+        + 'measure 日 and 生 are hard and 勉 is easy. It is not about '
+        + 'strokes.</p></div>'
+        + '<details class="fold" id="fcats"' + (C.open.cats ? " open" : "") + '>'
+        + '<summary>Choose by category<i id="ncats"></i></summary>'
+        + '<div class="cats" id="ccats"></div></details>'
+        + '<details class="fold" id="fall"' + (C.open.all ? " open" : "") + '>'
+        + '<summary>Choose from all kanji<i id="nall"></i></summary>'
+        + '<div class="chips" id="cchips"></div></details>'
         + '<div class="sides">'
-        + '<div class="panel"><h2>2. Front of the card</h2>'
+        + '<div class="panel"><h2>Front of the card</h2>'
         + '<div class="ticks" id="cfront"></div></div>'
-        + '<div class="panel"><h2>3. Back of the card</h2>'
+        + '<div class="panel"><h2>Back of the card</h2>'
         + '<div class="ticks" id="cback"></div></div>'
         + '</div></div>'
         + foot('<button class="btn" id="go">Start</button>');
@@ -776,11 +831,18 @@
             + '<b></b>' + esc(f.en) + '<span>' + esc(f.ja) + '</span></button>';
         }).join("");
       });
+      /* a fold remembers whether it was open, per device */
+      ["cats", "all"].forEach(function(which){
+        var box = $(which === "cats" ? "fcats" : "fall");
+        box.addEventListener("toggle", function(){
+          C.open[which] = box.open ? 1 : 0; save();
+        });
+      });
 
       /* ---- ticking changes classes, never the page ----
          Andrew: the options jumped back to the top on every tick. They did,
          because every tick redrew the whole rung and the scroller started
-         again at nothing. Nothing is redrawn here now: a tick flips the
+         again at nothing. Nothing is redrawn here: a tick flips the
          classes on what is already on the screen, so the page stays
          exactly where the student left it. */
       function paint(){
@@ -806,6 +868,12 @@
             b.querySelector("b").textContent = on ? "✓" : "";
           });
         });
+        /* a folded panel still says how much is chosen inside it */
+        var cats = K.cats.filter(function(c){
+          return K.kanji.some(function(k){ return k.cat === c.id && C.pick[k.k]; });
+        }).length;
+        $("ncats").textContent = cats ? cats + " of " + K.cats.length + " touched" : "";
+        $("nall").textContent = mine.length ? mine.length + " chosen" : "";
         var ready = mine.length && sideOf("front").length && sideOf("back").length;
         $("go").disabled = !ready;
         $("go").textContent = mine.length ? "Start · " + mine.length + " cards"
@@ -816,9 +884,30 @@
             + ' · back: '
             + sideOf("back").map(function(f){ return f.en.toLowerCase(); }).join(", ")
           : (mine.length ? "Tick at least one thing for each side of the card."
-                         : "Tick the kanji you want to revise.");
+                         : "Pick a Quick start, or open a list and tick your own.");
         save();
       }
+      function begin(){
+        cardQueue = shuffle(picked().slice());
+        cardAt = 0; cardFlipped = false;
+        DRAW.cards();
+      }
+      /* Quick start deals and starts in one tap. A student who has cleared
+         both faces gets the usual ones back rather than a dead button:
+         the point of the tap is to be reading a card a second later. */
+      each($("cquick"), "[data-q]", function(b){
+        b.onclick = function(){
+          var q = null;
+          QUICK.forEach(function(x){ if (x.id === b.dataset.q) q = x; });
+          if (!q) return;
+          C.pick = {};
+          quickPick(q.band, q.n).forEach(function(k){ C.pick[k.k] = 1; });
+          if (!sideOf("front").length) C.front = { kanji:1 };
+          if (!sideOf("back").length) C.back = { mean:1, on:1, kun:1 };
+          save();
+          begin();
+        };
+      });
       each($("ccats"), "[data-c]", function(b){
         b.onclick = function(){
           var c = b.dataset.c;
@@ -852,9 +941,7 @@
       });
       $("go").onclick = function(){
         if ($("go").disabled) return;
-        cardQueue = shuffle(picked().slice());
-        cardAt = 0; cardFlipped = false;
-        DRAW.cards();
+        begin();
       };
       paint();
     }
@@ -1344,6 +1431,7 @@
     near: readingsNear,
     alike: lookalikes,
     yomu: function(){ return Y ? Y.passages.length : 0; },
+    chosen: function(){ return picked().map(function(k){ return k.k; }); },
     cards: function(){ return { picked: picked().length,
                                 front: sideOf("front").map(function(f){ return f.id; }),
                                 back: sideOf("back").map(function(f){ return f.id; }),
