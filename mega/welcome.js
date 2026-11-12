@@ -7,7 +7,20 @@
    nyuuryoku.js do: canonical at the repo root, copied into each app, and
    tools/tab-check.js refuses to run while a copy has drifted.
 
-       WELCOME.show({ ja: "メガセンテンス", en: "MEGASENTENCE" });
+   An app does not call it. The script tag carries the words and the module
+   shows itself once the page is up:
+
+       <script src="welcome.js?v=..." data-ja="メガセンテンス"
+               data-en="MEGASENTENCE"></script>
+
+   That way putting the sign on an app is one line in its index.html and no
+   change to its code, whether its JavaScript is a file or sits inside the
+   page. WELCOME.show({ja, en}) is still there for anything that wants to
+   raise it by hand.
+
+   ?welcome=0 in the address turns it off for that visit, and ?welcome=1
+   asks for it. ?welcome=1 is also the way to see it on a page a browser is
+   holding a stale copy of, because a new address is a new page to fetch.
 
    WHAT IT DOES. Dims the room for about three and a half seconds, flickers
    the tubes on one character at a time, bobs the sign the way a title
@@ -31,7 +44,7 @@
    is exactly what that setting is for.                                   */
 "use strict";
 window.WELCOME = (function(){
-  var schema_version = 1;
+  var schema_version = 2;
   /* six tubes, repeated across however many characters there are */
   var HUES = ["#ff3d9a", "#2fe0ff", "#ffd23d", "#4dff88", "#ff8a3d", "#c47bff"];
   var CSS = [
@@ -133,6 +146,29 @@ window.WELCOME = (function(){
       if (it.style.parentNode) it.style.parentNode.removeChild(it.style);
     }, 520);
   }
+  /* ---- the script tag raises it ----
+     Taken at parse time, because document.currentScript is only this script
+     while this script is running. */
+  var tag = document.currentScript;
+  function asked(){
+    var q = String(window.location.search || "");
+    if (/[?&]welcome=0\b/.test(q)) return false;
+    if (/[?&]welcome=1\b/.test(q)) return true;
+    return null;
+  }
+  function auto(){
+    var want = asked();
+    if (want === false) return;
+    if (!tag) return;
+    if (want !== true && tag.getAttribute("data-auto") === "off") return;
+    var ja = tag.getAttribute("data-ja"), en = tag.getAttribute("data-en");
+    if (!ja) return;
+    show({ ja: ja, en: en || "" });
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", auto);
+  else auto();
+
   return { schema_version: schema_version, show: show, end: end,
            showing: function(){ return !!live; } };
 })();
