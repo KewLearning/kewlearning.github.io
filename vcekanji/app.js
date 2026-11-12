@@ -127,7 +127,7 @@
      item goes right and never again, supports cost, nothing is locked,
      and all of it lives in this browser. */
   var KEY = "vcekanji-v1";
-  var S = { furi:true, en:true, pts:0, spent:0, won:{}, done:{}, howto:{} };
+  var S = { furi:true, en:true, sfx:true, pts:0, spent:0, won:{}, done:{}, howto:{} };
   try {
     var raw = localStorage.getItem(KEY);
     if (raw) S = Object.assign(S, JSON.parse(raw) || {});
@@ -171,9 +171,34 @@
     document.body.classList.toggle("showen", !!S.en);
     $("furiBtn").classList.toggle("off", !S.furi);
     $("enBtn").classList.toggle("off", !S.en);
+    $("sfxBtn").classList.toggle("off", !S.sfx);
+    $("sfxBtn").setAttribute("aria-pressed", S.sfx ? "true" : "false");
+    if (window.FANFARE) FANFARE.mute(!S.sfx);
     $("ptsn").textContent = S.pts;
   }
   $("furiBtn").onclick = function(){ S.furi = !S.furi; paintToggles(); save(); };
+  /* ---- the sounds of getting somewhere ----
+     拍子木 marks a thing done, 太鼓 marks a rung finished, and the
+     accelerating run of the sticks ends the whole app. A browser will not
+     make a sound before it has been touched, so the engine is built inside
+     this tap and inside the first tap anywhere on the page. */
+  $("sfxBtn").onclick = function(){
+    S.sfx = !S.sfx; paintToggles(); save();
+    if (S.sfx && window.FANFARE){ FANFARE.wake(); FANFARE.ki(0, 0.9); }
+  };
+  window.addEventListener("pointerdown", function once(){
+    window.removeEventListener("pointerdown", once);
+    if (S.sfx && window.FANFARE) FANFARE.wake();
+  });
+  /* what has just been played, for tools/browser-check.js */
+  window.VCE_SFX = [];
+  function sfx(what){
+    window.VCE_SFX.push(what);
+    if (!S.sfx || !window.FANFARE) return;
+    if (what === "ki") FANFARE.ki();
+    else if (what === "taiko") FANFARE.taiko();
+    else if (what === "finale"){ FANFARE.kakegoe(); FANFARE.kiRun(); }
+  }
   $("enBtn").onclick = function(){ S.en = !S.en; paintToggles(); save(); };
   $("resetBtn").onclick = function(){
     if (!confirm("Clear your score and your ticks on this device?")) return;
@@ -238,7 +263,12 @@
   function done(id){
     var fresh = !S.done[id];
     S.done[id] = 1; save(); paintSteps();
-    if (fresh) award(5, "rung done");
+    if (!fresh) return;
+    award(5, "rung done");
+    /* every rung done is the end of the whole thing, and gets the run of
+       the sticks rather than one beat of the drum */
+    var all = STEPS.every(function(st){ return S.done[st.id]; });
+    sfx(all ? "finale" : "taiko");
   }
   function ruleFor(id){
     return '<div class="rule"><b>' + esc(STEPS[at].en) + '</b>'
@@ -457,7 +487,7 @@
               if (opts[+x.dataset.o] === a.a) x.classList.add("yes");
             });
             each(box, "[data-o]", function(x){ x.disabled = true; });
-            if (right) first(qkey(p, i), 1, "question");
+            if (right && first(qkey(p, i), 1, "question")) sfx("ki");
             paintScore();
           };
         });
@@ -1024,7 +1054,13 @@
           + 'before it. Change the set to aim at what is left.</p></div></div>'
           + foot('<button class="btn" id="redo">Go again</button>'
                + '<button class="btn ghost sm" id="stop">Change the set</button>');
+        /* the spinner finished. done() beats the drum the first time the
+           rung is ticked off; after that this does, because finishing a
+           set is its own thing. Never both: two drums at once is a fault,
+           not a fanfare. */
+        var ticked = !!S.done["cards"];
         done("cards");
+        if (ticked) sfx("taiko");
         $("redo").onclick = function(){
           cardTest = null; cardQueue = shuffle(picked().slice());
           cardAt = 0; cardFlipped = false; DRAW.cards();
@@ -1083,7 +1119,7 @@
             if (q.opts[+x.dataset.o] === q.answer) x.classList.add("yes");
           });
           each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-          if (right) first("cards:test:" + k.k, 1, "spun right");
+          if (right && first("cards:test:" + k.k, 1, "spun right")) sfx("ki");
           $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
             + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
             + '<span class="jp">' + esc(k.k) + '</span> ' + esc(k.en)
@@ -1197,7 +1233,7 @@
         }
         answered = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right) first("yomi:" + word.w + word.y, 1, "reading");
+        if (right && first("yomi:" + word.w + word.y, 1, "reading")) sfx("ki");
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1374,7 +1410,7 @@
         });
         chosen = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right) first("kaku:pick:" + word.w, 1, "chosen");
+        if (right && first("kaku:pick:" + word.w, 1, "chosen")) sfx("ki");
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "That is the one" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1397,9 +1433,9 @@
         if (got !== word.w) word = wordNamed(got) || word;
         /* 2 for typing it unaided, 1 for typing it with the four on
            screen, nothing if the choice already paid. */
-        if (!shown) first("kaku:type:" + word.w, 2, "typed");
+        if (!shown){ if (first("kaku:type:" + word.w, 2, "typed")) sfx("ki"); }
         else { S.won["kaku:type:" + word.w] = 1; save();
-               first("kaku:pick:" + word.w, 1, "typed with help"); }
+               if (first("kaku:pick:" + word.w, 1, "typed with help")) sfx("ki"); }
         $("fb").innerHTML = '<div class="mark yes"><b>Typed</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
           + (inEnglish ? "" : meaning(word)) + '</div>'
