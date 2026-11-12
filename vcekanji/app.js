@@ -57,6 +57,7 @@
 (function(){
   var K = window.KANJI_VCE;
   var EN = window.KANJI_WORDS_EN || {};
+  var LV = (window.KANJI_LEVELS && window.KANJI_LEVELS.grade) || {};
   var $ = function(id){ return document.getElementById(id); };
   function esc(s){
     return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
@@ -701,18 +702,34 @@
     return S.cards;
   }
   /* ---- what the app means by hard ----
-     His list carries no difficulty column, and difficulty is his call, not
-     this app's. So the bands are built from the only thing his data
-     measures: how much there is to keep straight about a kanji — the
-     readings it takes plus the words it turns up in. By that measure 日,
-     生 and 分 are hard and 勉 and 族 are easy, which is a claim about load
-     and not about strokes. The page says so in those words, and Q34 asks
-     him whether he wants it some other way.
+     Andrew's answer to Q34: the year level each kanji is taught. His own
+     sequence is not written down anywhere the hub can read, so the bands
+     use the year a kanji is taught in Japanese primary school, which is a
+     published fact and not a judgement — data/levels.js says where it
+     comes from and that it is not the Kew sequence.
+
+        easy    taught in year 1   (65 of his 200)
+        medium  taught in year 2   (91)
+        hard    year 3 and above   (43)
+
+     々 is the repeat sign rather than a kanji, so it has no year and sits
+     in no band; Any 20 can still deal it.
+
+     If levels.js is ever missing, the bands fall back to how much there is
+     to keep straight about a kanji — its readings plus its words — which
+     is what this used to do before he answered. A band is never silently
+     empty.
 
      Inside a band, the ones a student has not yet answered right on the
      spinner come first, so Quick start aims at what is left. */
   function loadOf(k){ return k.on.length + k.kun.length + k.words.length; }
   function bands(){
+    var graded = K.kanji.filter(function(k){ return LV[k.k]; });
+    if (graded.length > K.kanji.length / 2){
+      return { easy: graded.filter(function(k){ return LV[k.k] <= 1; }),
+               medium: graded.filter(function(k){ return LV[k.k] === 2; }),
+               hard: graded.filter(function(k){ return LV[k.k] >= 3; }) };
+    }
     var all = K.kanji.slice().sort(function(a, b){
       return loadOf(a) - loadOf(b) || a.k.localeCompare(b.k);
     });
@@ -730,6 +747,17 @@
         .slice(0, n - out.length).forEach(function(k){ out.push(k); });
     }
     return out;
+  }
+  function bandLine(){
+    var b = bands();
+    if (!K.kanji.filter(function(k){ return LV[k.k]; }).length)
+      return "Easy, medium and hard here mean how much there is to keep "
+           + "straight about a kanji: its readings and the words it turns up in.";
+    return "Easy, medium and hard here mean the year a kanji is taught in "
+         + "Japanese primary school: year 1 is easy (" + b.easy.length
+         + " of them), year 2 medium (" + b.medium.length + "), year 3 and "
+         + "above hard (" + b.hard.length + "). That is the Japanese school "
+         + "order, not the order you meet them at school here.";
   }
   var QUICK = [
     { id:"any",    en:"Any 20",        ja:"どれでも 20",  n:20, band:null },
@@ -798,10 +826,7 @@
             return '<button data-q="' + esc(q.id) + '"><b>' + esc(q.en)
               + '</b><span>' + esc(q.ja) + '</span></button>';
           }).join("") + '</div>'
-        + '<p class="hint">Hard here means the most to keep straight: the '
-        + 'readings a kanji takes and the words it turns up in. By that '
-        + 'measure 日 and 生 are hard and 勉 is easy. It is not about '
-        + 'strokes.</p></div>'
+        + '<p class="hint">' + esc(bandLine()) + '</p></div>'
         + '<details class="fold" id="fcats"' + (C.open.cats ? " open" : "") + '>'
         + '<summary>Choose by category<i id="ncats"></i></summary>'
         + '<div class="cats" id="ccats"></div></details>'

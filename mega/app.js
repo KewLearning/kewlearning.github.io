@@ -4705,4 +4705,9 @@
 
   paintToggles();
   draw();
+
+  /* The welcome sign, once per load and never on a tab change. It takes no
+     taps and leaves nothing behind; welcome.js says how. A student who
+     already knows where they are going taps straight through it. */
+  if (window.WELCOME) WELCOME.show({ ja: "メガセンテンス", en: "MEGASENTENCE" });
 })();
