@@ -190,7 +190,18 @@
     window.removeEventListener("pointerdown", once);
     if (S.sfx && window.FANFARE) FANFARE.wake();
   });
-  /* what has just been played, for tools/browser-check.js */
+  /* ---- when a sound is allowed ----
+     Andrew, after hearing the first build: a sound on every right answer
+     is a nuisance, not a reward. So nothing marks a single item. A sound
+     means a set or a long task is finished and nothing else:
+
+        拍子木   a passage answered in full, a flashcard set finished
+        太鼓     a rung finished
+        the run  every rung finished
+
+     And nothing at all for a student marking their own work. Got it and
+     Again later are a student talking to themselves, and a fanfare for
+     that teaches the wrong lesson about what counts. */
   window.VCE_SFX = [];
   function sfx(what){
     window.VCE_SFX.push(what);
@@ -487,7 +498,12 @@
               if (opts[+x.dataset.o] === a.a) x.classList.add("yes");
             });
             each(box, "[data-o]", function(x){ x.disabled = true; });
-            if (right && first(qkey(p, i), 1, "question")) sfx("ki");
+            if (right){
+              var was = pGot(p);
+              first(qkey(p, i), 1, "question");
+              /* the passage finished, which is a set */
+              if (was < p.asks.length && pGot(p) >= p.asks.length) sfx("ki");
+            }
             paintScore();
           };
         });
@@ -1060,7 +1076,10 @@
            not a fanfare. */
         var ticked = !!S.done["cards"];
         done("cards");
-        if (ticked) sfx("taiko");
+        /* the set finished. done() beats the drum the first time the rung
+           is ticked off; after that the sticks mark the set, because a set
+           is a smaller thing than a rung. Never both. */
+        if (ticked) sfx("ki");
         $("redo").onclick = function(){
           cardTest = null; cardQueue = shuffle(picked().slice());
           cardAt = 0; cardFlipped = false; DRAW.cards();
@@ -1119,7 +1138,7 @@
             if (q.opts[+x.dataset.o] === q.answer) x.classList.add("yes");
           });
           each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-          if (right && first("cards:test:" + k.k, 1, "spun right")) sfx("ki");
+          if (right) first("cards:test:" + k.k, 1, "spun right");
           $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
             + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
             + '<span class="jp">' + esc(k.k) + '</span> ' + esc(k.en)
@@ -1233,7 +1252,7 @@
         }
         answered = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right && first("yomi:" + word.w + word.y, 1, "reading")) sfx("ki");
+        if (right) first("yomi:" + word.w + word.y, 1, "reading");
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1410,7 +1429,7 @@
         });
         chosen = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right && first("kaku:pick:" + word.w, 1, "chosen")) sfx("ki");
+        if (right) first("kaku:pick:" + word.w, 1, "chosen");
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "That is the one" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1433,9 +1452,9 @@
         if (got !== word.w) word = wordNamed(got) || word;
         /* 2 for typing it unaided, 1 for typing it with the four on
            screen, nothing if the choice already paid. */
-        if (!shown){ if (first("kaku:type:" + word.w, 2, "typed")) sfx("ki"); }
+        if (!shown) first("kaku:type:" + word.w, 2, "typed");
         else { S.won["kaku:type:" + word.w] = 1; save();
-               if (first("kaku:pick:" + word.w, 1, "typed with help")) sfx("ki"); }
+               first("kaku:pick:" + word.w, 1, "typed with help"); }
         $("fb").innerHTML = '<div class="mark yes"><b>Typed</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
           + (inEnglish ? "" : meaning(word)) + '</div>'
