@@ -550,6 +550,129 @@
     }
   };
 
+  /* ================= the drum =================
+     The same reel ひと and メガセンテンス use, carried here as those apps
+     carry it: a copy, because these apps share no runtime. Two things are
+     left out. The clicks, because this app has no audio engine and a
+     silent drum is better than half a sound one. And the flick, because
+     the four answers are on the screen before the drum is thrown — Andrew
+     asked for that, so a student can read them while it spins — which
+     means the drum has to land on the kanji those answers were built for.
+     A hand throw lands where physics puts it; the button lands where it
+     is sent, so the button is the only way to throw this one.
+
+     The throw is solved, not guessed: the same sums are run forward for a
+     few hundred candidate speeds, the ones that stop on the wanted kanji
+     inside the time window are kept, and one of those is picked. The drum
+     is never steered or stopped early. */
+  var REEL = (function(){
+    var H = 76, raf = 0;
+    function cancel(){ if (raf) cancelAnimationFrame(raf); raf = 0; }
+
+    function mount(box, items, onLand){
+      var L = items.length, SPAN = L * H;
+      var strip = box.querySelector(".rstrip");
+      function draw(){
+        var three = "";
+        for (var c = 0; c < 3; c++){
+          three += items.map(function(it){
+            return '<div class="ritem"><b>' + it.html + '</b></div>';
+          }).join("");
+        }
+        strip.innerHTML = three;
+      }
+      draw();
+      var SLOW = 0.25, DRAG = 700, CATCH = 300, K = 150, C = 16;
+      var pos = 0, v = 0, target = null, last = 0;
+
+      function wrap(x){ return ((x % SPAN) + SPAN) % SPAN; }
+      function paint(){
+        strip.style.transform =
+          "translate3d(0," + (H - SPAN - wrap(pos)).toFixed(2) + "px,0)";
+      }
+      function at(){ return Math.round(wrap(pos) / H) % L; }
+      function landed(){
+        box.classList.remove("spinning");
+        if (onLand) onLand(items[at()], at());
+      }
+      /* a fixed step, so the drum lands where it was thrown on any screen
+         and under any load */
+      var STEP = 1 / 60, acc = 0;
+      function move(dt){
+        if (target === null){
+          var sgn = v < 0 ? -1 : 1;
+          v -= (SLOW * v + DRAG * sgn) * dt;
+          if (v * sgn < 0) v = 0;
+          pos += v * dt;
+          if (Math.abs(v) < CATCH) target = Math.round(pos / H) * H;
+        } else {
+          v += (-K * (pos - target) - C * v) * dt;
+          pos += v * dt;
+        }
+      }
+      function frame(now){
+        acc += last ? Math.min(0.25, (now - last) / 1000) : STEP;
+        last = now;
+        for (var guard = 0; acc >= STEP && guard < 30; guard++){
+          move(STEP); acc -= STEP;
+          if (target !== null && Math.abs(pos - target) < 0.4 && Math.abs(v) < 8){
+            pos = target; v = 0; acc = 0;
+            paint(); landed(); return;
+          }
+        }
+        paint();
+        raf = requestAnimationFrame(frame);
+      }
+      function launch(v0){
+        cancel();
+        target = null; v = v0; last = 0; acc = 0;
+        box.classList.add("spinning");
+        raf = requestAnimationFrame(frame);
+      }
+      function dryRun(v0){
+        var p = 0, u = v0, t = 0, dt = 1 / 60;
+        while (u > CATCH && t < 12){
+          u -= (SLOW * u + DRAG) * dt;
+          if (u < 0) u = 0;
+          p += u * dt;
+          t += dt;
+        }
+        return { slot: Math.round(p / H), secs: t + 0.3 };
+      }
+      var MINS = 1.8, MAXS = 3.4;
+      function throwTo(slot){
+        var from = Math.round(pos / H), want = ((slot % L) + L) % L, hits = [];
+        for (var v0 = 1200; v0 <= 15000; v0 += 10){
+          var r = dryRun(v0);
+          if (r.secs < MINS || r.secs > MAXS) continue;
+          if ((((from + r.slot) % L) + L) % L === want) hits.push(v0);
+        }
+        if (!hits.length) return launch(2600 + Math.random() * 1800);
+        launch(hits[Math.floor(Math.random() * hits.length)]);
+      }
+      paint();
+      return {
+        spinTo: function(id){
+          var i = 0;
+          items.forEach(function(it, n){ if (it.id === id) i = n; });
+          throwTo(i);
+        },
+        /* for a set of one, and for a device that cannot animate */
+        settleOn: function(id){
+          cancel();
+          var i = 0;
+          items.forEach(function(it, n){ if (it.id === id) i = n; });
+          pos = i * H; v = 0; target = null;
+          box.classList.remove("spinning");
+          paint();
+          if (onLand) onLand(items[i], i);
+        },
+        stop: cancel
+      };
+    }
+    return { mount: mount };
+  })();
+
   /* ================= 3. カード =================
      Andrew asked for flashcards a student aims at what they need: tick
      whole groups or single kanji, then tick what belongs on the front of
@@ -798,24 +921,49 @@
         $("sc").textContent = "";
         return;
       }
-      var k = t.pool[t.at], q = askFor(k);
+      var k = t.pool[t.at], q = askFor(k), answered = false;
+      /* The four are on the screen before the drum is thrown, which is
+         what Andrew asked for: read them while it spins, and the kanji
+         arrives to a student who already knows what the choices are.
+         They cannot be tapped until the drum lands, because answering a
+         question whose subject has not arrived is guessing. */
       $("main").innerHTML = ruleFor("cards")
         + '<div class="work"><div class="ask">'
         + '<div class="qtag">ルーレット · ' + esc(q.tag) + '</div>'
-        + '<div class="prompt' + (q.promptEn ? " lat" : "") + '" id="drum">'
-        + esc(q.prompt) + '</div>'
+        + '<div class="reel" id="reel">'
+        + '<div class="rwin"><div class="rstrip"></div><div class="rmark"></div></div>'
+        + '<button class="rspin" id="rgo" aria-label="Spin the drum">'
+        + '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"'
+        + ' stroke="currentColor" stroke-width="2" stroke-linecap="round">'
+        + '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 3v4h-4"/>'
+        + '</svg></button></div>'
+        + '<p class="hint" id="rtip">Read the four, then spin.</p>'
         + '<div class="opts" id="opts">' + q.opts.map(function(o, i){
             return '<button class="opt' + (q.optsEn ? " lat" : "")
-              + '" data-o="' + i + '">' + esc(o) + '</button>';
+              + '" data-o="' + i + '" disabled>' + esc(o) + '</button>';
           }).join("") + '</div><div id="fb"></div></div></div>'
         + foot('<button class="btn ghost sm" id="stop">Change the set</button>');
       $("stop").onclick = function(){ cardTest = null; cardQueue = null; DRAW.cards(); };
-      $("sc").innerHTML = '<b>' + (t.at + 1) + '</b> of ' + t.pool.length
-        + ' spun';
-      var answered = false;
+      $("sc").innerHTML = '<b>' + (t.at + 1) + '</b> of ' + t.pool.length + ' spun';
+
+      /* the drum carries the whole set, so what it passes is what the
+         student has been revising */
+      var reel = REEL.mount($("reel"), t.pool.map(function(x){
+        return { id: x.k, html: esc(x.k) };
+      }), function(it){
+        if (it.id !== k.k) return;
+        $("rtip").textContent = q.ask;
+        $("rgo").disabled = true;
+        each($("opts"), "[data-o]", function(x){ x.disabled = false; });
+      });
+      $("rgo").onclick = function(){
+        $("rgo").disabled = true;
+        $("rtip").textContent = "Spinning\u2026";
+        if (t.pool.length < 2) reel.settleOn(k.k); else reel.spinTo(k.k);
+      };
       each($("opts"), "[data-o]", function(b){
         b.onclick = function(){
-          if (answered || t.spinning) return;
+          if (answered) return;
           answered = true;
           var right = q.opts[+b.dataset.o] === q.answer;
           b.classList.add(right ? "yes" : "no");
@@ -828,33 +976,9 @@
             + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
             + '<span class="jp">' + esc(k.k) + '</span> ' + esc(k.en)
             + '<p>' + esc(readingLine(k)) + '</p></div>';
-          setTimeout(function(){ t.at++; DRAW.cards(); }, 1200);
+          setTimeout(function(){ reel.stop(); t.at++; DRAW.cards(); }, 1400);
         };
       });
-      spin(k);
-    }
-    /* The drum rolls through the set and settles on the one it asked. The
-       answers are held shut while it rolls: a tap that landed mid-spin used
-       to be swallowed, which reads as a broken button. */
-    function spin(k){
-      var t = cardTest, drum = $("drum");
-      if (!drum || t.pool.length < 2) return;
-      var slow = window.matchMedia
-        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (slow) return;
-      var face = drum.textContent, n = 0;
-      t.spinning = true;
-      each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-      var id = setInterval(function(){
-        n++;
-        drum.textContent = t.pool[Math.floor(Math.random() * t.pool.length)].k;
-        if (n > 11){
-          clearInterval(id);
-          drum.textContent = face;
-          t.spinning = false;
-          each($("opts"), "[data-o]", function(x){ x.disabled = false; });
-        }
-      }, 70);
     }
     function readingLine(k){
       var bits = [];
@@ -869,8 +993,7 @@
         others = K.kanji.filter(function(x){ return x.k !== k.k; });
       /* the front does not show the kanji, so the kanji is the question */
       if (!C.front.kanji){
-        var cue = C.front.mean ? k.en : (k.on.concat(k.kun)[0] || k.en);
-        return { tag:"which kanji", prompt: cue, promptEn: !!C.front.mean,
+        return { tag:"which kanji", ask:"Which kanji is it?",
                  answer: k.k, optsEn: false,
                  opts: shuffle(shuffle(others.slice()).slice(0, 3)
                         .map(function(x){ return x.k; }).concat([k.k])) };
@@ -885,10 +1008,10 @@
           var r = x.on.concat(x.kun)[0];
           if (r && r !== want && wrong.indexOf(r) < 0) wrong.push(r);
         });
-        return { tag:"which reading", prompt: k.k, promptEn: false,
+        return { tag:"which reading", ask:"Which reading does it take?",
                  answer: want, optsEn: false, opts: shuffle(wrong.concat([want])) };
       }
-      return { tag:"which meaning", prompt: k.k, promptEn: false,
+      return { tag:"which meaning", ask:"What does it mean?",
                answer: k.en, optsEn: true,
                opts: shuffle(shuffle(others.slice()).slice(0, 3)
                       .map(function(x){ return x.en; }).concat([k.en])) };

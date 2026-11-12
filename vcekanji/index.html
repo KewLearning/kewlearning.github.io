@@ -224,6 +224,34 @@
   .chip.on{border-color:var(--c,var(--deep));color:var(--c,var(--deep));
        background:color-mix(in srgb, var(--c,var(--deep)) 14%, var(--paper));
        font-weight:700}
+  /* ---- the drum, the same one ひと and メガセンテンス carry ---- */
+  .reel{display:flex;align-items:center;gap:10px;margin:4px auto 10px;
+       max-width:420px}
+  .rwin{position:relative;flex:1;min-width:0;height:228px;overflow:hidden;
+       background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+       -webkit-user-select:none;user-select:none;
+       -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22%,
+                          #000 78%,transparent 100%);
+       mask-image:linear-gradient(to bottom,transparent 0,#000 22%,
+                  #000 78%,transparent 100%)}
+  .rstrip{will-change:transform}
+  .ritem{height:76px;display:flex;align-items:center;justify-content:center;
+       font-family:var(--jp);font-size:52px;line-height:1}
+  .rmark{position:absolute;left:0;right:0;top:76px;height:76px;
+       pointer-events:none;border-top:2px solid var(--rung,var(--deep));
+       border-bottom:2px solid var(--rung,var(--deep));background:rgba(0,0,0,.03)}
+  .rspin{flex:none;width:48px;height:48px;border-radius:50%;cursor:pointer;
+       padding:0;border:2px solid var(--deep);background:var(--paper);
+       color:var(--deep);display:flex;align-items:center;justify-content:center;
+       transition:opacity .13s}
+  .rspin:hover,.rspin:focus{border-color:var(--rung,var(--deep));outline:none}
+  .rspin svg{width:23px;height:23px}
+  .rspin[disabled]{opacity:.3;cursor:default}
+  .reel.spinning .rspin{opacity:.3;pointer-events:none}
+  /* An answer waiting for the drum stays readable: the whole point of
+     putting them up first is that they can be read. */
+  .opt[disabled]:not(.yes):not(.no){opacity:1;cursor:default}
+
   .cardwrap{display:flex;align-items:center;justify-content:center;height:100%;
        padding:6px}
   .flip{width:min(560px,100%);min-height:min(56vh,420px);
@@ -386,12 +414,12 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261112c"></script>
-<script src="nyuuryoku.js?v=20261112c"></script>
-<script src="data/kanji.js?v=20261112c"></script>
-<script src="data/words-en.js?v=20261112c"></script>
-<script src="data/yomu.js?v=20261112c"></script>
-<script src="app.js?v=20261112c"></script>
-<div class="build" aria-hidden="true">build 2026-11-12c</div>
+<script src="tabs.js?v=20261112d"></script>
+<script src="nyuuryoku.js?v=20261112d"></script>
+<script src="data/kanji.js?v=20261112d"></script>
+<script src="data/words-en.js?v=20261112d"></script>
+<script src="data/yomu.js?v=20261112d"></script>
+<script src="app.js?v=20261112d"></script>
+<div class="build" aria-hidden="true">build 2026-11-12d</div>
 </body>
 </html>
