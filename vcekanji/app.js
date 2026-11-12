@@ -206,7 +206,8 @@
         + "There is no furigana: working the reading out is the task.",
     cards: "Tick the kanji you want, then tick what goes on the front of "
          + "the card and what goes on the back. Flip each card to check "
-         + "yourself. The spinner tests you on the set at the end.",
+         + "yourself. The spinner tests you on the set at the end. The word "
+         + "meanings are a draft, not from the kanji list.",
     find: "Search the whole list: type a kanji, a reading, a meaning or a "
         + "word. Filter by group with the buttons. Keep this open while you "
         + "write.",
@@ -288,6 +289,8 @@
 
   function draw(){
     document.onkeydown = null;
+    /* the page takes the rung's wash, and the rung's tab lights up in it */
+    document.body.dataset.rung = STEPS[at].id;
     paintToggles(); paintSteps();
     TABS.keep(KEY, STEPS[at].id);
     TABS.inview($("steps"));
@@ -428,7 +431,7 @@
             return '<div class="qbox" data-q="' + i + '">'
               + '<div class="qn">' + (i + 1) + '. ' + esc(a.q) + '</div>'
               + '<div class="opts">' + opts.map(function(o, j){
-                  return '<button class="opt en" data-o="' + j + '">'
+                  return '<button class="opt lat" data-o="' + j + '">'
                     + esc(o) + '</button>';
                 }).join("") + '</div></div>';
           }).join("") + '</div></div>'
@@ -562,7 +565,8 @@
     { id:"on",    ja:"音読み", en:"On reading" },
     { id:"kun",   ja:"訓読み", en:"Kun reading" },
     { id:"mean",  ja:"いみ",   en:"English meaning" },
-    { id:"words", ja:"ことば", en:"Words it is in" }
+    { id:"words", ja:"ことば", en:"Words it is in" },
+    { id:"wen",   ja:"ことばのいみ", en:"Words with their meanings" }
   ];
   function cardsState(){
     if (!S.cards) S.cards = { pick:{}, front:{ kanji:1 }, back:{ mean:1, on:1, kun:1 } };
@@ -580,6 +584,11 @@
     return FIELDS.filter(function(f){ return C[which][f.id]; });
   }
   function faceHTML(k, fields){
+    /* Both word rows ticked shows the glossed one only: the same words
+       twice over is not two things to learn. */
+    var ids = fields.map(function(f){ return f.id; });
+    if (ids.indexOf("wen") >= 0)
+      fields = fields.filter(function(f){ return f.id !== "words"; });
     return fields.map(function(f){
       if (f.id === "kanji")
         return '<div class="fkanji">' + esc(k.k) + '</div>';
@@ -593,8 +602,16 @@
         return k.kun.length
           ? '<div class="frd k"><i>kun</i>' + esc(k.kun.join("、")) + '</div>'
           : '<div class="frd none"><i>kun</i>none on the list</div>';
-      return '<div class="fwords">' + k.words.map(function(w){
-        return '<span>' + ruby(w.w, w.y) + '</span>';
+      if (f.id === "words")
+        return '<div class="fwords">' + k.words.map(function(w){
+          return '<span>' + ruby(w.w, w.y) + '</span>';
+        }).join("") + '</div>';
+      /* the meanings are the drafted ones, and a word with none says so
+         rather than showing an empty line */
+      return '<div class="fwords glossed">' + k.words.map(function(w){
+        var en = EN[w.w + "|" + w.y];
+        return '<span>' + ruby(w.w, w.y)
+          + '<i>' + esc(en || "no meaning drafted yet") + '</i></span>';
       }).join("") + '</div>';
     }).join("");
   }
@@ -607,7 +624,7 @@
 
     /* ---- the two tick-box panels ---- */
     function setUp(){
-      var C = cardsState(), mine = picked();
+      var C = cardsState();
       $("main").innerHTML = ruleFor("cards")
         + '<div class="work">'
         + '<div class="panel"><h2>1. Choose the kanji</h2>'
@@ -621,22 +638,64 @@
         + '</div></div>'
         + foot('<button class="btn" id="go">Start</button>');
       $("ccats").innerHTML = K.cats.map(function(c){
-        var all = K.kanji.filter(function(k){ return k.cat === c.id; });
-        var on = all.filter(function(k){ return C.pick[k.k]; }).length;
         return '<button data-c="' + esc(c.id) + '" class="cat-' + esc(c.id)
-          + (on === all.length ? " on" : (on ? " some" : ""))
-          + '">' + (on === all.length ? "✓ " : (on ? "– " : "")) + esc(c.en)
-          + '<span>' + esc(c.ja) + '</span></button>';
+          + '"><b></b>' + esc(c.en) + '<span>' + esc(c.ja) + '</span></button>';
       }).join("")
         + '<button data-c="*all">Tick all</button>'
         + '<button data-c="*none">Clear</button>';
       $("cchips").innerHTML = K.kanji.map(function(k){
-        return '<button class="chip cat-' + esc(k.cat)
-          + (C.pick[k.k] ? " on" : "") + '" data-k="' + esc(k.k) + '" title="'
-          + esc(k.en) + '">' + esc(k.k) + '</button>';
+        return '<button class="chip cat-' + esc(k.cat) + '" data-k="' + esc(k.k)
+          + '" title="' + esc(k.en) + '">' + esc(k.k) + '</button>';
       }).join("");
-      $("cfront").innerHTML = ticks("front");
-      $("cback").innerHTML = ticks("back");
+      ["front", "back"].forEach(function(which){
+        $("c" + which).innerHTML = FIELDS.map(function(f){
+          return '<button class="tick" data-f="' + esc(f.id) + '">'
+            + '<b></b>' + esc(f.en) + '<span>' + esc(f.ja) + '</span></button>';
+        }).join("");
+      });
+
+      /* ---- ticking changes classes, never the page ----
+         Andrew: the options jumped back to the top on every tick. They did,
+         because every tick redrew the whole rung and the scroller started
+         again at nothing. Nothing is redrawn here now: a tick flips the
+         classes on what is already on the screen, so the page stays
+         exactly where the student left it. */
+      function paint(){
+        var mine = picked();
+        each($("cchips"), "[data-k]", function(b){
+          b.classList.toggle("on", !!C.pick[b.dataset.k]);
+        });
+        each($("ccats"), "[data-c]", function(b){
+          var c = b.dataset.c;
+          if (c.charAt(0) === "*") return;
+          var all = K.kanji.filter(function(k){ return k.cat === c; });
+          var on = all.filter(function(k){ return C.pick[k.k]; }).length;
+          b.classList.toggle("on", on === all.length);
+          b.classList.toggle("some", on > 0 && on < all.length);
+          b.querySelector("b").textContent =
+            on === all.length ? "✓" : (on ? "–" : "");
+        });
+        ["front", "back"].forEach(function(which){
+          each($("c" + which), "[data-f]", function(b){
+            var on = !!C[which][b.dataset.f];
+            b.classList.toggle("on", on);
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+            b.querySelector("b").textContent = on ? "✓" : "";
+          });
+        });
+        var ready = mine.length && sideOf("front").length && sideOf("back").length;
+        $("go").disabled = !ready;
+        $("go").textContent = mine.length ? "Start · " + mine.length + " cards"
+                                          : "Start";
+        $("sc").innerHTML = ready
+          ? '<b>' + mine.length + '</b> kanji chosen · front: '
+            + sideOf("front").map(function(f){ return f.en.toLowerCase(); }).join(", ")
+            + ' · back: '
+            + sideOf("back").map(function(f){ return f.en.toLowerCase(); }).join(", ")
+          : (mine.length ? "Tick at least one thing for each side of the card."
+                         : "Tick the kanji you want to revise.");
+        save();
+      }
       each($("ccats"), "[data-c]", function(b){
         b.onclick = function(){
           var c = b.dataset.c;
@@ -649,14 +708,14 @@
               if (every) delete C.pick[k.k]; else C.pick[k.k] = 1;
             });
           }
-          save(); DRAW.cards();
+          paint();
         };
       });
       each($("cchips"), "[data-k]", function(b){
         b.onclick = function(){
           if (C.pick[b.dataset.k]) delete C.pick[b.dataset.k];
           else C.pick[b.dataset.k] = 1;
-          save(); DRAW.cards();
+          paint();
         };
       });
       ["front", "back"].forEach(function(which){
@@ -664,35 +723,17 @@
           b.onclick = function(){
             if (C[which][b.dataset.f]) delete C[which][b.dataset.f];
             else C[which][b.dataset.f] = 1;
-            save(); DRAW.cards();
+            paint();
           };
         });
       });
-      var ready = mine.length && sideOf("front").length && sideOf("back").length;
-      $("go").disabled = !ready;
-      $("go").textContent = mine.length ? "Start · " + mine.length + " cards" : "Start";
       $("go").onclick = function(){
-        if (!ready) return;
+        if ($("go").disabled) return;
         cardQueue = shuffle(picked().slice());
         cardAt = 0; cardFlipped = false;
         DRAW.cards();
       };
-      $("sc").innerHTML = ready
-        ? '<b>' + mine.length + '</b> kanji chosen · front: '
-          + sideOf("front").map(function(f){ return f.en.toLowerCase(); }).join(", ")
-          + ' · back: '
-          + sideOf("back").map(function(f){ return f.en.toLowerCase(); }).join(", ")
-        : (mine.length ? "Tick at least one thing for each side of the card."
-                       : "Tick the kanji you want to revise.");
-      function ticks(which){
-        return FIELDS.map(function(f){
-          return '<button class="tick' + (C[which][f.id] ? " on" : "")
-            + '" data-f="' + esc(f.id) + '" aria-pressed="'
-            + (C[which][f.id] ? "true" : "false") + '">'
-            + '<b>' + (C[which][f.id] ? "✓" : "") + '</b>' + esc(f.en)
-            + '<span>' + esc(f.ja) + '</span></button>';
-        }).join("");
-      }
+      paint();
     }
 
     /* ---- one card, two sides ---- */
@@ -743,7 +784,7 @@
         var got = t.pool.filter(function(k){ return S.won["cards:test:" + k.k]; }).length;
         $("main").innerHTML = ruleFor("cards")
           + '<div class="work"><div class="ask"><div class="qtag">set finished</div>'
-          + '<div class="prompt en">' + got + ' of ' + t.pool.length + '</div>'
+          + '<div class="prompt lat">' + got + ' of ' + t.pool.length + '</div>'
           + '<p class="hint">Answered right across this set and every set '
           + 'before it. Change the set to aim at what is left.</p></div></div>'
           + foot('<button class="btn" id="redo">Go again</button>'
@@ -761,10 +802,10 @@
       $("main").innerHTML = ruleFor("cards")
         + '<div class="work"><div class="ask">'
         + '<div class="qtag">ルーレット · ' + esc(q.tag) + '</div>'
-        + '<div class="prompt' + (q.promptEn ? " en" : "") + '" id="drum">'
+        + '<div class="prompt' + (q.promptEn ? " lat" : "") + '" id="drum">'
         + esc(q.prompt) + '</div>'
         + '<div class="opts" id="opts">' + q.opts.map(function(o, i){
-            return '<button class="opt' + (q.optsEn ? " en" : "")
+            return '<button class="opt' + (q.optsEn ? " lat" : "")
               + '" data-o="' + i + '">' + esc(o) + '</button>';
           }).join("") + '</div><div id="fb"></div></div></div>'
         + foot('<button class="btn ghost sm" id="stop">Change the set</button>');
@@ -1051,7 +1092,7 @@
       + '<div class="qtag">' + (inEnglish ? "write this word in Japanese"
                                           : "write this in kanji") + '</div>'
       + (inEnglish
-         ? '<div class="prompt en">' + esc(word.en) + '</div>'
+         ? '<div class="prompt lat">' + esc(word.en) + '</div>'
            + '<p class="hint">The English here is a draft, not from the '
            + 'kanji list. Say so if a meaning reads wrong.</p>'
          : '<div class="prompt kana">' + esc(word.y) + '</div>')

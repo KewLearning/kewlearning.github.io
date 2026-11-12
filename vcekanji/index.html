@@ -34,6 +34,16 @@
     --c-nature:#2a8a7a;  --c-travel:#4a6ab5;  --c-colour:#7a5230;
     --c-repeat:#6b6256;  --c-misc:#58616e;
     --c-on:var(--c-misc);
+    /* ---- one wash per rung ----
+       Andrew asked for background colour. It carries where you are: each
+       rung washes the page a different shade and lights its own tab in a
+       matching ink. The washes are all cool or sandy and none of them is
+       green or red, because right and wrong own those and a page tinted
+       like a verdict is a page that argues with its own marks. */
+    --w-yomu:#eef2f8;  --w-find:#f4f1e9;  --w-cards:#f2effa;
+    --w-yomi:#e9f3f4;  --w-kaku:#eef0f3;  --w-nyuu:#f5f1ef;
+    --i-yomu:#2f5fa8;  --i-find:#7a5230;  --i-cards:#5a4fb0;
+    --i-yomi:#1f6f8f;  --i-kaku:#45506b;  --i-nyuu:#58616e;
     --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
     --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
   }
@@ -46,7 +56,14 @@
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--font);
        font-size:16px;line-height:1.5;display:flex;flex-direction:column;
-       overflow:hidden}
+       overflow:hidden;transition:background-color .25s ease-out}
+  body[data-rung="yomu"]{background:var(--w-yomu);--rung:var(--i-yomu)}
+  body[data-rung="find"]{background:var(--w-find);--rung:var(--i-find)}
+  body[data-rung="cards"]{background:var(--w-cards);--rung:var(--i-cards)}
+  body[data-rung="yomi"]{background:var(--w-yomi);--rung:var(--i-yomi)}
+  body[data-rung="kaku"]{background:var(--w-kaku);--rung:var(--i-kaku)}
+  body[data-rung="nyuu"]{background:var(--w-nyuu);--rung:var(--i-nyuu)}
+  @media (prefers-reduced-motion:reduce){ body{transition:none} }
 
   .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
        background:var(--paper);border-bottom:1px solid var(--line);
@@ -78,12 +95,15 @@
   .steps i{display:block;font-style:normal;font-size:10.5px;
        letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .steps .done{color:var(--ok);font-weight:700}
-  .steps button[aria-current]{border-bottom-color:var(--deep)}
-  .steps button[aria-current] i{color:var(--deep)}
+  .steps button[aria-current]{border-bottom-color:var(--rung,var(--deep));
+       background:var(--bg-current,transparent)}
+  .steps button[aria-current] i{color:var(--rung,var(--deep))}
+  .steps button[aria-current] b{color:var(--rung,var(--ink))}
 
   main{flex:1;min-height:0;display:flex;flex-direction:column;
        padding:10px 14px 12px;max-width:1180px;width:100%;margin:0 auto}
   .rule{flex:none;background:#fffbe9;border:1px solid #e0cf9a;border-radius:9px;
+        border-left:5px solid var(--rung,#e0cf9a);
         padding:8px 11px;margin-bottom:9px;font-size:14px;line-height:1.45;
         transition:opacity .4s}
   .rule b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
@@ -133,6 +153,8 @@
        background:color-mix(in srgb, var(--c,var(--deep)) 12%, var(--paper));
        font-weight:700}
   .cats button.some{border-color:var(--c,var(--deep));color:var(--c,var(--deep))}
+  .cats button b{font-weight:700}
+  .cats button b:not(:empty){margin-right:4px}
   /* the dot is the group's colour, so the palette is legible before
      anything is filtered */
   .cats button[data-c]:not([data-c^="*"])::before{content:"";width:9px;
@@ -227,6 +249,11 @@
        margin-right:6px}
   .fwords{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;
        font-family:var(--jp);font-size:clamp(17px,2.6vw,21px);line-height:2}
+  .fwords.glossed{gap:6px 16px;line-height:1.7}
+  .fwords.glossed span{display:inline-flex;flex-direction:column;
+       align-items:center}
+  .fwords.glossed i{font-family:var(--font);font-style:normal;
+       font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.2}
 
   /* ---- よむ, reading for meaning ----
      A reading screen is a column: the passage and its questions scroll,
@@ -279,7 +306,11 @@
        padding:10px 12px 12px;margin-top:10px}
   .qbox .qn{font-size:15px;font-weight:700;margin-bottom:2px}
   .qbox .opts{margin-top:8px}
-  .opt.en{font-family:var(--font);font-size:15.5px;font-weight:600;
+  /* .en belongs to the EN toggle, which hides what it marks. An option
+     written in English is not a translation a student can turn off, so it
+     carries .lat instead: turning EN off used to blank every answer on
+     the reading questions. */
+  .opt.lat{font-family:var(--font);font-size:15.5px;font-weight:600;
        padding:9px 10px;line-height:1.35}
 
   /* ---- the question screens ---- */
@@ -287,7 +318,7 @@
   .prompt{font-family:var(--jp);font-size:clamp(34px,7vw,56px);line-height:1.25;
        margin:6px 0 2px}
   .prompt.kana{font-size:clamp(26px,5vw,40px)}
-  .prompt.en{font-family:var(--font);font-weight:700;
+  .prompt.lat{font-family:var(--font);font-weight:700;
        font-size:clamp(24px,4vw,34px);line-height:1.25;color:var(--deep)}
   .ask .hint{margin-top:2px}
   .qtag{font-size:12.5px;color:var(--muted);letter-spacing:.06em;
@@ -350,12 +381,12 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261112a"></script>
-<script src="nyuuryoku.js?v=20261112a"></script>
-<script src="data/kanji.js?v=20261112a"></script>
-<script src="data/words-en.js?v=20261112a"></script>
-<script src="data/yomu.js?v=20261112a"></script>
-<script src="app.js?v=20261112a"></script>
-<div class="build" aria-hidden="true">build 2026-11-12a</div>
+<script src="tabs.js?v=20261112b"></script>
+<script src="nyuuryoku.js?v=20261112b"></script>
+<script src="data/kanji.js?v=20261112b"></script>
+<script src="data/words-en.js?v=20261112b"></script>
+<script src="data/yomu.js?v=20261112b"></script>
+<script src="app.js?v=20261112b"></script>
+<div class="build" aria-hidden="true">build 2026-11-12b</div>
 </body>
 </html>
