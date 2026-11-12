@@ -18,6 +18,22 @@
     --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
     --on:#2b5f8c;           /* 音読み, everywhere, always */
     --kun:#7a4a86;          /* 訓読み, everywhere, always */
+    /* ---- one hue per group, and the hue means the group ----
+       Andrew asked for colour. These are it: every one of the fourteen
+       groups on his list owns a hue, and that hue is the same on a search
+       card, on a chip, on a flashcard and in a filter, so a student can
+       learn where a kanji lives by its colour.
+
+       THE HUES NEVER TOUCH AN ANSWER. Right and wrong stay --ok and
+       --accent and keep their ✓ and ✗, and no group colour is ever used on
+       an option, a mark or a score. That is why a green group beside a
+       green tick is not a problem: they never share a surface. */
+    --c-num:#2f5fa8;     --c-counter:#5a4fb0; --c-time:#8a4f9e;
+    --c-body:#b24a6a;    --c-place:#c0552f;   --c-school:#1f6f8f;
+    --c-people:#a3482f;  --c-adj:#6b6a2a;     --c-verb:#3f7a3a;
+    --c-nature:#2a8a7a;  --c-travel:#4a6ab5;  --c-colour:#7a5230;
+    --c-repeat:#6b6256;  --c-misc:#58616e;
+    --c-on:var(--c-misc);
     --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
     --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
   }
@@ -93,6 +109,16 @@
   body.nofuri ruby rt{visibility:hidden}
   body:not(.showen) .en{display:none}
 
+  /* Each group paints its own surfaces. One rule per group, and every
+     element that wants the colour asks for --c with the same class. */
+  .cat-num{--c:var(--c-num)}         .cat-counter{--c:var(--c-counter)}
+  .cat-time{--c:var(--c-time)}       .cat-body{--c:var(--c-body)}
+  .cat-place{--c:var(--c-place)}     .cat-school{--c:var(--c-school)}
+  .cat-people{--c:var(--c-people)}   .cat-adj{--c:var(--c-adj)}
+  .cat-verb{--c:var(--c-verb)}       .cat-nature{--c:var(--c-nature)}
+  .cat-travel{--c:var(--c-travel)}   .cat-colour{--c:var(--c-colour)}
+  .cat-repeat{--c:var(--c-repeat)}   .cat-misc{--c:var(--c-misc)}
+
   /* ---- さがす, the list ---- */
   .find{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px}
   .find input{flex:1;min-width:180px;font-family:var(--jp);font-size:17px;
@@ -103,11 +129,18 @@
   .cats button{border:1.5px solid var(--line);border-radius:999px;background:#fff;
        cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:600;
        padding:4px 12px;color:var(--muted)}
-  .cats button.on{border-color:var(--deep);color:var(--deep);background:#eef3f9;
+  .cats button.on{border-color:var(--c,var(--deep));color:var(--c,var(--deep));
+       background:color-mix(in srgb, var(--c,var(--deep)) 12%, var(--paper));
        font-weight:700}
+  .cats button.some{border-color:var(--c,var(--deep));color:var(--c,var(--deep))}
+  /* the dot is the group's colour, so the palette is legible before
+     anything is filtered */
+  .cats button[data-c]:not([data-c^="*"])::before{content:"";width:9px;
+       height:9px;border-radius:50%;background:var(--c,var(--muted));
+       display:inline-block;margin-right:7px;vertical-align:middle}
   .cats button span{font-family:var(--jp);font-weight:400;color:var(--muted);
        margin-left:5px;font-size:12.5px}
-  .cats button.on span{color:var(--deep)}
+  .cats button.on span{color:var(--c,var(--deep))}
   /* The cards grow when you point at one or tap it, the way the dock
      does: the grid keeps its place and only the card under the pointer
      changes size, so nothing reflows and nothing jumps. The 12px of
@@ -115,7 +148,9 @@
      clips anything outside it. */
   .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));
        gap:9px;align-content:start;padding:12px}
-  .kcard{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+  .kcard{border:1.5px solid var(--line);border-radius:12px;
+       border-left:6px solid var(--c,var(--line));
+       background:color-mix(in srgb, var(--c,var(--paper)) 7%, var(--paper));
        padding:9px 11px 10px;text-align:left;display:block;width:100%;
        font-family:inherit;color:inherit;cursor:pointer;
        transition:transform .14s ease-out,box-shadow .14s ease-out,
@@ -126,7 +161,8 @@
   .kcard.open{box-shadow:0 10px 26px rgba(16,40,70,.24)}
   @media (prefers-reduced-motion:reduce){ .kcard{transition:none} }
   .kcard .top{display:flex;align-items:baseline;gap:10px}
-  .kcard .big{font-family:var(--jp);font-size:48px;line-height:1.1;color:var(--ink)}
+  .kcard .big{font-family:var(--jp);font-size:48px;line-height:1.1;
+       color:var(--c,var(--ink))}
   .kcard .mean{font-size:15px;color:var(--muted);flex:1}
   .kcard .rds{font-family:var(--jp);font-size:15.5px;margin-top:3px}
   .kcard .rds s{text-decoration:none;display:inline-block;margin-right:9px}
@@ -139,13 +175,72 @@
   .kcard .ws span{font-family:var(--jp);font-size:19px;line-height:1.9}
   .none{color:var(--muted);font-size:14px;padding:10px 2px}
 
+  /* ---- カード, the flashcards ---- */
+  .panel{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+       padding:10px 12px 12px;margin-bottom:10px}
+  .panel h2{font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+       color:var(--muted);margin-bottom:8px}
+  .sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+       gap:10px}
+  .ticks{display:flex;flex-direction:column;gap:6px}
+  .tick{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);
+       border-radius:10px;background:var(--paper);padding:8px 11px;cursor:pointer;
+       font-family:var(--font);font-size:14.5px;font-weight:600;color:var(--ink);
+       text-align:left}
+  .tick b{flex:none;width:20px;height:20px;border:2px solid var(--line);
+       border-radius:5px;display:flex;align-items:center;justify-content:center;
+       font-size:13px;color:#fff;background:var(--paper)}
+  .tick.on{border-color:var(--deep);background:#eef3f9}
+  .tick.on b{background:var(--deep);border-color:var(--deep)}
+  .tick span{font-family:var(--jp);font-weight:400;color:var(--muted);
+       font-size:13px;margin-left:auto}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;max-height:34vh;overflow:auto;
+       padding:2px}
+  .chip{font-family:var(--jp);font-size:20px;line-height:1;width:40px;height:40px;
+       border:1.5px solid var(--line);border-radius:9px;background:var(--paper);
+       color:var(--muted);cursor:pointer}
+  .chip.on{border-color:var(--c,var(--deep));color:var(--c,var(--deep));
+       background:color-mix(in srgb, var(--c,var(--deep)) 14%, var(--paper));
+       font-weight:700}
+  .cardwrap{display:flex;align-items:center;justify-content:center;height:100%;
+       padding:6px}
+  .flip{width:min(560px,100%);min-height:min(56vh,420px);
+       border:2px solid var(--c,var(--line));
+       border-top:7px solid var(--c,var(--line));
+       border-radius:16px;background:var(--paper);cursor:pointer;display:flex;
+       flex-direction:column;align-items:center;justify-content:center;gap:10px;
+       padding:18px 20px 34px;position:relative;font-family:inherit;color:inherit;
+       box-shadow:0 6px 18px rgba(16,40,70,.08)}
+  .flip .side{position:absolute;bottom:10px;left:0;right:0;text-align:center;
+       font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+       color:var(--muted)}
+  .face{display:flex;flex-direction:column;align-items:center;gap:9px;
+       text-align:center}
+  .fkanji{font-family:var(--jp);font-size:clamp(84px,18vw,150px);line-height:1;
+       color:var(--c,var(--ink))}
+  .fmean{font-size:clamp(18px,3vw,25px);font-weight:700}
+  .frd{font-family:var(--jp);font-size:clamp(18px,3vw,26px)}
+  .frd.o{color:var(--on)} .frd.k{color:var(--kun)}
+  .frd.none{color:var(--muted);font-size:14px}
+  .frd i{font-family:var(--font);font-style:normal;font-size:10.5px;
+       letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+       margin-right:6px}
+  .fwords{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;
+       font-family:var(--jp);font-size:clamp(17px,2.6vw,21px);line-height:2}
+
   /* ---- よむ, reading for meaning ----
      A reading screen is a column: the passage and its questions scroll,
      the gloss panel does not. The gloss sits between the scroller and
      the footer, the same place it sits in ひと, so a tapped word never
      covers the sentence it came from. */
   .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-       gap:10px;align-content:start;padding:2px}
+       gap:10px;align-content:start;padding:2px;margin-bottom:14px}
+  .lvl{display:flex;align-items:center;gap:8px;font-size:12.5px;
+       letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+       margin:2px 0 7px}
+  .lvl i{font-style:normal;font-size:11px;font-weight:700;color:var(--deep);
+       border:1.5px solid var(--line);border-radius:999px;padding:1px 8px}
+  .pcard.lv-stretch{border-left:6px solid var(--deep)}
   .pcard{border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
        padding:10px 12px 11px;text-align:left;display:block;width:100%;
        cursor:pointer;font-family:inherit;color:inherit;
@@ -192,6 +287,9 @@
   .prompt{font-family:var(--jp);font-size:clamp(34px,7vw,56px);line-height:1.25;
        margin:6px 0 2px}
   .prompt.kana{font-size:clamp(26px,5vw,40px)}
+  .prompt.en{font-family:var(--font);font-weight:700;
+       font-size:clamp(24px,4vw,34px);line-height:1.25;color:var(--deep)}
+  .ask .hint{margin-top:2px}
   .qtag{font-size:12.5px;color:var(--muted);letter-spacing:.06em;
        text-transform:uppercase}
   .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
@@ -252,11 +350,12 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="tabs.js?v=20261111b"></script>
-<script src="nyuuryoku.js?v=20261111b"></script>
-<script src="data/kanji.js?v=20261111b"></script>
-<script src="data/yomu.js?v=20261111b"></script>
-<script src="app.js?v=20261111b"></script>
-<div class="build" aria-hidden="true">build 2026-11-11b</div>
+<script src="tabs.js?v=20261112a"></script>
+<script src="nyuuryoku.js?v=20261112a"></script>
+<script src="data/kanji.js?v=20261112a"></script>
+<script src="data/words-en.js?v=20261112a"></script>
+<script src="data/yomu.js?v=20261112a"></script>
+<script src="app.js?v=20261112a"></script>
+<div class="build" aria-hidden="true">build 2026-11-12a</div>
 </body>
 </html>
