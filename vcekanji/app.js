@@ -9,22 +9,31 @@
 
    THE RUNGS, in the order Andrew wanted them:
 
-     よむ       reading for meaning. Nine passages, one per prescribed
-                topic, with no furigana: tap any word for its reading and
-                its English, then answer three questions in English. The
-                rung he wanted leading, and the only part of the app whose
-                Japanese is not his — data/yomu.js says so, and he has the
-                draft.
+     よむ       reading for meaning. Fifteen passages at two levels — the
+                core nine, one per prescribed topic, and six longer ones
+                with harder compounds — with no furigana: tap any word for
+                its reading and its English, then answer three questions in
+                English. The rung he wanted leading, and the only part of
+                the app whose Japanese is not his: data/yomu.js says so,
+                and he has the draft.
      さがす     the list itself, searchable by kanji, reading, meaning or
                 word. A reference a student can keep open while writing.
+                Each of his fourteen groups owns a colour here and keeps it
+                everywhere else in the app.
+     カード     flashcards a student aims: tick the kanji, tick what goes
+                on each face, flip, and then take the ルーレット test on the
+                set. Flipping is unmarked; the spinner is the marked part.
      よみかた   which reading a kanji takes in which word, drilled across
                 all 559. The thing the examiners' reports name every year.
-     かく       the reading is given and the student produces the kanji.
-                They type it, which is what the examination asks for and
-                pays 2. Stuck, or on a school iPad with no Japanese
-                keyboard, they ask for four words that look or sound alike
-                and choose, which pays 1. Asking comes second on purpose:
-                Andrew spotted that choosing first put the answer on the
+     かく       the student produces the kanji, prompted by the reading one
+                turn and by the English meaning the next. Andrew's reading
+                of the build before this one: kana plus an IME that offers
+                the kanji is copying, so every second turn asks what the
+                word means first. They type it, which is what the
+                examination asks for and pays 2. Stuck, or on a school iPad
+                with no Japanese keyboard, they ask for four words that
+                look or sound alike and choose, which pays 1. Asking comes
+                second on purpose: choosing first put the answer on the
                 screen and left nothing to type.
      にゅうりょく  how to turn that keyboard on, the same module the exam
                 apps carry.
@@ -34,10 +43,12 @@
    charging for a meaning here would drill a habit the examination does not
    ask for. One line changes it if Andrew wants it charged.
 
-   NO ENGLISH IS INVENTED FOR HIS WORDS. The list glosses the kanji, not
-   the words, so this app never shows an English meaning for 住所 or
-   一日: it shows the kanji each word is made of and what those mean. A
-   gloss nobody has checked is a wrong answer waiting to be marked right.
+   HIS LIST GLOSSES THE KANJI, NOT THE WORDS. Two files here add English
+   he has not written: data/words-en.js, a meaning for each of the 458
+   words, and data/yomu.js, the passages and their glossary. Both say so at
+   the top of themselves, both have a page he can read them from, and the
+   app says where its English comes from wherever a student meets it. His
+   own data is untouched.
 
    The shell, the ledger and the fold-away rule box are ported from ひと
    and メガセンテンス rather than rewritten, so a student who has used one
@@ -45,6 +56,7 @@
 "use strict";
 (function(){
   var K = window.KANJI_VCE;
+  var EN = window.KANJI_WORDS_EN || {};
   var $ = function(id){ return document.getElementById(id); };
   function esc(s){
     return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
@@ -89,11 +101,17 @@
           if (seen[key].from.indexOf(k.k) < 0) seen[key].from.push(k.k);
           return;
         }
-        seen[key] = { w: w.w, y: w.y, from: [k.k], cat: k.cat };
+        seen[key] = { w: w.w, y: w.y, en: EN[key] || "", from: [k.k], cat: k.cat };
         WORDS.push(seen[key]);
       });
     });
   })();
+  /* the first word on the list written exactly this way */
+  function wordNamed(w){
+    var hit = null;
+    WORDS.forEach(function(x){ if (!hit && x.w === w) hit = x; });
+    return hit;
+  }
   /* the kanji inside a word, in order, as far as the list knows them */
   function partsOf(word){
     var out = [];
@@ -177,6 +195,7 @@
   var STEPS = [
     { id:"yomu",  ja:"よむ",       en:"Read it" },
     { id:"find",  ja:"さがす",     en:"Look it up" },
+    { id:"cards", ja:"カード",     en:"Flashcards" },
     { id:"yomi",  ja:"よみかた",   en:"Which reading" },
     { id:"kaku",  ja:"かく",       en:"Write it" },
     { id:"nyuu",  ja:"にゅうりょく", en:"Typing Japanese" }
@@ -185,15 +204,19 @@
     yomu: "Read the passage. Tap any word for its reading and its meaning, "
         + "free and as often as you like. Then answer the three questions. "
         + "There is no furigana: working the reading out is the task.",
+    cards: "Tick the kanji you want, then tick what goes on the front of "
+         + "the card and what goes on the back. Flip each card to check "
+         + "yourself. The spinner tests you on the set at the end.",
     find: "Search the whole list: type a kanji, a reading, a meaning or a "
         + "word. Filter by group with the buttons. Keep this open while you "
         + "write.",
     yomi: "Read the word and choose its reading. The wrong answers are the "
         + "readings the same kanji takes in other words, which is where the "
         + "marks go.",
-    kaku: "Read the kana and type the word in kanji. Typing pays 2 points, "
-        + "because that is what the examination asks for. Stuck? Tap Show "
-        + "four choices and pick one instead, which pays 1.",
+    kaku: "Write the word in kanji and type it. The prompt alternates: the "
+        + "reading one turn, the English meaning the next, so it asks what "
+        + "the word means as well as how it is written. Typing pays 2. "
+        + "Stuck? Tap Show four choices and pick one, which pays 1.",
     nyuu: "Turn the Japanese keyboard on once and the laptop types かな and "
         + "漢字 all year. The written examination needs it."
   };
@@ -264,6 +287,7 @@
   new MutationObserver(howto).observe($("main"), { childList: true });
 
   function draw(){
+    document.onkeydown = null;
     paintToggles(); paintSteps();
     TABS.keep(KEY, STEPS[at].id);
     TABS.inview($("steps"));
@@ -356,19 +380,31 @@
     else readOne(Y.passages[yomuOn]);
 
     function pickOne(){
+      /* Two levels, named on the card rather than hidden in the data: the
+         core nine, one for each prescribed topic, and the stretch set with
+         longer sentences and the compounds a Unit 3 and 4 text carries.
+         Nothing is locked; a student picks. */
       $("main").innerHTML = ruleFor("yomu")
-        + '<div class="work"><div class="plist" id="plist">'
-        + Y.passages.map(function(p, i){
-            var n = pGot(p), all = p.asks.length;
-            return '<button type="button" class="pcard" data-p="' + i + '">'
-              + '<b>' + esc(p.ja) + '</b>'
-              + '<div class="pe">' + esc(p.en) + '</div>'
-              + '<div class="pt2">' + esc(p.topic) + '</div>'
-              + '<div class="pq' + (n >= all ? ' all' : '') + '">' + n + ' of '
-              + all + ' questions right' + (n >= all ? " ✓" : "") + '</div>'
-              + '</button>';
-          }).join("") + '</div></div>' + foot("");
-      each($("plist"), "[data-p]", function(b){
+        + '<div class="work">'
+        + ["core", "stretch"].map(function(lv){
+            var set = Y.passages.filter(function(p){ return p.level === lv; });
+            if (!set.length) return "";
+            return '<h2 class="lvl">' + (lv === "core"
+                ? "The nine topics" : "Longer, with harder compounds")
+              + '<i>' + set.length + '</i></h2>'
+              + '<div class="plist">' + set.map(function(p){
+                  var i = Y.passages.indexOf(p), n = pGot(p), all = p.asks.length;
+                  return '<button type="button" class="pcard lv-' + esc(lv)
+                    + '" data-p="' + i + '">'
+                    + '<b>' + esc(p.ja) + '</b>'
+                    + '<div class="pe">' + esc(p.en) + '</div>'
+                    + '<div class="pt2">' + esc(p.topic) + '</div>'
+                    + '<div class="pq' + (n >= all ? " all" : "") + '">' + n
+                    + ' of ' + all + ' questions right' + (n >= all ? " ✓" : "")
+                    + '</div></button>';
+                }).join("") + '</div>';
+          }).join("") + '</div>' + foot("");
+      each($("main"), "[data-p]", function(b){
         b.onclick = function(){ yomuOn = +b.dataset.p; DRAW.yomu(); };
       });
       var g = yomuGot();
@@ -451,15 +487,18 @@
        how a student finds a kanji, not something they are being tested on,
        so かぞえかた sits beside Counters rather than instead of it. */
     $("cats").innerHTML =
-      '<button data-c="" class="' + (findCat ? "" : "on") + '">All'
+      '<button data-c="*all" class="' + (findCat ? "" : "on") + '">All'
       + '<span>ぜんぶ</span></button>'
       + K.cats.map(function(c){
-          return '<button data-c="' + esc(c.id) + '" class="'
-            + (findCat === c.id ? "on" : "") + '">' + esc(c.en)
+          return '<button data-c="' + esc(c.id) + '" class="cat-' + esc(c.id)
+            + (findCat === c.id ? " on" : "") + '">' + esc(c.en)
             + '<span>' + esc(c.ja) + '</span></button>';
         }).join("");
     each($("cats"), "[data-c]", function(b){
-      b.onclick = function(){ findCat = b.dataset.c; DRAW.find(); };
+      b.onclick = function(){
+        findCat = b.dataset.c === "*all" ? "" : b.dataset.c;
+        DRAW.find();
+      };
     });
     $("clear").onclick = function(){ findQ = ""; findCat = ""; DRAW.find(); };
     $("q").oninput = function(){ findQ = $("q").value; list(); };
@@ -495,7 +534,7 @@
         + ' words';
     }
     function card(k){
-      return '<button type="button" class="kcard">'
+      return '<button type="button" class="kcard cat-' + esc(k.cat) + '">'
         + '<div class="top"><span class="big">' + esc(k.k) + '</span>'
         + '<span class="mean">' + esc(k.en) + '</span></div>'
         + '<div class="rds">'
@@ -508,7 +547,314 @@
     }
   };
 
-  /* ================= 3. よみかた =================
+  /* ================= 3. カード =================
+     Andrew asked for flashcards a student aims at what they need: tick
+     whole groups or single kanji, then tick what belongs on the front of
+     the card and what belongs on the back. Everything on a card comes off
+     his list — the kanji, his English, his readings, his example words.
+
+     Flipping is not marked. A student who says they knew it is talking to
+     themselves, and this app does not pay for that. The spinner at the end
+     of a set is the marked part: it asks, the student answers, and the
+     app can see whether the answer is right.                            */
+  var FIELDS = [
+    { id:"kanji", ja:"漢字",   en:"The kanji" },
+    { id:"on",    ja:"音読み", en:"On reading" },
+    { id:"kun",   ja:"訓読み", en:"Kun reading" },
+    { id:"mean",  ja:"いみ",   en:"English meaning" },
+    { id:"words", ja:"ことば", en:"Words it is in" }
+  ];
+  function cardsState(){
+    if (!S.cards) S.cards = { pick:{}, front:{ kanji:1 }, back:{ mean:1, on:1, kun:1 } };
+    if (!S.cards.pick) S.cards.pick = {};
+    if (!S.cards.front) S.cards.front = { kanji:1 };
+    if (!S.cards.back) S.cards.back = { mean:1, on:1, kun:1 };
+    return S.cards;
+  }
+  function picked(){
+    var C = cardsState();
+    return K.kanji.filter(function(k){ return C.pick[k.k]; });
+  }
+  function sideOf(which){
+    var C = cardsState();
+    return FIELDS.filter(function(f){ return C[which][f.id]; });
+  }
+  function faceHTML(k, fields){
+    return fields.map(function(f){
+      if (f.id === "kanji")
+        return '<div class="fkanji">' + esc(k.k) + '</div>';
+      if (f.id === "mean")
+        return '<div class="fmean">' + esc(k.en) + '</div>';
+      if (f.id === "on")
+        return k.on.length
+          ? '<div class="frd o"><i>on</i>' + esc(k.on.join("、")) + '</div>'
+          : '<div class="frd none"><i>on</i>none on the list</div>';
+      if (f.id === "kun")
+        return k.kun.length
+          ? '<div class="frd k"><i>kun</i>' + esc(k.kun.join("、")) + '</div>'
+          : '<div class="frd none"><i>kun</i>none on the list</div>';
+      return '<div class="fwords">' + k.words.map(function(w){
+        return '<span>' + ruby(w.w, w.y) + '</span>';
+      }).join("") + '</div>';
+    }).join("");
+  }
+  var cardQueue = null, cardAt = 0, cardFlipped = false, cardTest = null;
+
+  DRAW.cards = function(){
+    if (cardTest) return testScreen();
+    if (cardQueue) return practise();
+    setUp();
+
+    /* ---- the two tick-box panels ---- */
+    function setUp(){
+      var C = cardsState(), mine = picked();
+      $("main").innerHTML = ruleFor("cards")
+        + '<div class="work">'
+        + '<div class="panel"><h2>1. Choose the kanji</h2>'
+        + '<div class="cats" id="ccats"></div>'
+        + '<div class="chips" id="cchips"></div></div>'
+        + '<div class="sides">'
+        + '<div class="panel"><h2>2. Front of the card</h2>'
+        + '<div class="ticks" id="cfront"></div></div>'
+        + '<div class="panel"><h2>3. Back of the card</h2>'
+        + '<div class="ticks" id="cback"></div></div>'
+        + '</div></div>'
+        + foot('<button class="btn" id="go">Start</button>');
+      $("ccats").innerHTML = K.cats.map(function(c){
+        var all = K.kanji.filter(function(k){ return k.cat === c.id; });
+        var on = all.filter(function(k){ return C.pick[k.k]; }).length;
+        return '<button data-c="' + esc(c.id) + '" class="cat-' + esc(c.id)
+          + (on === all.length ? " on" : (on ? " some" : ""))
+          + '">' + (on === all.length ? "✓ " : (on ? "– " : "")) + esc(c.en)
+          + '<span>' + esc(c.ja) + '</span></button>';
+      }).join("")
+        + '<button data-c="*all">Tick all</button>'
+        + '<button data-c="*none">Clear</button>';
+      $("cchips").innerHTML = K.kanji.map(function(k){
+        return '<button class="chip cat-' + esc(k.cat)
+          + (C.pick[k.k] ? " on" : "") + '" data-k="' + esc(k.k) + '" title="'
+          + esc(k.en) + '">' + esc(k.k) + '</button>';
+      }).join("");
+      $("cfront").innerHTML = ticks("front");
+      $("cback").innerHTML = ticks("back");
+      each($("ccats"), "[data-c]", function(b){
+        b.onclick = function(){
+          var c = b.dataset.c;
+          if (c === "*all") K.kanji.forEach(function(k){ C.pick[k.k] = 1; });
+          else if (c === "*none") C.pick = {};
+          else {
+            var all = K.kanji.filter(function(k){ return k.cat === c; });
+            var every = all.every(function(k){ return C.pick[k.k]; });
+            all.forEach(function(k){
+              if (every) delete C.pick[k.k]; else C.pick[k.k] = 1;
+            });
+          }
+          save(); DRAW.cards();
+        };
+      });
+      each($("cchips"), "[data-k]", function(b){
+        b.onclick = function(){
+          if (C.pick[b.dataset.k]) delete C.pick[b.dataset.k];
+          else C.pick[b.dataset.k] = 1;
+          save(); DRAW.cards();
+        };
+      });
+      ["front", "back"].forEach(function(which){
+        each($("c" + which), "[data-f]", function(b){
+          b.onclick = function(){
+            if (C[which][b.dataset.f]) delete C[which][b.dataset.f];
+            else C[which][b.dataset.f] = 1;
+            save(); DRAW.cards();
+          };
+        });
+      });
+      var ready = mine.length && sideOf("front").length && sideOf("back").length;
+      $("go").disabled = !ready;
+      $("go").textContent = mine.length ? "Start · " + mine.length + " cards" : "Start";
+      $("go").onclick = function(){
+        if (!ready) return;
+        cardQueue = shuffle(picked().slice());
+        cardAt = 0; cardFlipped = false;
+        DRAW.cards();
+      };
+      $("sc").innerHTML = ready
+        ? '<b>' + mine.length + '</b> kanji chosen · front: '
+          + sideOf("front").map(function(f){ return f.en.toLowerCase(); }).join(", ")
+          + ' · back: '
+          + sideOf("back").map(function(f){ return f.en.toLowerCase(); }).join(", ")
+        : (mine.length ? "Tick at least one thing for each side of the card."
+                       : "Tick the kanji you want to revise.");
+      function ticks(which){
+        return FIELDS.map(function(f){
+          return '<button class="tick' + (C[which][f.id] ? " on" : "")
+            + '" data-f="' + esc(f.id) + '" aria-pressed="'
+            + (C[which][f.id] ? "true" : "false") + '">'
+            + '<b>' + (C[which][f.id] ? "✓" : "") + '</b>' + esc(f.en)
+            + '<span>' + esc(f.ja) + '</span></button>';
+        }).join("");
+      }
+    }
+
+    /* ---- one card, two sides ---- */
+    function practise(){
+      if (cardAt >= cardQueue.length){
+        cardTest = { pool: shuffle(picked().slice()), at: 0, asked: 0, spun: false };
+        cardQueue = null;
+        DRAW.cards();
+        return;
+      }
+      var k = cardQueue[cardAt], front = sideOf("front"), back = sideOf("back");
+      $("main").innerHTML = ruleFor("cards")
+        + '<div class="work"><div class="cardwrap">'
+        + '<button class="flip cat-' + esc(k.cat) + '" id="flip" type="button">'
+        + '<div class="face">' + faceHTML(k, cardFlipped ? back : front) + '</div>'
+        + '<div class="side">' + (cardFlipped ? "back" : "front")
+        + ' · tap to turn</div></button></div></div>'
+        + foot('<button class="btn ghost sm" id="again">Again later</button>'
+             + '<button class="btn ghost sm" id="next">Got it</button>'
+             + '<button class="btn ghost sm" id="stop">Change the set</button>');
+      $("flip").onclick = function(){ cardFlipped = !cardFlipped; DRAW.cards(); };
+      $("again").onclick = function(){
+        cardQueue.push(k); cardAt++; cardFlipped = false; DRAW.cards();
+      };
+      $("next").onclick = function(){
+        cardAt++; cardFlipped = false; DRAW.cards();
+      };
+      $("stop").onclick = function(){
+        cardQueue = null; cardFlipped = false; DRAW.cards();
+      };
+      document.onkeydown = function(e){
+        if (e.key === " " || e.key === "Enter"){
+          e.preventDefault(); cardFlipped = !cardFlipped; DRAW.cards();
+        }
+      };
+      $("sc").innerHTML = '<b>' + (cardAt + 1) + '</b> of ' + cardQueue.length
+        + ' · the spinner tests you at the end';
+    }
+
+    /* ---- ルーレット, the marked part ----
+       It spins through the set and stops on one, and then asks something
+       the app can mark: the kanji when the front does not carry it, and
+       otherwise a reading or the meaning. Four answers, one of them its
+       own, and the wrong three come off the same list. */
+    function testScreen(){
+      var t = cardTest;
+      if (t.at >= t.pool.length){
+        var got = t.pool.filter(function(k){ return S.won["cards:test:" + k.k]; }).length;
+        $("main").innerHTML = ruleFor("cards")
+          + '<div class="work"><div class="ask"><div class="qtag">set finished</div>'
+          + '<div class="prompt en">' + got + ' of ' + t.pool.length + '</div>'
+          + '<p class="hint">Answered right across this set and every set '
+          + 'before it. Change the set to aim at what is left.</p></div></div>'
+          + foot('<button class="btn" id="redo">Go again</button>'
+               + '<button class="btn ghost sm" id="stop">Change the set</button>');
+        done("cards");
+        $("redo").onclick = function(){
+          cardTest = null; cardQueue = shuffle(picked().slice());
+          cardAt = 0; cardFlipped = false; DRAW.cards();
+        };
+        $("stop").onclick = function(){ cardTest = null; DRAW.cards(); };
+        $("sc").textContent = "";
+        return;
+      }
+      var k = t.pool[t.at], q = askFor(k);
+      $("main").innerHTML = ruleFor("cards")
+        + '<div class="work"><div class="ask">'
+        + '<div class="qtag">ルーレット · ' + esc(q.tag) + '</div>'
+        + '<div class="prompt' + (q.promptEn ? " en" : "") + '" id="drum">'
+        + esc(q.prompt) + '</div>'
+        + '<div class="opts" id="opts">' + q.opts.map(function(o, i){
+            return '<button class="opt' + (q.optsEn ? " en" : "")
+              + '" data-o="' + i + '">' + esc(o) + '</button>';
+          }).join("") + '</div><div id="fb"></div></div></div>'
+        + foot('<button class="btn ghost sm" id="stop">Change the set</button>');
+      $("stop").onclick = function(){ cardTest = null; cardQueue = null; DRAW.cards(); };
+      $("sc").innerHTML = '<b>' + (t.at + 1) + '</b> of ' + t.pool.length
+        + ' spun';
+      var answered = false;
+      each($("opts"), "[data-o]", function(b){
+        b.onclick = function(){
+          if (answered || t.spinning) return;
+          answered = true;
+          var right = q.opts[+b.dataset.o] === q.answer;
+          b.classList.add(right ? "yes" : "no");
+          if (!right) each($("opts"), "[data-o]", function(x){
+            if (q.opts[+x.dataset.o] === q.answer) x.classList.add("yes");
+          });
+          each($("opts"), "[data-o]", function(x){ x.disabled = true; });
+          if (right) first("cards:test:" + k.k, 1, "spun right");
+          $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
+            + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
+            + '<span class="jp">' + esc(k.k) + '</span> ' + esc(k.en)
+            + '<p>' + esc(readingLine(k)) + '</p></div>';
+          setTimeout(function(){ t.at++; DRAW.cards(); }, 1200);
+        };
+      });
+      spin(k);
+    }
+    /* The drum rolls through the set and settles on the one it asked. The
+       answers are held shut while it rolls: a tap that landed mid-spin used
+       to be swallowed, which reads as a broken button. */
+    function spin(k){
+      var t = cardTest, drum = $("drum");
+      if (!drum || t.pool.length < 2) return;
+      var slow = window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (slow) return;
+      var face = drum.textContent, n = 0;
+      t.spinning = true;
+      each($("opts"), "[data-o]", function(x){ x.disabled = true; });
+      var id = setInterval(function(){
+        n++;
+        drum.textContent = t.pool[Math.floor(Math.random() * t.pool.length)].k;
+        if (n > 11){
+          clearInterval(id);
+          drum.textContent = face;
+          t.spinning = false;
+          each($("opts"), "[data-o]", function(x){ x.disabled = false; });
+        }
+      }, 70);
+    }
+    function readingLine(k){
+      var bits = [];
+      if (k.on.length) bits.push("on " + k.on.join("、"));
+      if (k.kun.length) bits.push("kun " + k.kun.join("、"));
+      return bits.join(" · ");
+    }
+    function askFor(k){
+      var C = cardsState(), pool = cardTest.pool;
+      var others = pool.filter(function(x){ return x.k !== k.k; });
+      if (others.length < 3)
+        others = K.kanji.filter(function(x){ return x.k !== k.k; });
+      /* the front does not show the kanji, so the kanji is the question */
+      if (!C.front.kanji){
+        var cue = C.front.mean ? k.en : (k.on.concat(k.kun)[0] || k.en);
+        return { tag:"which kanji", prompt: cue, promptEn: !!C.front.mean,
+                 answer: k.k, optsEn: false,
+                 opts: shuffle(shuffle(others.slice()).slice(0, 3)
+                        .map(function(x){ return x.k; }).concat([k.k])) };
+      }
+      /* it does show the kanji, so ask for whatever the back promised */
+      var rds = k.on.concat(k.kun);
+      if ((C.back.on || C.back.kun) && rds.length){
+        var want = (C.back.on && k.on.length) ? k.on[0] : rds[0];
+        var wrong = [];
+        shuffle(others.slice()).forEach(function(x){
+          if (wrong.length >= 3) return;
+          var r = x.on.concat(x.kun)[0];
+          if (r && r !== want && wrong.indexOf(r) < 0) wrong.push(r);
+        });
+        return { tag:"which reading", prompt: k.k, promptEn: false,
+                 answer: want, optsEn: false, opts: shuffle(wrong.concat([want])) };
+      }
+      return { tag:"which meaning", prompt: k.k, promptEn: false,
+               answer: k.en, optsEn: true,
+               opts: shuffle(shuffle(others.slice()).slice(0, 3)
+                      .map(function(x){ return x.en; }).concat([k.en])) };
+    }
+  };
+
+  /* ================= 4. よみかた =================
      A word, four readings, and the wrong ones are the readings the same
      kanji takes somewhere else: 一日 against いちにち, 日曜日 against
      にちようび. That is the mistake worth drilling, and it is the one the
@@ -606,7 +952,7 @@
     }).join("") + '</div>';
   }
 
-  /* ================= 4. かく =================
+  /* ================= 5. かく =================
      The reading is given and the student produces the kanji. The first
      build asked them to choose it from four and then type it, which
      Andrew read and saw straight through: once the right word is on the
@@ -622,15 +968,51 @@
      The three wrong choices are words that sound alike or share a kanji,
      never words picked at random: a question whose wrong answers are
      obviously wrong is a question about nothing.                        */
-  var kakuDeck = null, kakuAt = 0;
+  /* Two decks, dealt turn and turn about, so every second word is asked
+     in English. Andrew's point: a kana prompt plus an IME that offers the
+     kanji is a copying task, and copying is not knowing. The English turn
+     asks what the word means before it asks how it is written.
+
+     The English comes from data/words-en.js, which is a draft nobody has
+     checked, so a word with no gloss simply never takes an English turn
+     rather than being asked with a guess. */
+  var kakuDeck = null, kakuAt = 0, kakuEnDeck = null, kakuEnAt = 0, kakuTurn = 0;
+  function kakuPool(en){
+    return WORDS.filter(function(w){
+      return hasKanji(w.w) && (!en || (w.en && w.en.length));
+    });
+  }
   function dealKaku(){
+    if (kakuTurn % 2 === 1 && kakuPool(true).length){
+      if (!kakuEnDeck || kakuEnAt >= kakuEnDeck.length){
+        kakuEnDeck = shuffle(kakuPool(true)); kakuEnAt = 0;
+      }
+      return kakuEnDeck[kakuEnAt];
+    }
     if (!kakuDeck || kakuAt >= kakuDeck.length){
       /* only words with kanji in them: asking a student to write つ in
          kanji is asking for nothing */
-      kakuDeck = shuffle(WORDS.filter(function(w){ return hasKanji(w.w); }));
+      kakuDeck = shuffle(kakuPool(false));
       kakuAt = 0;
     }
     return kakuDeck[kakuAt];
+  }
+  function kakuAsksEnglish(){
+    return kakuTurn % 2 === 1 && kakuPool(true).length > 0;
+  }
+  function nextKaku(){
+    if (kakuAsksEnglish()) kakuEnAt++; else kakuAt++;
+    kakuTurn++;
+  }
+  /* A meaning can be written more than one way — 友だち and 友人 are both
+     a friend — so a word typed for an English prompt is right if it is the
+     word dealt, or any other word the draft glosses the same way. */
+  function sameMeaning(got, word){
+    if (got === word.w) return true;
+    if (!word.en) return false;
+    return WORDS.some(function(w){
+      return w.w === got && w.en === word.en;
+    });
   }
   function lookalikes(word){
     var out = [], seen = {};
@@ -661,13 +1043,18 @@
     return out.slice(0, 3);
   }
   DRAW.kaku = function(){
-    var word = dealKaku();
+    var word = dealKaku(), inEnglish = kakuAsksEnglish();
     var opts = shuffle(lookalikes(word).concat([word]));
     var shown = false, chosen = false, typed = false;
     $("main").innerHTML = ruleFor("kaku")
       + '<div class="work"><div class="ask">'
-      + '<div class="qtag">write this in kanji</div>'
-      + '<div class="prompt kana">' + esc(word.y) + '</div>'
+      + '<div class="qtag">' + (inEnglish ? "write this word in Japanese"
+                                          : "write this in kanji") + '</div>'
+      + (inEnglish
+         ? '<div class="prompt en">' + esc(word.en) + '</div>'
+           + '<p class="hint">The English here is a draft, not from the '
+           + 'kanji list. Say so if a meaning reads wrong.</p>'
+         : '<div class="prompt kana">' + esc(word.y) + '</div>')
       + '<div class="typebox" id="tb">'
       + '<input id="ta" inputmode="text" autocomplete="off" spellcheck="false"'
       + ' aria-label="Type the word in kanji">'
@@ -680,7 +1067,7 @@
       + '<div id="fb"></div></div></div>'
       + foot('<button class="btn ghost sm" id="skip">Another word</button>');
     paintScore();
-    $("skip").onclick = function(){ kakuAt++; DRAW.kaku(); };
+    $("skip").onclick = function(){ nextKaku(); DRAW.kaku(); };
     $("ta").focus();
 
     /* Asking for the four is the support, so it says what it costs
@@ -720,8 +1107,9 @@
       if (typed) return;
       var got = ($("ta").value || "").trim();
       if (!got) return;
-      if (got === word.w){
+      if (sameMeaning(got, word)){
         typed = true;
+        if (got !== word.w) word = wordNamed(got) || word;
         /* 2 for typing it unaided, 1 for typing it with the four on
            screen, nothing if the choice already paid. */
         if (!shown) first("kaku:type:" + word.w, 2, "typed");
@@ -760,7 +1148,7 @@
     }
   };
 
-  /* ================= 5. にゅうりょく =================
+  /* ================= 6. にゅうりょく =================
      The same module the Year 10, 11 and 12 examination apps carry, with
      its own styles. A student cannot type an answer to the written
      examination until this is done, and this app asks them to type. */
@@ -782,6 +1170,11 @@
     near: readingsNear,
     alike: lookalikes,
     yomu: function(){ return Y ? Y.passages.length : 0; },
+    cards: function(){ return { picked: picked().length,
+                                front: sideOf("front").map(function(f){ return f.id; }),
+                                back: sideOf("back").map(function(f){ return f.id; }),
+                                testing: !!cardTest }; },
+    english: function(){ return kakuAsksEnglish(); },
     read: function(i){ yomuOn = i; draw(); },
     tokens: function(line){ return readable(line); }
   };
