@@ -7,6 +7,12 @@
 
        <script src="hub.js?v=..."></script>
 
+   It puts two links on the page: the way back to ジャプリ, and a question
+   mark that opens the how-to page. Several apps ask a student to type in
+   Japanese and only four of them carry the keyboard how-to; rather than
+   bolt a tab onto each of the others, the advice lives once at /how/ and
+   every app can reach it.
+
    WHERE IT GOES. Into the app's own bar if it has one, as the first thing in
    it, because the way out belongs at the start of the row and not among the
    tools a student is using. An app with no bar — the two unit maps — gets a
@@ -36,6 +42,17 @@ window.HUB = (function(){
     '.hubhome b{font-family:var(--jp,sans-serif);font-weight:700;font-size:14px}',
     '.hubhome.loose{position:fixed;left:10px;top:10px;z-index:60;',
     '  box-shadow:0 2px 10px rgba(16,40,70,.12)}',
+    '.hubhelp{display:inline-flex;align-items:center;justify-content:center;',
+    '  flex:none;width:38px;min-height:38px;text-decoration:none;',
+    '  border:2px solid var(--line,#ccd5e0);border-radius:9px;',
+    '  background:var(--paper,#fff);color:var(--deep,#16375e);',
+    '  font-family:var(--font,sans-serif);font-size:17px;font-weight:700;',
+    '  line-height:1;cursor:pointer;transition:border-color .13s}',
+    '.hubhelp:hover,.hubhelp:focus{border-color:var(--deep,#16375e);outline:none}',
+    '.hubhelp.loose{position:fixed;top:10px;z-index:60;',
+    '  box-shadow:0 2px 10px rgba(16,40,70,.12)}',
+    '.hubhelp.loose.right{right:10px}',
+    '@media (max-width:620px){ .hubhelp{width:34px;min-height:34px} }',
     '@media (max-width:620px){',
     '  .hubhome{padding:0 8px;min-height:34px}',
     '  .hubhome b{font-size:13px}',
@@ -58,6 +75,7 @@ window.HUB = (function(){
   function put(){
     if (document.querySelector('.hubhome')) return false;
     var href = (tag && tag.getAttribute('data-href')) || '../';
+    var help = (tag && tag.getAttribute('data-help')) || '../how/';
     var style = document.createElement('style');
     style.textContent = CSS;
     document.head.appendChild(style);
@@ -67,11 +85,29 @@ window.HUB = (function(){
     a.title = 'Back to ジャプリ';
     a.setAttribute('aria-label', 'Back to ジャプリ, the hub');
     a.innerHTML = ICON + '<b>ジャプリ</b>';
+    /* the question mark: one page of advice, the same from every app */
+    var q = null;
+    if (!/\/how\/?$/.test(location.pathname)){
+      q = document.createElement('a');
+      q.className = 'hubhelp';
+      q.href = help;
+      q.title = 'How to use ジャプリ';
+      q.setAttribute('aria-label', 'How to use ジャプリ: typing Japanese, '
+        + 'where your score lives, getting around');
+      q.textContent = '?';
+    }
+    /* Both go at the start, together: they are the two ways out of the
+       app and neither belongs among the app's own tools. The question
+       mark at the far right would have sat against Reset, which is the
+       one button a mis-tap must not find. */
     var bar = document.querySelector('.bar');
-    if (bar) bar.insertBefore(a, bar.firstChild);
-    else {
+    if (bar){
+      bar.insertBefore(a, bar.firstChild);
+      if (q) bar.insertBefore(q, a.nextSibling);
+    } else {
       a.className += ' loose';
       document.body.appendChild(a);
+      if (q){ q.className += ' loose right'; document.body.appendChild(q); }
     }
     return true;
   }

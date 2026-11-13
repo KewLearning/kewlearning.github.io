@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>つかいかた · how to use ジャプリ</title>
+<meta name="description" content="How to type Japanese, where your score lives, and how to get around ジャプリ.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Ctext x='32' y='45' font-size='34' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3E%3F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="shell.css?v=20261113a">
+<style>
+  /* A page of advice, not an activity: it scrolls like a document and
+     borrows the shell for everything else. */
+  body{overflow:auto}
+  main{display:block;padding:14px 14px 40px}
+  .lede{max-width:760px;font-size:16.5px;line-height:1.55;margin:4px 0 18px;
+        color:var(--muted)}
+  .card{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;
+        padding:16px 18px 18px;margin-bottom:14px;max-width:860px}
+  .card h2{font-family:var(--jp);font-size:21px;line-height:1.2;margin-bottom:2px}
+  .card h2 i{font-family:var(--font);font-style:normal;font-size:12px;
+        font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--muted);display:block;margin-top:3px}
+  .card p{font-size:15px;line-height:1.55;margin-top:9px;max-width:62em}
+  .card ol,.card ul{margin:9px 0 0 20px;font-size:15px;line-height:1.6}
+  .card li{margin-bottom:4px}
+  .card .key{display:inline-block;border:1.5px solid var(--line);border-radius:6px;
+        padding:0 6px;font-size:13px;font-weight:700;background:var(--bg)}
+  .card .jp{font-family:var(--jp)}
+  .note{font-size:13.5px;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>つかいかた<span>how to use ジャプリ</span></h1>
+</div>
+<main>
+  <p class="lede">Five things worth knowing once. They are the same in every
+  app on ジャプリ.</p>
+
+  <div class="card">
+    <h2>日本語をタイプする<i>Turn the Japanese keyboard on</i></h2>
+    <p>Several apps ask you to type in Japanese. A laptop will not do it until
+    you add the Japanese keyboard, and you only have to do it once. The steps
+    below are for the laptop you are reading this on, and the box at the end
+    tells you whether it worked.</p>
+    <div id="nyuu"></div>
+  </div>
+
+  <div class="card">
+    <h2>てんすう<i>Where your score lives</i></h2>
+    <p>Each app keeps your points and your ticks in this browser, on this
+    device. Nothing is sent anywhere and nobody else can see it.</p>
+    <ul>
+      <li>Close the app and come back: your score is still there.</li>
+      <li>Use a different laptop, or a private window, and you start again.</li>
+      <li><b>Reset</b> clears that app on that device, and cannot be undone.</li>
+      <li><b>Save</b> copies a line of text you can paste to your teacher.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>うごきかた<i>Getting around</i></h2>
+    <ul>
+      <li>Tap <b class="jp">ジャプリ</b> at the top left of any app to come back
+      to the hub.</li>
+      <li>Each app remembers the tab you were last on and opens there.</li>
+      <li>A link from your teacher can open one tab straight away, so it
+      lands where the lesson starts.</li>
+      <li>The sign that flashes up when an app opens is only a welcome. Tap
+      anywhere to go straight past it.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>きりかえ<i>Turning things on and off</i></h2>
+    <ul>
+      <li><b class="jp">ふりがな</b> hides or shows the kana above the kanji.
+      Turn it off when you want to test yourself.</li>
+      <li><b>EN</b> hides or shows the English.</li>
+      <li><b>♪</b> turns the sounds off.</li>
+    </ul>
+    <p class="note">Each switch stays as you leave it on that device.</p>
+  </div>
+
+  <div class="card">
+    <h2>ふるいページ<i>If a page looks out of date</i></h2>
+    <p>Every app prints its build in the bottom right corner. If what you see
+    does not match what your teacher describes, your browser is holding an
+    old copy: hold <span class="key">Shift</span> and press reload, or add
+    <span class="key">?welcome=1</span> to the address, which asks for a
+    fresh page.</p>
+  </div>
+</main>
+<script src="hub.js?v=20261113a"></script>
+<script src="nyuuryoku.js?v=20261113a"></script>
+<script>
+  document.getElementById('nyuu').innerHTML = NYUURYOKU.html();
+  NYUURYOKU.wire();
+</script>
+<div class="build" aria-hidden="true">build 2026-11-13a</div>
+</body>
+</html>
