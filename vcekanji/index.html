@@ -7,15 +7,13 @@
 <meta name="theme-color" content="#16375e">
 <title>VCE漢字 · the prescribed kanji</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Crect x='18' y='20' width='28' height='4' fill='%23fff'/%3E%3Crect x='30' y='20' width='4' height='26' fill='%23fff'/%3E%3Crect x='18' y='33' width='28' height='4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="shell.css?v=20261113a">
 <style>
   /* The same shell as the rest of ジャプリ: one screen, one scrolling
      region, the textbook font stack, and colour that carries meaning
      rather than decorating. Built for a school laptop first, because
      this is a Year 11 and 12 app and they sit at one. */
   :root{
-    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
-    --line:#ccd5e0; --line-soft:#e3e9f0;
-    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
     --on:#2b5f8c;           /* 音読み, everywhere, always */
     --kun:#7a4a86;          /* 訓読み, everywhere, always */
     /* ---- one hue per group, and the hue means the group ----
@@ -43,17 +41,14 @@
     --w-yomu:#eef2f8;  --w-find:#f4f1e9;  --w-cards:#f2effa;
     --w-yomi:#e9f3f4;  --w-kaku:#eef0f3;  --w-nyuu:#f5f1ef;
     --i-yomu:#2f5fa8;  --i-find:#7a5230;  --i-cards:#5a4fb0;
-    --i-yomi:#1f6f8f;  --i-kaku:#45506b;  --i-nyuu:#58616e;
-    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
-    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    --i-yomi:#1f6f8f;  --i-kaku:#45506b;  --i-nyuu:#58616e;}
+  
   /* A display: rule beats the hidden attribute, and .opts and .typebox
      both set one. Without this line a box the app has hidden stays on
      the screen, which is how かく showed its four choices before anybody
      asked for them. */
   [hidden]{display:none !important}
-  html,body{height:100%}
+  
   body{background:var(--bg);color:var(--ink);font-family:var(--font);
        font-size:16px;line-height:1.5;display:flex;flex-direction:column;
        overflow:hidden;transition:background-color .25s ease-out}
@@ -65,68 +60,59 @@
   body[data-rung="nyuu"]{background:var(--w-nyuu);--rung:var(--i-nyuu)}
   @media (prefers-reduced-motion:reduce){ body{transition:none} }
 
-  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-       background:var(--paper);border-bottom:1px solid var(--line);
-       padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top))}
-  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
-  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
-       font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-       color:var(--muted)}
-  .bar .sp{flex:1}
-  .tool{min-height:38px;padding:0 11px;border:2px solid var(--deep);
-        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
-        font-family:var(--font);font-size:13px;font-weight:700}
-  .tool.off{border-color:var(--line);color:var(--muted)}
+  
+  
+  
+  
+  
+  
   .pts{min-height:38px;display:flex;align-items:center;gap:5px;padding:0 11px;
        border:2px solid var(--warm);border-radius:9px;background:#fffdf4;
        font-size:12px;font-weight:700;color:var(--warm)}
-  .pts b{font-size:17px;color:var(--ink)}
+  
   .pts i{font-style:normal;font-size:12px;font-weight:700}
   .pts i.up{color:var(--ok)}
   .pts i.down{color:var(--accent)}
 
-  .steps{flex:none;display:flex;background:var(--paper);
-       border-bottom:1px solid var(--line);overflow-x:auto}
+  
   .steps button{flex:1;min-width:104px;border:0;background:none;cursor:pointer;
        padding:7px 10px;border-bottom:3px solid transparent;
        font-family:var(--font);text-align:center}
-  .steps b{display:block;font-family:var(--jp);font-size:15px;color:var(--ink);
-       font-weight:700;line-height:1.2}
+  
   .steps i{display:block;font-style:normal;font-size:10.5px;
        letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-  .steps .done{color:var(--ok);font-weight:700}
+  
   .steps button[aria-current]{border-bottom-color:var(--rung,var(--deep));
        background:var(--bg-current,transparent)}
   .steps button[aria-current] i{color:var(--rung,var(--deep))}
   .steps button[aria-current] b{color:var(--rung,var(--ink))}
 
-  main{flex:1;min-height:0;display:flex;flex-direction:column;
-       padding:10px 14px 12px;max-width:1180px;width:100%;margin:0 auto}
+  
   .rule{flex:none;background:#fffbe9;border:1px solid #e0cf9a;border-radius:9px;
         border-left:5px solid var(--rung,#e0cf9a);
         padding:8px 11px;margin-bottom:9px;font-size:14px;line-height:1.45;
         transition:opacity .4s}
   .rule b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
         color:var(--warm);display:block;margin-bottom:2px}
-  .rule.fading{opacity:0}
+  
   .howto{flex:none;align-self:flex-start;margin-bottom:9px;min-height:26px;
        padding:0 10px;border:1px solid #e0cf9a;border-radius:999px;
        background:#fffbe9;color:var(--warm);font-family:var(--font);
        font-size:11.5px;font-weight:700;cursor:pointer}
   main.folded .rule{display:none}
-  .work{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+  
   .foot{flex:none;display:flex;align-items:center;gap:10px;margin-top:9px;
         flex-wrap:wrap;font-size:13px;color:var(--muted)}
-  .foot .sp{flex:1}
-  .hint{font-size:12.5px;color:var(--muted)}
+  
+  
   .btn{border:2px solid var(--deep);background:var(--deep);color:#fff;
        border-radius:10px;min-height:40px;padding:0 14px;cursor:pointer;
        font-family:var(--font);font-size:14.5px;font-weight:700}
-  .btn.ghost{background:#fff;color:var(--deep)}
-  .btn.sm{min-height:36px;font-size:13.5px;padding:0 11px}
-  .btn[disabled]{opacity:.4;cursor:default}
+  
+  
+  
   ruby rt{font-size:.5em;font-weight:400;color:var(--muted)}
-  body.nofuri ruby rt{visibility:hidden}
+  
   body:not(.showen) .en{display:none}
 
   /* Each group paints its own surfaces. One rule per group, and every
@@ -258,7 +244,7 @@
                           #000 78%,transparent 100%);
        mask-image:linear-gradient(to bottom,transparent 0,#000 22%,
                   #000 78%,transparent 100%)}
-  .rstrip{will-change:transform}
+  
   .ritem{height:76px;display:flex;align-items:center;justify-content:center;
        font-family:var(--jp);font-size:52px;line-height:1}
   .rmark{position:absolute;left:0;right:0;top:76px;height:76px;
@@ -271,7 +257,7 @@
   .rspin:hover,.rspin:focus{border-color:var(--rung,var(--deep));outline:none}
   .rspin svg{width:23px;height:23px}
   .rspin[disabled]{opacity:.3;cursor:default}
-  .reel.spinning .rspin{opacity:.3;pointer-events:none}
+  
   /* An answer waiting for the drum stays readable: the whole point of
      putting them up first is that they can be read. */
   .opt[disabled]:not(.yes):not(.no){opacity:1;cursor:default}
@@ -393,10 +379,9 @@
   .help{display:flex;justify-content:center;margin-top:11px}
   .mark{border-left:4px solid var(--line);padding:6px 11px;margin:12px auto 0;
        font-size:14px;max-width:620px;text-align:left}
-  .mark.yes{border-color:var(--ok)} .mark.no{border-color:var(--accent)}
-  .mark.hm{border-color:#b8860b}
-  .mark b{display:block;font-size:11px;letter-spacing:.08em;
-       text-transform:uppercase;color:var(--muted)}
+   
+  
+  
   .mark .jp{font-family:var(--jp);font-size:19px}
   .mark p{font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:4px}
   .mark .gl{display:block;font-style:normal;font-weight:700;font-size:16px;
@@ -439,16 +424,16 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261112j"></script>
-<script src="fanfare.js?v=20261112j"></script>
-<script src="welcome.js?v=20261112j" data-ja="VCE漢字" data-en="VCE KANJI"></script>
-<script src="tabs.js?v=20261112j"></script>
-<script src="nyuuryoku.js?v=20261112j"></script>
-<script src="data/kanji.js?v=20261112j"></script>
-<script src="data/levels.js?v=20261112j"></script>
-<script src="data/words-en.js?v=20261112j"></script>
-<script src="data/yomu.js?v=20261112j"></script>
-<script src="app.js?v=20261112j"></script>
-<div class="build" aria-hidden="true">build 2026-11-12j</div>
+<script src="hub.js?v=20261113a"></script>
+<script src="fanfare.js?v=20261113a"></script>
+<script src="welcome.js?v=20261113a" data-ja="VCE漢字" data-en="VCE KANJI"></script>
+<script src="tabs.js?v=20261113a"></script>
+<script src="nyuuryoku.js?v=20261113a"></script>
+<script src="data/kanji.js?v=20261113a"></script>
+<script src="data/levels.js?v=20261113a"></script>
+<script src="data/words-en.js?v=20261113a"></script>
+<script src="data/yomu.js?v=20261113a"></script>
+<script src="app.js?v=20261113a"></script>
+<div class="build" aria-hidden="true">build 2026-11-13a</div>
 </body>
 </html>

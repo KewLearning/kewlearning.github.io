@@ -7,19 +7,16 @@
 <meta name="theme-color" content="#16375e">
 <title>しけん · Year 11</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Ccircle cx='32' cy='24' r='11' fill='%2316375e'/%3E%3Cpath d='M13 56c0-11 8-18 19-18s19 7 19 18z' fill='%2316375e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="shell.css?v=20261113a">
 <style>
   /* Built to a school laptop: 1366 by 768 before the browser takes its
      cut. One step fills the screen, the page itself never scrolls, and
      exactly one region inside each step takes up the slack. Laptops are
      wide and short, so width buys back height wherever it can. */
   :root{
-    --bg:#eef1f5; --paper:#fff; --ink:#15191f; --muted:#4a5464;
-    --line:#ccd5e0; --line-soft:#e3e9f0;
-    --deep:#16375e; --accent:#a83232; --ok:#2f6a3e; --warm:#8a6d1f;
     --i:#2b5f8c;            /* い adjectives, everywhere, always */
     --na:#7a4a86;           /* な adjectives, everywhere, always */
-    --noun:#5a6470;         /* the things you describe */
-    --font:Calibri,Carlito,'Segoe UI',Tahoma,Verdana,sans-serif;
+    --noun:#5a6470;
     /* This page was the odd one out: it went straight to Hiragino Sans,
        a gothic, and skipped every textbook face, while the hub landing
        page and the oral app both lead with UD Digi Kyokasho. So a Year 8
@@ -32,90 +29,61 @@
        which is also a textbook face. An iPad has no kyokasho at all and
        lands on Hiragino, which is the one gap and not one a font stack
        can close. Nothing here is downloaded. */
-    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:var(--font);
-       font-size:16px;line-height:1.5;display:flex;flex-direction:column;
-       overflow:hidden}
+    --jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo,sans-serif;}
+  
+  
+  
 
-  .bar{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-       background:var(--paper);
-       border-bottom:1px solid var(--line);padding:7px 14px;
-       padding-top:calc(7px + env(safe-area-inset-top))}
-  .bar h1{font-family:var(--jp);font-size:20px;font-weight:700;line-height:1.1}
-  .bar h1 span{display:block;font-family:var(--font);font-size:11px;
-       font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-       color:var(--muted)}
-  .bar .sp{flex:1}
-  .tool{min-height:38px;padding:0 11px;border:2px solid var(--deep);
-        border-radius:9px;background:#fff;color:var(--deep);cursor:pointer;
-        font-family:var(--font);font-size:13px;font-weight:700}
-  .tool.off{border-color:var(--line);color:var(--muted)}
+  
+  
+  
+  
+  
+  
 
-  /* The score is a readout, not a button. Every change to it says why,
-     in the chip itself: the number moves and the reason sits next to it
-     for a few seconds. A number that changes with no reason given is the
-     one thing a student will not trust. */
-  .pts{min-height:38px;display:flex;align-items:center;gap:5px;padding:0 11px;
-       border:2px solid var(--warm);border-radius:9px;background:#fffbe9;
-       color:var(--warm);font-size:13px;font-weight:700}
-  .pts b{font-size:17px;color:var(--ink)}
+  
+  
   .pts i{font-style:normal;font-size:12px;font-weight:700}
   .pts i.up{color:var(--ok)}
   .pts i.down{color:var(--accent)}
 
-  /* The step bar is a map, not a gate: every step is reachable from the
-     first second, and the mark only reports what has been done. */
-  .steps{flex:none;display:flex;background:var(--paper);
-         border-bottom:1px solid var(--line);overflow-x:auto}
+  
   .steps button{flex:1;min-width:92px;border:0;background:none;cursor:pointer;
        padding:7px 6px 6px;font-family:var(--font);color:var(--muted);
        border-bottom:3px solid transparent;text-align:center}
-  .steps b{display:block;font-family:var(--jp);font-size:15px;color:var(--ink);
-       font-weight:700;line-height:1.2}
-  .steps i{display:block;font-style:normal;font-size:10.5px;
-       letter-spacing:.05em;text-transform:uppercase}
-  .steps .done{color:var(--ok);font-weight:700}
-  .steps button[aria-current]{border-bottom-color:var(--deep)}
-  .steps button[aria-current] i{color:var(--deep)}
+  
+  
+  
+  
+  
 
-  main{flex:1;min-height:0;display:flex;flex-direction:column;
-       padding:10px 14px 12px;max-width:1180px;width:100%;margin:0 auto}
-  .rule{flex:none;background:#fffbe9;border:1px solid #e0cf9a;border-radius:9px;
-        padding:8px 11px;margin-bottom:9px;font-size:14px;line-height:1.45}
-  .rule b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
-        color:#7a6320;display:block;margin-bottom:2px}
+  
+  
+  
   /* the how-to box folds away ten seconds in and leaves this chip */
   .rule{transition:opacity .4s}
-  .rule.fading{opacity:0}
-  main.folded > .rule{display:none}
-  .howto{flex:none;align-self:flex-start;margin-bottom:9px;min-height:26px;
-        padding:0 11px;border:1px solid #e0cf9a;background:#fffbe9;color:#7a6320;
-        border-radius:999px;font:700 11px/1 var(--font);letter-spacing:.09em;
-        text-transform:uppercase;cursor:pointer}
-  .howto:hover{background:#fff6d8}
+  
+  
+  
+  
   @media (prefers-reduced-motion:reduce){ .rule{transition:none} }
   .rule .eg{font-family:var(--jp);font-size:15.5px;margin-top:4px}
   .rule .eg em{font-style:normal;font-family:var(--font);font-size:13px;
         color:var(--muted);margin-left:7px}
-  .work{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+  
   /* the footer wraps. Five buttons and a line of help do not fit a
      360px phone on one row, and a row that does not wrap pushes the
      last of them off the side of the page. */
   .foot{flex:none;display:flex;align-items:center;gap:10px;margin-top:9px;
         flex-wrap:wrap;font-size:13px;color:var(--muted)}
   .foot .hint{flex:1 1 auto;min-width:0}
-  .foot .sp{flex:1}
-  .hint{font-size:12.5px;color:var(--muted)}
+  
+  
 
-  .btn{border:2px solid var(--deep);background:var(--deep);color:#fff;
-       border-radius:9px;min-height:42px;padding:0 15px;cursor:pointer;
-       font-family:var(--font);font-size:15px;font-weight:700}
-  .btn.ghost{background:#fff;color:var(--deep)}
-  .btn.sm{min-height:36px;font-size:13.5px;padding:0 11px}
-  .btn[disabled]{opacity:.4;cursor:default}
+  
+  
+  
+  
 
   /* Colour is a taxonomy: い is always this blue, な always this purple,
      and a noun always grey, on every screen. Right and wrong are a tick
@@ -148,7 +116,7 @@
   .card.no{border-color:var(--accent);background:#fdf2f2}
   .card.gone{opacity:.25;pointer-events:none}
   ruby rt{font-size:.5em;font-weight:400;color:var(--muted)}
-  body.nofuri ruby rt{visibility:hidden}
+  
   /* ---- what the EN button hides ----
      Andrew: "what is the EN button on the top left of screen for in
      this app? Does it work? Where does it apply." It did nothing: it
@@ -220,7 +188,6 @@
     .wslots{grid-template-columns:1fr 1fr}
     .wchip{width:62px;height:52px}
   }
-
 
   /* ---------- きせかえ: drag the clothes onto the figure ----------
      The drop targets live inside the SVG, so they scale with the drawing
@@ -303,10 +270,9 @@
   textarea:focus{border-color:var(--deep);outline:none}
   .mark{border-left:4px solid var(--line);padding:5px 10px;margin:6px 0;
         font-size:14px}
-  .mark.yes{border-color:var(--ok)} .mark.no{border-color:var(--accent)}
-  .mark.hm{border-color:#b8860b}
-  .mark b{display:block;font-size:11px;letter-spacing:.08em;
-        text-transform:uppercase;color:var(--muted)}
+   
+  
+  
   /* the two sorting steps: the phrase the answer builds, right or wrong */
   .ph{font-family:var(--jp);font-size:18px;line-height:1.45;margin:2px 0}
   .ph i{font-style:normal;font-family:var(--font);font-size:11px;
@@ -342,12 +308,7 @@
      none so it can never swallow a tap meant for the feedback under it.
      Floats up and fades; the small sway stops it reading as a sprite on
      a rail. */
-  /* Which build is on screen. Without it there is no way to tell a
-     change that did not work from a change that never arrived, and that
-     question cost Andrew three rounds of asking for the same thing. */
-  .build{position:fixed;right:4px;bottom:2px;z-index:70;pointer-events:none;
-     font-family:var(--font);font-size:9px;letter-spacing:.04em;
-     color:var(--line);user-select:none}
+  
   .yoka,.ninj{position:fixed;z-index:60;pointer-events:none}
   .yoka{transform:translate(-50%,0);animation:yfloat 1.6s ease-out forwards}
   /* The ninja crosses and is gone in 0.7s. Right should be acknowledged
@@ -390,27 +351,23 @@
                            #000 76%,transparent 100%);
         mask-image:linear-gradient(to bottom,transparent 0,#000 24%,
                    #000 76%,transparent 100%)}
-  .reel.spinning .rwin{cursor:default}
-  .rwin:active{cursor:grabbing}
-  .rstrip{will-change:transform}
-  .ritem{height:64px;display:flex;flex-direction:column;align-items:center;
-         justify-content:center;gap:1px;text-align:center;padding:0 10px}
+  
+  
+  
+  
   .ritem b{font-size:clamp(16px,5vw,21px);font-weight:600;line-height:1.15;
            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
            max-width:100%}
-  .ritem i{font-style:normal;font-size:12px;color:var(--muted);
-           letter-spacing:.04em}
-  .rmark{position:absolute;left:0;right:0;top:64px;height:64px;
-         pointer-events:none;border-top:2px solid var(--deep);
-         border-bottom:2px solid var(--deep);background:rgba(0,0,0,.035)}
+  
+  
   .reel{display:flex;align-items:center;gap:9px;margin:2px 0 10px}
   .rspin{flex:none;width:44px;height:44px;border-radius:50%;cursor:pointer;
          padding:0;border:2px solid var(--line);background:var(--paper);
          color:var(--deep);display:flex;align-items:center;
          justify-content:center;opacity:.78;transition:opacity .13s}
-  .rspin:hover,.rspin:focus{opacity:1;border-color:var(--deep);outline:none}
-  .rspin svg{width:21px;height:21px}
-  .reel.spinning .rspin{opacity:.3;pointer-events:none}
+  
+  
+  
   .ask-en{font-size:15px;color:var(--muted);margin:2px 0 7px}
   .ask-en b{color:var(--ink);font-size:17px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -617,13 +574,13 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261112b"></script>
-<script src="welcome.js?v=20261112b" data-ja="しけん" data-en="YEAR 11 EXAM"></script>
-<script src="tabs.js?v=20261112b"></script>
-<script src="data/exam.js?v=20261112b"></script>
-<script src="data/audio.js?v=20261112b"></script>
-<script src="nyuuryoku.js?v=20261112b"></script>
-<script src="app.js?v=20261112b"></script>
-<div class="build" aria-hidden="true">build 2026-11-12b</div>
+<script src="hub.js?v=20261113a"></script>
+<script src="welcome.js?v=20261113a" data-ja="しけん" data-en="YEAR 11 EXAM"></script>
+<script src="tabs.js?v=20261113a"></script>
+<script src="data/exam.js?v=20261113a"></script>
+<script src="data/audio.js?v=20261113a"></script>
+<script src="nyuuryoku.js?v=20261113a"></script>
+<script src="app.js?v=20261113a"></script>
+<div class="build" aria-hidden="true">build 2026-11-13a</div>
 </body>
 </html>
