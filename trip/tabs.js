@@ -146,11 +146,29 @@ window.TABS = {
       if (!nav) return;
       this.nav = nav;
       this.sel = sel || "[aria-current], .on";
-      var b = nav.querySelector(this.sel);
-      if (!b) return;
-      if (nav.scrollWidth <= nav.clientWidth + 1) return;
-      var nb = nav.getBoundingClientRect(), bb = b.getBoundingClientRect();
-      nav.scrollLeft += (bb.left + bb.width / 2) - (nb.left + nb.width / 2);
+      var self = this;
+      var put = function (){
+        var b = nav.querySelector(self.sel);
+        if (!b) return;
+        if (nav.scrollWidth <= nav.clientWidth + 1) return;
+        var nb = nav.getBoundingClientRect(), bb = b.getBoundingClientRect();
+        nav.scrollLeft += (bb.left + bb.width / 2) - (nb.left + nb.width / 2);
+      };
+      put();
+      /* ---- and again once the faces have arrived ----
+         The apps now ship a Japanese face, and a webfont lands after the
+         first layout: every tab changes width at that moment, so a bar
+         scrolled to the right place a frame earlier is scrolled to the
+         wrong one. れきしの人 has thirteen tabs and showed it first — the
+         open tab sat off the edge of the bar. Doing it again when the
+         fonts are ready costs nothing on a device that had them already. */
+      if (document.fonts && document.fonts.ready && !this._fontsWired){
+        this._fontsWired = true;
+        document.fonts.ready.then(function (){
+          try { put(); } catch (e) {}
+        });
+      }
     } catch (e) {}
-  }
+  },
+  _fontsWired: false
 };
