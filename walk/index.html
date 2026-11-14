@@ -6,6 +6,7 @@
 <meta name="google" content="notranslate">
 <title>単元の道 · Unit Walk</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%B6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts.css?v=20261114a">
 <style>
   /* ============================================================
      単元の道 v2 — the whole 7-12 spine. Every unit walks the same
@@ -43,7 +44,7 @@
        Latin resolves inside --font-en, kana and kanji fall straight through
        to --font-jp. Never write a font name outside this block. */
     --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
-    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','Klee One','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
     --font:var(--font-en),var(--font-jp),sans-serif;
 
     --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
@@ -392,8 +393,8 @@
   </div>
 </div>
 
-<script src="hub.js?v=20261113a"></script>
-<script src="welcome.js?v=20261113a" data-ja="単元の道" data-en="UNIT WALK"></script>
+<script src="hub.js?v=20261114a"></script>
+<script src="welcome.js?v=20261114a" data-ja="単元の道" data-en="UNIT WALK"></script>
 <script src="tabs.js"></script>
 <script src="lever.js"></script>
 <script>
@@ -11895,6 +11896,6 @@ applyStart();
    UNITS is a const rather than a window property. */
 window.WALK_APP = { units: ()=>UNITS.map((u)=>u.key), now: ()=>[S.unit,S.screen] };
 </script>
-<div class="build" aria-hidden="true">build 2026-11-13a</div>
+<div class="build" aria-hidden="true">build 2026-11-14a</div>
 </body>
 </html>

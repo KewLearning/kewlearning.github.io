@@ -1,0 +1,49 @@
+/* fonts.css — the two faces the apps carry, so a Mac looks like a laptop.
+   ---------------------------------------------------------------------------
+   Andrew's call, after looking at five faces side by side: keep UD デジタル
+   教科書体 first, because it is purpose-built for textbooks and every school
+   Windows laptop already has it, and ship a face for the devices that do not.
+
+   WHAT SHIPS AND WHY.
+     Klee One  the closest freely licensed face to 教科書体. Only reached on
+               a Mac, an iPad or a Chromebook, because Windows finds UD Digi
+               Kyokasho first and never asks for this file. Subset to the
+               1,199 characters the fourteen apps actually use: 272 KB for
+               the regular and 284 KB for the semibold, down from 1.8 MB
+               each. SIL Open Font License 1.1, which allows redistribution;
+               fonts/klee-one-OFL.txt is the licence.
+     Carlito   metrically identical to Calibri, so English is the same shape
+               everywhere rather than Calibri on Windows and Segoe or Tahoma
+               elsewhere. 32 KB a weight. SIL OFL 1.1.
+
+   WHAT IT CANNOT DO. Klee One has no standalone radical components (亻, 扌,
+   氵, 艹 and the rest) and no fullwidth tilde, so those few characters fall
+   back to whatever the device has — on 単元の道's radical screens and the
+   oral exam's ～, and only on devices without UD Digi Kyokasho. Nothing is
+   lost that was not already falling back today.
+
+   The Japanese face is scoped by unicode-range so Latin text never lands in
+   it: English stays Calibri or Carlito, Japanese stays kyokashotai.       */
+
+@font-face{
+  font-family:'Klee One';
+  src:url(fonts/klee-one-400.woff2) format('woff2');
+  font-weight:400; font-style:normal; font-display:swap;
+  unicode-range:U+3000-303F,U+3041-309F,U+30A0-30FF,U+4E00-9FFF,U+FF00-FFEF;
+}
+@font-face{
+  font-family:'Klee One';
+  src:url(fonts/klee-one-600.woff2) format('woff2');
+  font-weight:600 900; font-style:normal; font-display:swap;
+  unicode-range:U+3000-303F,U+3041-309F,U+30A0-30FF,U+4E00-9FFF,U+FF00-FFEF;
+}
+@font-face{
+  font-family:'Carlito';
+  src:url(fonts/carlito-400.woff2) format('woff2');
+  font-weight:400; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Carlito';
+  src:url(fonts/carlito-700.woff2) format('woff2');
+  font-weight:700; font-style:normal; font-display:swap;
+}

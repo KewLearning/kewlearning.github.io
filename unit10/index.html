@@ -6,6 +6,7 @@
 <meta name="google" content="notranslate">
 <title>ユニット10 · できること・すきなこと</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts.css?v=20261114a">
 <style>
   /* ============================================================
      UNIT HUB — one unit, end to end: frontloaded vocabulary, the
@@ -29,7 +30,7 @@
        Latin resolves inside --font-en, kana and kanji fall straight through
        to --font-jp. Never write a font name outside this block. */
     --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
-    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','Klee One','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
     --font:var(--font-en),var(--font-jp),sans-serif;
 
     --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
@@ -342,8 +343,8 @@
 </div>
 </div>
 <div class="build-tag">Unit10 PoC 2026-08-18</div>
-<script src="hub.js?v=20261113a"></script>
-<script src="welcome.js?v=20261113a" data-ja="ユニット10" data-en="UNIT 10"></script>
+<script src="hub.js?v=20261114a"></script>
+<script src="welcome.js?v=20261114a" data-ja="ユニット10" data-en="UNIT 10"></script>
 <script src="tabs.js"></script>
 <script src="lever.js"></script>
 <script>
@@ -788,8 +789,7 @@ const UI_RUBY = {
       note.innerHTML = "<b>This list is also the seed of the vocabulary hub.</b> Every word here is stored with its reading, " +
         "its part of speech, its group and ます-form, and a real example, which is exactly what a whole-site vocabulary bank needs. " +
         "Words also carry their kanji families: " + fam.map((w) => ruby(w.jp)).join("、") +
-        " shares 手 with 歌手 (singer) and 運転手 (driver). Families like that get built in the " +
-        '<a href="../words/">ことばラボ Word Lab</a>, so a unit can hand its words straight to it.';
+        " shares 手 with 歌手 (singer) and 運転手 (driver).";
       $("study-body").appendChild(note);
     }
     if (window.HubLever) window.HubLever.apply(body);
@@ -943,8 +943,7 @@ const UI_RUBY = {
       S.done.kanji = true;
       const s = firstScore("k:");
       $("kanji-area").innerHTML = '<div class="hook" style="border-left-color:var(--correct)"><b>かんじビルダー かんりょう.</b><br>' +
-        "First try: " + s.got + "/" + s.of + ". These are the pieces the unit's words are built from, so they turn up again in the reading." +
-        '<div class="inwords">Whole words get built from characters in the <a href="../words/" style="color:var(--accent);font-weight:700">ことばラボ Word Lab</a>.</div></div>';
+        "First try: " + s.got + "/" + s.of + ". These are the pieces the unit's words are built from, so they turn up again in the reading.</div>";
       $("kanji-fb").className = "feedback";
       $("kanji-check").style.display = "none"; $("kanji-next").style.display = "none";
       $("kanji-prog").textContent = "ステップ3 · かんじビルダー ✓";
@@ -1249,6 +1248,6 @@ const UI_RUBY = {
   (ENTER[TABS.startId(TABKEY, Object.keys(ENTER))] || ENTER.home)();
 })();
 </script>
-<div class="build" aria-hidden="true">build 2026-11-13a</div>
+<div class="build" aria-hidden="true">build 2026-11-14a</div>
 </body>
 </html>
