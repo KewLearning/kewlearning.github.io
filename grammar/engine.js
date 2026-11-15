@@ -1,7 +1,7 @@
 /* ============================================================
    GRAMMAR HUB — ENGINE
    ------------------------------------------------------------
-   Owns: the matrix selector, the drill loop (with mastery
+   Owns: the level selector, the drill loop (with mastery
    rounds, adapted from Holly's "Name that Tense"), scoring, and
    the report. Knows nothing about specific grammar — it dispatches
    every item to TASK_TYPES[item.type].
@@ -32,85 +32,50 @@
      timeline, which made picking one step look like picking two. */
   let chosenChunks = new Set();
   let typeFilter = "all";
-  let showAllBands = false; // teacher toggle: reveal script/words (VIC F-2, 3-4) columns
+  let level = null;       // the level on screen; null means the three level cards
+  let query = "";         // what is in the search box
 
-  /* ---------------- JAPANESE-FIRST CHROME ----------------
-     The menus default to Japanese; the cycler steps every label through
-     kanji -> kana -> romaji -> English (Liam's spec). Static labels (title,
-     subtitle, report heading) also cycle individually when tapped. Action
-     buttons follow the global mode only, because clicking them has to fire
-     the action. Item content (prompts, options, explanations) is not
-     touched here — that is a content-lane job (J11).
-     Forms: [kanji, kana, romaji, English]. For katakana loanwords the kanji
-     and kana forms are identical — katakana IS the phonetic script there. */
-  const UI_STRINGS = {
-    title:      ["日本語文法ハブ", "にほんごぶんぽうハブ", "Nihongo Bunpō Hub", "Japanese Grammar Hub"],
-    subtitle:   ["スキルを選んで、練習して、レポート", "スキルをえらんで、れんしゅうして、レポート",
-                 "sukiru o erande, renshū shite, repōto", "pick a skill, practise, get a report"],
-    selectAll:  ["全部選ぶ", "ぜんぶえらぶ", "zenbu erabu", "Select all ready"],
-    clear:      ["クリア", "クリア", "kuria", "Clear"],
-    start:      ["練習スタート", "れんしゅうスタート", "renshū sutāto", "Start practising"],
-    exit:       ["やめる", "やめる", "yameru", "Exit"],
-    check:      ["チェック", "チェック", "chekku", "Check"],
-    next:       ["次へ", "つぎへ", "tsugi e", "Next"],
-    done:       ["終わりました！", "おわりました！", "owarimashita!", "Session complete"],
-    again:      ["もう一度", "もういちど", "mō ichido", "Run again"],
-    newSel:     ["選び直す", "えらびなおす", "erabinaosu", "New selection"],
-    allTasks:   ["全部", "ぜんぶ", "zenbu", "All tasks"],
-    identify:   ["見分ける", "みわける", "miwakeru", "Identify"],
-    gapfill:    ["穴埋め", "あなうめ", "anaume", "Gap fill"],
-    transform:  ["変える", "かえる", "kaeru", "Transform"],
-    order:      ["並べる", "ならべる", "naraberu", "Order"],
-    poolReading:["読む練習", "よむれんしゅう", "yomu renshū", "Reading Practice"],
-    poolVocab:  ["トピックの言葉", "トピックのことば", "topikku no kotoba", "Topic Vocabulary"],
-  };
-  // Stage 1 is ADDITIVE where the label has kanji: furigana appears above it.
-  const RUBY = {
-    title: "<ruby>\u65e5\u672c\u8a9e<rt>\u306b\u307b\u3093\u3054</rt></ruby><ruby>\u6587\u6cd5<rt>\u3076\u3093\u307d\u3046</rt></ruby>\u30cf\u30d6",
-    subtitle: "\u30b9\u30ad\u30eb\u3092<ruby>\u9078<rt>\u3048\u3089</rt></ruby>\u3093\u3067\u3001<ruby>\u7df4\u7fd2<rt>\u308c\u3093\u3057\u3085\u3046</rt></ruby>\u3057\u3066\u3001\u30ec\u30dd\u30fc\u30c8",
-    selectAll: "<ruby>\u5168\u90e8<rt>\u305c\u3093\u3076</rt></ruby><ruby>\u9078<rt>\u3048\u3089</rt></ruby>\u3076",
-    start: "<ruby>\u7df4\u7fd2<rt>\u308c\u3093\u3057\u3085\u3046</rt></ruby>\u30b9\u30bf\u30fc\u30c8",
-    next: "<ruby>\u6b21<rt>\u3064\u304e</rt></ruby>\u3078",
-    done: "<ruby>\u7d42<rt>\u304a</rt></ruby>\u308f\u308a\u307e\u3057\u305f\uff01",
-    again: "\u3082\u3046<ruby>\u4e00\u5ea6<rt>\u3044\u3061\u3069</rt></ruby>",
-    newSel: "<ruby>\u9078<rt>\u3048\u3089</rt></ruby>\u3073<ruby>\u76f4<rt>\u306a\u304a</rt></ruby>\u3059",
-    allTasks: "<ruby>\u5168\u90e8<rt>\u305c\u3093\u3076</rt></ruby>",
-    identify: "<ruby>\u898b\u5206<rt>\u307f\u308f</rt></ruby>\u3051\u308b",
-    gapfill: "<ruby>\u7a74\u57cb<rt>\u3042\u306a\u3046</rt></ruby>\u3081",
-    transform: "<ruby>\u5909<rt>\u304b</rt></ruby>\u3048\u308b",
-    order: "<ruby>\u4e26<rt>\u306a\u3089</rt></ruby>\u3079\u308b",
-    poolReading: "<ruby>\u8aad<rt>\u3088</rt></ruby>\u3080<ruby>\u7df4\u7fd2<rt>\u308c\u3093\u3057\u3085\u3046</rt></ruby>",
-    poolVocab: "\u30c8\u30d4\u30c3\u30af\u306e<ruby>\u8a00\u8449<rt>\u3053\u3068\u3070</rt></ruby>",
-  };
+  /* ---------------- ENGLISH FIRST, JAPANESE ON REQUEST ----------------
+     Andrew's call, November 2026: this is not an immersion school, and a
+     beginner cannot find じょし by looking for it. Every tile reads English
+     first with the Japanese pattern underneath, and the EN button turns the
+     English off for a student who would rather have Japanese titles.
 
-  let uiForm = 0; // the page stage, kept in step with the lever
+     That choice sticks. It is written once for the whole site, so a student
+     sets it here and every app opens the way they left it, and it is the
+     same EN button in the same corner as the twelve apps that already carry
+     one: one control to learn rather than a mechanism to work out.
 
-  // pick from a four-form [kanji, kana, romaji, English] array by stage
-  function tForm(arr, stage) {
-    if (!arr) return null;
-    const f = stage === undefined ? uiForm : stage;
-    return arr[f] || arr[3];
+     What this replaces: a spring-loaded lever that stepped every label
+     through kanji, kana, romaji and English and then crept back to kanji on
+     its own. It was the best thing on the page and the wrong thing for a
+     student who had come to find the particles. lever.js keeps it for the
+     apps built around it.                                               */
+  const LANG_KEY = "japuri:en";
+  let showEn = true;
+
+  function readLang() {
+    try { showEn = window.localStorage.getItem(LANG_KEY) !== "0"; }
+    catch (e) { showEn = true; }
   }
-  function jtText(key, formOverride) {
-    const forms = UI_STRINGS[key];
-    if (!forms) return null;
-    const f = formOverride === undefined ? uiForm : formOverride;
-    return forms[f] || forms[3];
-  }
-  const applyLang = () => window.HubLever.apply();
-
-  function visibleBands() {
-    return window.BANDS.filter((b) => showAllBands || (window.BAND_META[b] && window.BAND_META[b].show));
-  }
-  function bandMeta(b) { return (window.BAND_META && window.BAND_META[b]) || { head: b, long: b, teacher: b, cur: "", show: true }; }
-  // First band (in curriculum order) at which a category has any items, for
-  // the "this row starts at X" message on cells before that band.
-  function firstBandFor(cat) {
-    for (const b of window.BANDS) {
-      if (window.SKILLS.some((s) => s.category === cat && s.band === b)) return b;
+  function paintLang() {
+    document.body.classList.toggle("noen", !showEn);
+    const b = $("enBtn");
+    if (b) {
+      b.classList.toggle("off", !showEn);
+      b.setAttribute("aria-pressed", showEn ? "true" : "false");
+      b.title = showEn ? "Turn the English titles off" : "Turn the English titles back on";
     }
-    return null;
   }
+  function setLang(on) {
+    showEn = on;
+    try { window.localStorage.setItem(LANG_KEY, on ? "1" : "0"); } catch (e) {}
+    paintLang();
+  }
+
+  /* Band names survive only as report and export labels. The selection
+     screen used to be a band grid, then a year timeline; it is neither now. */
+  function bandMeta(b) { return (window.BAND_META && window.BAND_META[b]) || { head: b, long: b, teacher: b, cur: "", show: true }; }
 
   function show(name) {
     Object.values(screens).forEach((s) => s.classList.remove("active"));
@@ -125,12 +90,25 @@
     return skill.items.filter((it) => it.type === typeFilter);
   }
 
-  /* ---------------- YEAR TIMELINE (the sequence view) ----------------
-     Prep to Year 12 across the top; one row per strand; each chunk is a
-     teaching step placed on the years it is taught across. A strand read
-     left to right is the same skill getting harder, which is the point of
-     the view. Ported from the non-EAL year view in Liam's English hub. */
+  /* ---------------- THE SELECTOR ----------------
+     Three levels; then one level's patterns, under the seven headings a
+     student reads. Nothing on this screen names a year.
 
+     WHAT THIS REPLACES, AND WHY. The screen used to be the whole Prep-to-12
+     sequence at once: 13 strand rows by 13 year columns, 38 patterns on
+     screen together. It is a good diagram and a bad front door, and Andrew
+     named the symptom exactly: "students just don't know where to start".
+     A composite Year 10/11/12 room makes the year axis worse than useless,
+     because three answers are right at the same desk.
+
+     So: pick a level, read English, see the pattern in Japanese underneath,
+     tap it. Years still order the patterns inside a heading, so a strand
+     still gets harder left to right, and picking a pattern still brings the
+     step before it along as review. Nothing is locked, and nothing is
+     hidden: the search box reaches all 38 from the first screen.          */
+
+  /* A pattern covers one or more skill nodes, by id, and is only "chosen"
+     when every node of it that has items is queued. */
   function chunkSkills(chunk) {
     return chunk.covers.map(skillById).filter(Boolean);
   }
@@ -142,113 +120,169 @@
     return ids.length > 0 && ids.every((id) => selectedSkills.has(id));
   }
 
-  function buildMatrix() {
-    const wrap = $("matrix");
-    wrap.innerHTML = "";
-    const years = window.JP_YEARS;
+  function groupOf(strand) { return (window.JP_GROUPS && window.JP_GROUPS[strand]) || strand; }
+  function levelMeta(id) { return (window.JP_LEVELS || []).find((l) => l.id === id) || null; }
 
-    // the year axis: quiet numbers, then two grouped curriculum bars
-    const head = document.createElement("div");
-    head.className = "tl-row tl-head";
-    head.innerHTML = `<div class="tl-label"></div>` +
-      years.map((y, i) => {
-        const label = y === "F" ? ["\u30d7\u30ec\u30c3\u30d7", "\u30d7\u30ec\u30c3\u30d7", "pureppu", "Prep"][uiForm] : y;
-        const teacher = i <= 10 ? `Victorian Curriculum, Level ${y}` : `VCE Units ${i === 11 ? "1 and 2" : "3 and 4"}`;
-        return `<div class="tl-year" title="${escapeHtmlE(teacher)}">${escapeHtmlE(label)}</div>`;
-      }).join("");
-    wrap.appendChild(head);
-
-    const bars = document.createElement("div");
-    bars.className = "tl-row tl-bars";
-    bars.innerHTML = `<div class="tl-label"></div>` +
-      `<div class="tl-bar" data-cur="VIC" style="grid-column:2 / 13" title="Prep to Year 10 follow the Victorian Curriculum F\u201310 Japanese"><span>${["\u30d3\u30af\u30c8\u30ea\u30a2\u5dde\u30ab\u30ea\u30ad\u30e5\u30e9\u30e0 F\u201310", "\u30d3\u30af\u30c8\u30ea\u30a2\u3057\u3085\u3046\u30ab\u30ea\u30ad\u30e5\u30e9\u30e0 F\u201310", "Bikutoria-sh\u016b karikyuramu F\u201310", "Victorian Curriculum F\u201310"][uiForm]}</span></div>` +
-      `<div class="tl-bar" data-cur="VCE" style="grid-column:13 / 15" title="Years 11 and 12 follow the VCE Japanese Second Language study design"><span>VCE</span></div>`;
-    wrap.appendChild(bars);
-
+  /* every pattern, flattened, with the strand it came from and the pattern
+     before it in that strand (the one that comes along as review) */
+  function allPatterns() {
+    const out = [];
     Object.entries(window.JP_CHUNKS).forEach(([strand, chunks]) => {
-      const row = document.createElement("div");
-      row.className = "tl-row";
-      const meta = (window.CATEGORY_META && window.CATEGORY_META[strand]) || { prescribedBy: "" };
-      // row-level fact, shown once on the label instead of on every card
-      const chipWords = {
-        VCE: ["VCE\u30ea\u30b9\u30c8", "VCE\u30ea\u30b9\u30c8", "VCE risuto", "VCE list"],
-        PROGRAM: ["\u5b66\u6821", "\u304c\u3063\u3053\u3046", "gakk\u014d", "school"],
-      };
-      const chip = meta.prescribedBy === "VCE"
-        ? `<span class="row-chip chip-vce" title="On the VCE prescribed grammar list">${chipWords.VCE[uiForm]}</span>`
-        : meta.prescribedBy === "PROGRAM"
-          ? `<span class="row-chip chip-prog" title="School-designed. Not on the VCE prescribed grammar list.">${chipWords.PROGRAM[uiForm]}</span>`
-          : "";
-      const strandLabel = tForm(window.JT_STRANDS && window.JT_STRANDS[strand]) || strand;
-      row.innerHTML = `<div class="tl-label"><span class="tl-strand" title="${escapeHtmlE((window.JT_STRANDS && window.JT_STRANDS[strand] || [strand])[3] || strand)}">${escapeHtmlE(strandLabel)}</span>${chip}</div>`;
-
-      chunks.forEach((chunk, ci) => {
-        const n = chunkItemCount(chunk);
-        const el = document.createElement("div");
-        el.className = "tl-chunk" + (n ? " has-items" : " no-items");
-        el.dataset.chunk = chunk.title;   // lets a deep link find its own step
-        // +2: CSS grid is 1-indexed and column 1 is the strand label
-        el.style.gridColumn = `${chunk.y0 + 2} / ${chunk.y1 + 3}`;
-        const yearsLabel = uiForm <= 1 ? `${chunk.years}\u5e74` : `Year${chunk.years.indexOf("\u2013") > -1 ? "s" : ""} ${chunk.years}`;
-        const chunkTitle = tForm(chunk.t) || chunk.title;
-        const noneWord = ["\u307e\u3060\u306a\u3057", "\u307e\u3060\u306a\u3057", "mada nashi", "no items yet"][uiForm];
-        el.innerHTML = `<span class="tl-title">${escapeHtmlE(chunkTitle)}</span>` +
-          `<span class="tl-meta">${escapeHtmlE(yearsLabel)}${n ? ` \u00b7 ${n}` : ` \u00b7 ${noneWord}`}</span>`;
-
-        if (n) {
-          const prev = ci > 0 ? chunks[ci - 1] : null;
-          el.title = prev
-            ? `${yearsLabel}, ${n} items. Builds on: ${prev.title}. Picking this one brings that along as review.`
-            : `${yearsLabel}, ${n} items. The first step in this row.`;
-          if (chunk.needs && chunk.needs.length) {
-            el.title += ` Also builds on ${chunk.needs.join("; ")}.`;
-          }
-          el.setAttribute("aria-label", `${strand}: ${chunk.title}. ${el.title}`);
-          el.addEventListener("click", () => {
-            const on = !chunkSelected(chunk);
-            if (on) chosenChunks.add(chunk.title);
-            else chosenChunks.delete(chunk.title);
-            const apply = (c) => c.covers.forEach((id) => {
-              const s = skillById(id);
-              if (!s || !itemsFor(s).length) return;
-              if (on) selectedSkills.add(id); else selectedSkills.delete(id);
-            });
-            apply(chunk);
-            // the step before it comes along as review (Liam's English hub rule)
-            if (on && prev && chunkItemCount(prev)) apply(prev);
-            buildMatrix();
-          });
-          /* chosen gets the solid outline; queued-but-not-chosen says why */
-          if (chunkSelected(chunk)){
-            if (chosenChunks.has(chunk.title)) el.classList.add("selected");
-            else {
-              el.classList.add("review");
-              const why = document.createElement("span");
-              why.className = "tl-why";
-              why.textContent = ["\u5fa9\u7fd2", "\u3075\u304f\u3057\u3085\u3046",
-                                 "fukush\u016b", "review"][uiForm];
-              el.appendChild(why);
-            }
-          }
-        }
-        row.appendChild(el);
+      chunks.forEach((chunk, i) => {
+        out.push({ strand: strand, chunk: chunk, prev: i > 0 ? chunks[i - 1] : null,
+                   group: groupOf(strand), n: chunkItemCount(chunk) });
       });
-      wrap.appendChild(row);
     });
-    buildLegend();
-    refreshCount();
+    return out;
   }
 
-  function buildLegend() {
-    const legends = [
-      "\u30d6\u30ed\u30c3\u30af\u306f\u3001\u306a\u3089\u3046\u5e74\u306b\u7f6e\u304b\u308c\u305f\u5b66\u7fd2\u30b9\u30c6\u30c3\u30d7\u3067\u3059\u3002\u884c\u3092\u5de6\u304b\u3089\u53f3\u3078\u8aad\u3080\u3068\u3001\u540c\u3058\u30b9\u30ad\u30eb\u304c\u3060\u3093\u3060\u3093\u96e3\u3057\u304f\u306a\u308a\u307e\u3059\u3002\u30b9\u30c6\u30c3\u30d7\u3092\u30af\u30ea\u30c3\u30af\u3059\u308b\u3068\u7df4\u7fd2\u3067\u304d\u307e\u3059\u3002\u524d\u306e\u30b9\u30c6\u30c3\u30d7\u3082\u5fa9\u7fd2\u3068\u3057\u3066\u4e00\u7dd2\u306b\u5165\u308a\u307e\u3059\u3002\u30ed\u30c3\u30af\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
-      "\u30d6\u30ed\u30c3\u30af\u306f\u3001\u306a\u3089\u3046\u3068\u3057\u306b\u304a\u304b\u308c\u305f\u304c\u304f\u3057\u3085\u3046\u30b9\u30c6\u30c3\u30d7\u3067\u3059\u3002\u304e\u3087\u3046\u3092\u3072\u3060\u308a\u304b\u3089\u307f\u304e\u3078\u3088\u3080\u3068\u3001\u304a\u306a\u3058\u30b9\u30ad\u30eb\u304c\u3060\u3093\u3060\u3093\u3080\u305a\u304b\u3057\u304f\u306a\u308a\u307e\u3059\u3002\u30b9\u30c6\u30c3\u30d7\u3092\u30af\u30ea\u30c3\u30af\u3059\u308b\u3068\u308c\u3093\u3057\u3085\u3046\u3067\u304d\u307e\u3059\u3002\u307e\u3048\u306e\u30b9\u30c6\u30c3\u30d7\u3082\u3075\u304f\u3057\u3085\u3046\u3068\u3057\u3066\u3044\u3063\u3057\u3087\u306b\u306f\u3044\u308a\u307e\u3059\u3002\u30ed\u30c3\u30af\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
-      "Burokku wa, narau toshi ni okareta gakush\u016b suteppu desu. Gy\u014d o hidari kara migi e yomu to, onaji sukiru ga dandan muzukashiku narimasu. Suteppu o kurikku suru to rensh\u016b dekimasu. Mae no suteppu mo fukush\u016b to shite issho ni hairimasu. Rokku wa arimasen.",
-      "Each block is a teaching step, placed on the years it is usually taught. Read a row left to right and you are watching one skill get harder. Click a step to practise it \u2014 the step before comes along as review. Nothing is locked.",
-    ];
-    $("matrixLegend").textContent = legends[uiForm];
-    const btn = $("bandToggleBtn");
-    if (btn) btn.style.display = "none";
+  function levelCount(id) {
+    const list = allPatterns().filter((e) => e.chunk.level === id && e.n);
+    return { patterns: list.length, items: list.reduce((a, e) => a + e.n, 0) };
+  }
+
+  /* Tap a pattern: queue it, and bring the step before it in the same strand
+     along as review. Liam's rule from the English hub, kept. */
+  function togglePattern(entry) {
+    const on = !chunkSelected(entry.chunk);
+    if (on) chosenChunks.add(entry.chunk.title);
+    else chosenChunks.delete(entry.chunk.title);
+    const apply = (c) => c.covers.forEach((id) => {
+      const sk = skillById(id);
+      if (!sk || !itemsFor(sk).length) return;
+      if (on) selectedSkills.add(id); else selectedSkills.delete(id);
+    });
+    apply(entry.chunk);
+    if (on && entry.prev && chunkItemCount(entry.prev)) apply(entry.prev);
+    renderSelect();
+  }
+
+  function patTile(entry) {
+    const c = entry.chunk;
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "pat" + (entry.n ? "" : " empty");
+    el.dataset.chunk = c.title;
+    const en = c.en || c.title;
+    const jp = c.jp || (c.t && c.t[0]) || "";
+    el.innerHTML =
+      '<span class="pat-en en">' + escapeHtmlE(en) + "</span>" +
+      '<span class="pat-ja">' + escapeHtmlE(jp) + "</span>" +
+      '<span class="pat-n">' + (entry.n ? entry.n + (entry.n === 1 ? " item" : " items")
+                                        : "no items yet") + "</span>";
+    if (!entry.n) {
+      el.disabled = true;
+      el.title = en + ". No items written for this one yet.";
+      return el;
+    }
+    let tip = en + " · " + jp + " · " + entry.n + " items.";
+    if (entry.prev && chunkItemCount(entry.prev)) {
+      tip += " Picking this brings " + (entry.prev.en || entry.prev.title) + " along as review.";
+    }
+    if (c.needs && c.needs.length) tip += " Builds on " + c.needs.join("; ") + ".";
+    el.title = tip;
+    el.setAttribute("aria-label", entry.group + ": " + en + ". " + tip);
+    el.addEventListener("click", () => togglePattern(entry));
+    if (chunkSelected(c)) {
+      if (chosenChunks.has(c.title)) el.classList.add("selected");
+      else {
+        el.classList.add("review");
+        const why = document.createElement("span");
+        why.className = "pat-why";
+        why.innerHTML = '<span class="en">review</span><span class="pat-why-ja">復習</span>';
+        el.appendChild(why);
+      }
+    }
+    return el;
+  }
+
+  /* the three level cards, with what each one covers */
+  function renderLevels() {
+    const wrap = $("picker");
+    wrap.innerHTML = "";
+    const q = document.createElement("h2");
+    q.className = "pick-q";
+    q.textContent = "Where do you want to start?";
+    wrap.appendChild(q);
+    const row = document.createElement("div");
+    row.className = "levels";
+    (window.JP_LEVELS || []).forEach((l) => {
+      const count = levelCount(l.id);
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "lvl";
+      el.innerHTML = '<span class="lvl-name">' + escapeHtmlE(l.name) + "</span>" +
+        '<span class="lvl-blurb">' + escapeHtmlE(l.blurb) + "</span>" +
+        '<span class="lvl-n">' + count.patterns + " patterns · " + count.items + " items</span>";
+      el.addEventListener("click", () => { level = l.id; query = ""; $("patSearch").value = ""; renderSelect(); });
+      row.appendChild(el);
+    });
+    wrap.appendChild(row);
+    const note = document.createElement("p");
+    note.className = "pick-note";
+    note.textContent = "Pick a level, or search for a pattern. Nothing is locked: open any level you like.";
+    wrap.appendChild(note);
+  }
+
+  /* one level's patterns, or the search results, grouped under headings */
+  function renderPatterns() {
+    const wrap = $("picker");
+    wrap.innerHTML = "";
+    const searching = !!query;
+    const head = document.createElement("div");
+    head.className = "lvl-head";
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "linkbtn";
+    back.textContent = "← All levels";
+    back.addEventListener("click", () => { level = null; query = ""; $("patSearch").value = ""; renderSelect(); });
+    head.appendChild(back);
+    const name = document.createElement("span");
+    name.className = "lvl-now";
+    const meta = levelMeta(level);
+    name.textContent = searching ? "Patterns matching “" + query + "”"
+                                 : (meta ? meta.name : "");
+    head.appendChild(name);
+    wrap.appendChild(head);
+
+    let list = allPatterns();
+    if (searching) {
+      const q = query.toLowerCase();
+      list = list.filter((e) => {
+        const hay = [e.chunk.en, e.chunk.jp, e.chunk.title, e.group, e.strand]
+          .concat(e.chunk.t || []).join(" ").toLowerCase();
+        return hay.indexOf(q) > -1;
+      });
+    } else {
+      list = list.filter((e) => e.chunk.level === level);
+    }
+    if (!list.length) {
+      const none = document.createElement("p");
+      none.className = "pick-note";
+      none.textContent = "Nothing matches that. Try a particle, a form, or a word like time or compare.";
+      wrap.appendChild(none);
+      return;
+    }
+    (window.JP_GROUP_ORDER || []).forEach((g) => {
+      const mine = list.filter((e) => e.group === g);
+      if (!mine.length) return;
+      const h = document.createElement("h3");
+      h.className = "grp";
+      h.textContent = g;
+      wrap.appendChild(h);
+      const grid = document.createElement("div");
+      grid.className = "pats";
+      mine.forEach((e) => grid.appendChild(patTile(e)));
+      wrap.appendChild(grid);
+    });
+  }
+
+  function renderSelect() {
+    if (query || level) renderPatterns(); else renderLevels();
+    const picking = !!(query || level);
+    $("selectTools").hidden = !picking;
+    $("typeFilter").hidden = !picking;
+    refreshCount();
   }
 
   function buildPools() {
@@ -264,16 +298,16 @@
       if (!catSkills.length) return;
       const group = document.createElement("div");
       group.className = "pools-group";
-      const poolKey = cat === "Reading Practice" ? "poolReading" : cat === "Topic Vocabulary" ? "poolVocab" : "";
-      group.innerHTML = `<h3${poolKey ? ` data-jt="${poolKey}"` : ""}>${escapeHtmlE(jtText(poolKey) || cat)}</h3>`;
+      group.innerHTML = `<h3 class="grp">${escapeHtmlE(cat)}</h3>`;
       const list = document.createElement("div");
       list.className = "pools-list";
       catSkills.forEach((skill) => {
         const n = itemsFor(skill).length;
         const card = document.createElement("div");
         card.className = "pool-card" + (n ? " has-items" : " no-items");
-        card.innerHTML = `<span class="pool-name" title="${escapeHtmlE((skill.nameT || [skill.name])[3] || skill.name)}">${escapeHtmlE(tForm(skill.nameT) || skill.name)}</span>` +
-          (n ? `<span class="pool-count">${uiForm <= 1 ? `${n}\u554f` : uiForm === 2 ? `mondai ${n}` : `${n} question${n === 1 ? "" : "s"}`}</span>` : `<span class="pool-count zero">0</span>`);
+        card.innerHTML = `<span class="pool-name">${escapeHtmlE(skill.name)}</span>` +
+          (n ? `<span class="pool-count">${n} question${n === 1 ? "" : "s"}</span>`
+             : `<span class="pool-count zero">0</span>`);
         if (n) {
           card.addEventListener("click", () => {
             if (selectedSkills.has(skill.id)) selectedSkills.delete(skill.id);
@@ -294,11 +328,10 @@
     let items = 0;
     selectedSkills.forEach((id) => { items += itemsFor(skillById(id)).length; });
     const k = selectedSkills.size;
-    $("selCount").textContent = uiForm <= 1
-      ? `スキル${k}・${items}問`
-      : uiForm === 2
-        ? `sukiru ${k} · mondai ${items}`
-        : `${k} skill${k === 1 ? "" : "s"} · ${items} item${items === 1 ? "" : "s"}`;
+    const chosen = chosenChunks.size;
+    $("selCount").textContent = chosen
+      ? `${chosen} pattern${chosen === 1 ? "" : "s"} chosen · ${items} item${items === 1 ? "" : "s"}`
+      : `${k} skill${k === 1 ? "" : "s"} · ${items} item${items === 1 ? "" : "s"}`;
     $("startBtn").disabled = items === 0;
   }
 
@@ -313,9 +346,8 @@
     }));
     const types = ["all"].concat(present);
     wrap.innerHTML = types.map((t) => {
-      const key = t === "all" ? "allTasks" : t;
-      const label = jtText(key) || window.TASK_TYPES[t].label;
-      return `<button class="filter-btn${t === typeFilter ? " active" : ""}" data-t="${t}" data-jt="${UI_STRINGS[key] ? key : ""}">${escapeHtmlE(label)}</button>`;
+      const label = t === "all" ? "All tasks" : window.TASK_TYPES[t].label;
+      return `<button class="filter-btn${t === typeFilter ? " active" : ""}" data-t="${t}">${escapeHtmlE(label)}</button>`;
     }).join("");
     wrap.querySelectorAll(".filter-btn").forEach((b) => {
       b.addEventListener("click", () => {
@@ -323,7 +355,7 @@
         wrap.querySelectorAll(".filter-btn").forEach((x) => x.classList.toggle("active", x === b));
         // drop selections that now have no items
         [...selectedSkills].forEach((id) => { if (itemsFor(skillById(id)).length === 0) selectedSkills.delete(id); });
-        buildMatrix();
+        renderSelect();
         buildPools();
       });
     });
@@ -596,65 +628,75 @@
     buildTypeFilter();
 
     /* Deep link: another tool in the hub can send a student straight to the
-       step that owns a skill, e.g. ../grammar/#nominalisers-b4 from the
-       Unit 10 hub's grammar gym. The chunk is preselected and scrolled to,
-       so the two apps join up instead of just cross-referencing. */
+       pattern that owns a skill, e.g. ../grammar/#nominalisers-b4 from the
+       Unit 10 hub's grammar gym. The pattern is queued, its level opens, and
+       the tile pings so the student can see where they have landed. */
     function applyDeepLink() {
-      document.querySelectorAll(".tl-chunk.deeplinked").forEach((n) => n.classList.remove("deeplinked"));
+      document.querySelectorAll(".pat.deeplinked").forEach((n) => n.classList.remove("deeplinked"));
       const id = decodeURIComponent((location.hash || "").replace(/^#/, ""));
       if (!id) return;
       const skill = skillById(id);
       if (!skill || !itemsFor(skill).length) return;
       selectedSkills.add(id);
-      buildMatrix(); buildPools();
-      // Queue exactly the skill that was asked for, but highlight the whole
-      // step that contains it: a step can cover several skills, so it only
-      // renders as "selected" when all of them are queued, and the student
-      // still needs to see where on the timeline they have landed.
+      // Queue exactly the skill that was asked for, and open the level that
+      // holds it. A pattern can cover several skills, so it still only reads
+      // as chosen when all of them are queued.
       let target = null;
       Object.values(window.JP_CHUNKS).forEach((chunks) => chunks.forEach((c) => {
         if (c.covers.indexOf(id) > -1) target = c;
       }));
+      if (target && target.level) { level = target.level; query = ""; $("patSearch").value = ""; }
+      renderSelect(); buildPools();
       const el = target
-        ? [...document.querySelectorAll(".tl-chunk")].find((n) => n.dataset.chunk === target.title)
-        : document.querySelector(".tl-chunk.selected");
+        ? [...document.querySelectorAll(".pat")].find((n) => n.dataset.chunk === target.title)
+        : document.querySelector(".pat.selected");
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.classList.add("deeplinked");
       }
     }
 
-    buildMatrix();
+    renderSelect();
     buildPools();
     applyDeepLink();
     window.addEventListener("hashchange", applyDeepLink);
 
+    /* The search box reaches all 38 patterns from the first screen, so
+       nothing is more than one keystroke away from a student who knows what
+       they want. Typing leaves the level behind; clearing it goes back. */
+    $("patSearch").addEventListener("input", () => {
+      query = $("patSearch").value.trim();
+      renderSelect();
+    });
+    $("patSearch").addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { $("patSearch").value = ""; query = ""; renderSelect(); }
+    });
+
     $("selectAllBtn").addEventListener("click", () => {
-      window.SKILLS.forEach((s) => { if (s.introduced && itemsFor(s).length) selectedSkills.add(s.id); });
-      chosenChunks.clear();
-      buildMatrix();
+      /* "all ready" means everything on screen, not everything in the bank:
+         a student in Grammar basics asking for all of it does not mean the
+         VCE argument patterns. */
+      const shown = [...document.querySelectorAll(".pat:not(.empty)")].map((n) => n.dataset.chunk);
+      Object.values(window.JP_CHUNKS).forEach((chunks) => chunks.forEach((c) => {
+        if (shown.indexOf(c.title) < 0) return;
+        chosenChunks.add(c.title);
+        c.covers.forEach((id) => {
+          const sk = skillById(id);
+          if (sk && itemsFor(sk).length) selectedSkills.add(id);
+        });
+      }));
+      renderSelect();
       buildPools();
     });
     $("selectNoneBtn").addEventListener("click", () => {
-      selectedSkills.clear(); chosenChunks.clear(); buildMatrix(); buildPools();
+      selectedSkills.clear(); chosenChunks.clear(); renderSelect(); buildPools();
     });
     $("startBtn").addEventListener("click", startSession);
 
-    $("bandToggleBtn").addEventListener("click", () => { showAllBands = !showAllBands; buildMatrix(); });
-
-    // The lever itself lives in lever.js, shared by every page of the hub.
-    // This page hands it its own four-form strings; it mounts the big page
-    // lever, discovers section levers from data-scope, and wires tap bumps.
-    window.HubLever.init({
-      strings: UI_STRINGS,
-      ruby: RUBY,
-      onChange: (s) => {
-        uiForm = s;
-        if ($("selectScreen").classList.contains("active")) { buildMatrix(); buildPools(); }
-        else refreshCount();
-      },
-    });
-
+    /* EN off leaves the Japanese titles on their own, and stays off. */
+    readLang();
+    paintLang();
+    $("enBtn").addEventListener("click", () => setLang(!showEn));
 
     // task area emits gh:ready when an answer is entered, gh:submit on Enter
     $("taskArea").addEventListener("gh:ready", () => { if (!graded) $("checkBtn").disabled = false; });

@@ -96,7 +96,7 @@ window.TASK_TYPES = (function () {
           <input type="text" class="gap-input" autocomplete="off" lang="ja" placeholder="${esc(item.cue || "")}">
           <span>${item.after || ""}</span>
         </div>
-        ${item.cue ? `<div class="cue">Hint: ${esc(item.cue)}</div>` : ""}
+        ${item.cue ? `<div class="cue">ヒント: ${esc(item.cue)}</div>` : ""}
       `;
     },
     wire(area) {

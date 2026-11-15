@@ -4050,67 +4050,108 @@ window.JT_STRANDS = {
 window.JP_YEARS = ["F","1","2","3","4","5","6","7","8","9","10","11","12"];
 window.JP_CHUNKS = {
   "Requests and Politeness": [
-    { title:"Greetings and set phrases", t:["あいさつ","あいさつ","aisatsu","Greetings and set phrases"], y0:0, y1:2, years:"F–2", covers:["greet-f2"] },
-    { title:"Classroom requests: 〜てください", t:["教室のおねがい：〜てください","きょうしつのおねがい：〜てください","kyōshitsu no onegai: 〜te kudasai","Classroom requests: 〜てください"], y0:3, y1:4, years:"3–4", covers:["greet-y34"] },
-    { title:"Introducing yourself politely", t:["自己しょうかい","じこしょうかい","jikoshōkai","Introducing yourself politely"], y0:5, y1:6, years:"5–6", covers:["greet-y56"] },
-    { title:"てもいい・てはいけない (may, must not)", t:["てもいい・てはいけない","てもいい・てはいけない","temo ii, te wa ikenai","てもいい・てはいけない (may, must not)"], y0:8, y1:8, years:"8", covers:["te-form-2-choices"], needs:["Verb Forms: Making the て-form"] }
+    { title:"Greetings and set phrases", en:"Greetings and set phrases", jp:"おはようございます。", level:"basics", t:["あいさつ","あいさつ","aisatsu","Greetings and set phrases"], y0:0, y1:2, years:"F–2", covers:["greet-f2"] },
+    { title:"Classroom requests: 〜てください", en:"Classroom requests", jp:"〜てください", level:"basics", t:["教室のおねがい：〜てください","きょうしつのおねがい：〜てください","kyōshitsu no onegai: 〜te kudasai","Classroom requests: 〜てください"], y0:3, y1:4, years:"3–4", covers:["greet-y34"] },
+    { title:"Introducing yourself politely", en:"Introducing yourself politely", jp:"わたしはエマです。", level:"basics", t:["自己しょうかい","じこしょうかい","jikoshōkai","Introducing yourself politely"], y0:5, y1:6, years:"5–6", covers:["greet-y56"] },
+    { title:"てもいい・てはいけない (may, must not)", en:"May, and must not", jp:"てもいい・てはいけない", level:"basics", t:["てもいい・てはいけない","てもいい・てはいけない","temo ii, te wa ikenai","てもいい・てはいけない (may, must not)"], y0:8, y1:8, years:"8", covers:["te-form-2-choices"], needs:["Verb Forms: Making the て-form"] }
   ],
   "Counting and Time": [
-    { title:"Numbers", t:["かず","かず","kazu","Numbers"], y0:3, y1:4, years:"3–4", covers:["num-y34"] },
-    { title:"Time and days", t:["時間とよう日","じかんとようび","jikan to yōbi","Time and days"], y0:5, y1:6, years:"5–6", covers:["num-y56"], needs:["Particles: に for points in time"] },
-    { title:"Counters, and how often", t:["かぞえ方とひん度","かぞえかたとひんど","kazoekata to hindo","Counters, and how often"], y0:7, y1:8, years:"7–8", covers:["num-y78"] }
+    { title:"Numbers", en:"Numbers", jp:"いち・に・さん", level:"basics", t:["かず","かず","kazu","Numbers"], y0:3, y1:4, years:"3–4", covers:["num-y34"] },
+    { title:"Time and days", en:"Time and days", jp:"七時に学校へ行きます。", level:"basics", t:["時間とよう日","じかんとようび","jikan to yōbi","Time and days"], y0:5, y1:6, years:"5–6", covers:["num-y56"], needs:["Particles: に for points in time"] },
+    { title:"Counters, and how often", en:"Counters, and how often", jp:"一しゅうかんに三かい", level:"basics", t:["かぞえ方とひん度","かぞえかたとひんど","kazoekata to hindo","Counters, and how often"], y0:7, y1:8, years:"7–8", covers:["num-y78"] }
   ],
   "Sentences": [
-    { title:"これはXです", t:["これはXです","これはXです","kore wa X desu","これはXです (This is X)"], y0:0, y1:2, years:"F–2", covers:["identity-f2"] },
-    { title:"これ・それ・あれ, and の", t:["これ・それ・あれ・の","これ・それ・あれ・の","kore, sore, are, no","これ・それ・あれ, and の"], y0:3, y1:4, years:"3–4", covers:["identity-y34"] },
-    { title:"Describing with adjectives", t:["けいよう詞でせつめい","けいようしでせつめい","keiyōshi de setsumei","Describing with adjectives"], y0:5, y1:6, years:"5–6", covers:["identity-y56"] },
-    { title:"Past and negative", t:["過去とひてい","かことひてい","kako to hitei","Past and negative"], y0:7, y1:8, years:"7–8", covers:["identity-y78"] },
-    { title:"Plain forms (casual, and before expressions)", t:["ふつう体","ふつうたい","futsūtai","Plain forms (casual, and before expressions)"], y0:9, y1:10, years:"9–10", covers:["plain-finite-l"] }
+    { title:"これはXです", en:"This is X", jp:"これはねこです。", level:"basics", t:["これはXです","これはXです","kore wa X desu","これはXです (This is X)"], y0:0, y1:2, years:"F–2", covers:["identity-f2"] },
+    { title:"これ・それ・あれ, and の", en:"This, that, and whose", jp:"これ・それ・あれ・の", level:"basics", t:["これ・それ・あれ・の","これ・それ・あれ・の","kore, sore, are, no","これ・それ・あれ, and の"], y0:3, y1:4, years:"3–4", covers:["identity-y34"] },
+    { title:"Describing with adjectives", en:"Describing with adjectives", jp:"このほんはおもしろいです。", level:"basics", t:["けいよう詞でせつめい","けいようしでせつめい","keiyōshi de setsumei","Describing with adjectives"], y0:5, y1:6, years:"5–6", covers:["identity-y56"] },
+    { title:"Past and negative", en:"Past and negative", jp:"きのうは日よう日でした。", level:"basics", t:["過去とひてい","かことひてい","kako to hitei","Past and negative"], y0:7, y1:8, years:"7–8", covers:["identity-y78"] },
+    { title:"Plain forms (casual, and before expressions)", en:"Plain forms", jp:"ふつう体 · 行く・行った", level:"intermediate", t:["ふつう体","ふつうたい","futsūtai","Plain forms (casual, and before expressions)"], y0:9, y1:10, years:"9–10", covers:["plain-finite-l"] }
   ],
   "Particles": [
-    { title:"One particle at a time", t:["助詞を一つずつ","じょしをひとつずつ","joshi o hitotsu zutsu","One particle at a time"], y0:5, y1:6, years:"5–6", covers:["particles-sentences"] },
-    { title:"Choosing between は/が, に/で", t:["は/が・に/で をえらぶ","は/が・に/で をえらぶ","wa/ga, ni/de o erabu","Choosing between は/が, に/で"], y0:7, y1:8, years:"7–8", covers:["particles-b1-core"] },
-    { title:"に vs で vs へ in context", t:["に・で・へ のちがい","に・で・へ のちがい","ni, de, e no chigai","に vs で vs へ in context"], y0:9, y1:10, years:"9–10", covers:["particles-harder-b2"] }
+    { title:"One particle at a time", en:"One particle at a time", jp:"わたしはがくせいです。", level:"basics", t:["助詞を一つずつ","じょしをひとつずつ","joshi o hitotsu zutsu","One particle at a time"], y0:5, y1:6, years:"5–6", covers:["particles-sentences"] },
+    { title:"Choosing between は/が, に/で", en:"Choosing the right particle", jp:"は・が・に・で", level:"basics", t:["は/が・に/で をえらぶ","は/が・に/で をえらぶ","wa/ga, ni/de o erabu","Choosing between は/が, に/で"], y0:7, y1:8, years:"7–8", covers:["particles-b1-core"] },
+    { title:"に vs で vs へ in context", en:"Telling に, で and へ apart", jp:"に・で・へ", level:"intermediate", t:["に・で・へ のちがい","に・で・へ のちがい","ni, de, e no chigai","に vs で vs へ in context"], y0:9, y1:10, years:"9–10", covers:["particles-harder-b2"] }
   ],
   "Questions": [
-    { title:"か (asking)", t:["か（質問する）","か（しつもんする）","ka (shitsumon suru)","か (asking)"], y0:5, y1:6, years:"5–6", covers:["sfp-sentences"] },
-    { title:"ね・よ (agreement, assurance)", t:["ね・よ","ね・よ","ne, yo","ね・よ (agreement, assurance)"], y0:7, y1:8, years:"7–8", covers:["sentence-final-b4"] },
-    { title:"の, and how casual to sound", t:["の（カジュアルな質問）","の（カジュアルなしつもん）","no (kajuaru na shitsumon)","の, and how casual to sound"], y0:9, y1:10, years:"9–10", covers:["sfp-links"] }
+    { title:"か (asking)", en:"Asking a question", jp:"何年生ですか。", level:"basics", t:["か（質問する）","か（しつもんする）","ka (shitsumon suru)","か (asking)"], y0:5, y1:6, years:"5–6", covers:["sfp-sentences"] },
+    { title:"ね・よ (agreement, assurance)", en:"Agreeing, and assuring", jp:"ね・よ", level:"basics", t:["ね・よ","ね・よ","ne, yo","ね・よ (agreement, assurance)"], y0:7, y1:8, years:"7–8", covers:["sentence-final-b4"] },
+    { title:"の, and how casual to sound", en:"Casual questions with の", jp:"あした来るの？", level:"intermediate", t:["の（カジュアルな質問）","の（カジュアルなしつもん）","no (kajuaru na shitsumon)","の, and how casual to sound"], y0:9, y1:10, years:"9–10", covers:["sfp-links"] }
   ],
   "Amounts and Comparing": [
-    { title:"ごろ・ぐらい (about, roughly)", t:["ごろ・ぐらい","ごろ・ぐらい","goro, gurai","ごろ・ぐらい (about, roughly)"], y0:5, y1:6, years:"5–6", covers:["extent-sentences"] },
-    { title:"しか・だけ・より・一番・のほう", t:["しか・だけ・より・一番・のほう","しか・だけ・より・いちばん・のほう","shika, dake, yori, ichiban, no hō","しか・だけ・より・一番・のほう (only, than, the most)"], y0:7, y1:8, years:"7–8", covers:["extent-b3","misc-choices"] }
+    { title:"ごろ・ぐらい (about, roughly)", en:"About, and roughly", jp:"ごろ・ぐらい", level:"basics", t:["ごろ・ぐらい","ごろ・ぐらい","goro, gurai","ごろ・ぐらい (about, roughly)"], y0:5, y1:6, years:"5–6", covers:["extent-sentences"] },
+    { title:"しか・だけ・より・一番・のほう", en:"Only, than, and the most", jp:"しか・だけ・より・一番・のほう", level:"basics", t:["しか・だけ・より・一番・のほう","しか・だけ・より・いちばん・のほう","shika, dake, yori, ichiban, no hō","しか・だけ・より・一番・のほう (only, than, the most)"], y0:7, y1:8, years:"7–8", covers:["extent-b3","misc-choices"] }
   ],
   "Verb Forms": [
-    { title:"ます・ません・ました", t:["ます・ません・ました","ます・ません・ました","masu, masen, mashita","ます・ません・ました (polite forms)"], y0:5, y1:6, years:"5–6", covers:["polite-finite-s"] },
-    { title:"Making the て-form", t:["て形を作る","てけいをつくる","te-kei o tsukuru","Making the て-form"], y0:7, y1:8, years:"7–8", covers:["te-form-b2-core"], needs:["Requests and Politeness: 〜てください, used as a set phrase since Year 3"] },
-    { title:"てみる・てしまう・ても・てから", t:["てみる・てしまう・ても・てから","てみる・てしまう・ても・てから","temiru, teshimau, temo, tekara","てみる・てしまう・ても・てから (try, finish, even if, after)"], y0:9, y1:10, years:"9–10", covers:["te-form-b2-extended"] }
+    { title:"ます・ません・ました", en:"Polite verb forms", jp:"ます・ません・ました", level:"basics", t:["ます・ません・ました","ます・ません・ました","masu, masen, mashita","ます・ません・ました (polite forms)"], y0:5, y1:6, years:"5–6", covers:["polite-finite-s"] },
+    { title:"Making the て-form", en:"Making the て-form", jp:"手を洗って、ご飯を食べます。", level:"basics", t:["て形を作る","てけいをつくる","te-kei o tsukuru","Making the て-form"], y0:7, y1:8, years:"7–8", covers:["te-form-b2-core"], needs:["Requests and Politeness: 〜てください, used as a set phrase since Year 3"] },
+    { title:"てみる・てしまう・ても・てから", en:"Try, finish, even if, after", jp:"てみる・てしまう・ても・てから", level:"intermediate", t:["てみる・てしまう・ても・てから","てみる・てしまう・ても・てから","temiru, teshimau, temo, tekara","てみる・てしまう・ても・てから (try, finish, even if, after)"], y0:9, y1:10, years:"9–10", covers:["te-form-b2-extended"] }
   ],
   "Verb Endings": [
-    { title:"たい・に行く (wanting, going to do)", t:["たい・に行く","たい・にいく","tai, ni iku","たい・に行く (wanting, going to do)"], y0:8, y1:8, years:"8", covers:["verb-stem-choices"], needs:["Verb Forms: the ます-stem"] },
-    { title:"そう・かた・やすい/にくい・ながら・すぎる", t:["そう・かた・やすい/にくい・ながら・すぎる","そう・かた・やすい/にくい・ながら・すぎる","sō, kata, yasui/nikui, nagara, sugiru","そう・かた・やすい/にくい・ながら・すぎる (looks like, how to, easy/hard, while, too much)"], y0:9, y1:10, years:"9–10", covers:["verb-stem-b2"], needs:["Verb Forms: the ます-stem"] }
+    { title:"たい・に行く (wanting, going to do)", en:"Wanting to, and going to do", jp:"たい・に行く", level:"basics", t:["たい・に行く","たい・にいく","tai, ni iku","たい・に行く (wanting, going to do)"], y0:8, y1:8, years:"8", covers:["verb-stem-choices"], needs:["Verb Forms: the ます-stem"] },
+    { title:"そう・かた・やすい/にくい・ながら・すぎる", en:"Looks like, how to, while, too much", jp:"そう・かた・やすい/にくい・ながら・すぎる", level:"intermediate", t:["そう・かた・やすい/にくい・ながら・すぎる","そう・かた・やすい/にくい・ながら・すぎる","sō, kata, yasui/nikui, nagara, sugiru","そう・かた・やすい/にくい・ながら・すぎる (looks like, how to, easy/hard, while, too much)"], y0:9, y1:10, years:"9–10", covers:["verb-stem-b2"], needs:["Verb Forms: the ます-stem"] }
   ],
   "Past and If": [
-    { title:"たことがある・たあとで (experience, after)", t:["たことがある・たあとで","たことがある・たあとで","ta koto ga aru, ta ato de","たことがある・たあとで (experience, after)"], y0:8, y1:8, years:"8", covers:["ta-choices"] },
-    { title:"たほうがいい・たら・たり〜たり", t:["たほうがいい・たら・たり〜たり","たほうがいい・たら・たり〜たり","ta hō ga ii, tara, tari〜tari","たほうがいい・たら・たり〜たり (advice, if/when, listing)"], y0:9, y1:10, years:"9–10", covers:["ta-tara-tari-b2"], needs:["Verb Forms: the て-form (た conjugates the same way)"] },
-    { title:"ば・というNoun", t:["ば・という","ば・という","ba, to iu","ば・というNoun (if, called)"], y0:11, y1:11, years:"11", covers:["misc-paragraphs"] }
+    { title:"たことがある・たあとで (experience, after)", en:"Experience, and after doing", jp:"たことがある・たあとで", level:"basics", t:["たことがある・たあとで","たことがある・たあとで","ta koto ga aru, ta ato de","たことがある・たあとで (experience, after)"], y0:8, y1:8, years:"8", covers:["ta-choices"] },
+    { title:"たほうがいい・たら・たり〜たり", en:"Advice, if and when, listing", jp:"たほうがいい・たら・たり〜たり", level:"intermediate", t:["たほうがいい・たら・たり〜たり","たほうがいい・たら・たり〜たり","ta hō ga ii, tara, tari〜tari","たほうがいい・たら・たり〜たり (advice, if/when, listing)"], y0:9, y1:10, years:"9–10", covers:["ta-tara-tari-b2"], needs:["Verb Forms: the て-form (た conjugates the same way)"] },
+    { title:"ば・というNoun", en:"If, and the one called", jp:"ば・というNoun", level:"advanced", t:["ば・という","ば・という","ba, to iu","ば・というNoun (if, called)"], y0:11, y1:11, years:"11", covers:["misc-paragraphs"] }
   ],
   "Can and Must": [
-    { title:"できる・ことができる・なければならない", t:["できる・ことができる・なければならない","できる・ことができる・なければならない","dekiru, koto ga dekiru, nakereba naranai","できる・ことができる・なければならない (can, must)"], y0:9, y1:10, years:"9–10", covers:["misc-b4","nai-form-b3","nominalisers-b4"], needs:["Sentences: plain forms"] },
-    { title:"ことにする・ことになる (deciding, being decided)", t:["ことにする・ことになる","ことにする・ことになる","koto ni suru, koto ni naru","ことにする・ことになる (deciding, being decided)"], y0:11, y1:11, years:"11", covers:["nominalisers-paragraphs"] }
+    { title:"できる・ことができる・なければならない", en:"Can, and must", jp:"できる・ことができる・なければならない", level:"intermediate", t:["できる・ことができる・なければならない","できる・ことができる・なければならない","dekiru, koto ga dekiru, nakereba naranai","できる・ことができる・なければならない (can, must)"], y0:9, y1:10, years:"9–10", covers:["misc-b4","nai-form-b3","nominalisers-b4"], needs:["Sentences: plain forms"] },
+    { title:"ことにする・ことになる (deciding, being decided)", en:"Deciding, and being decided", jp:"ことにする・ことになる", level:"advanced", t:["ことにする・ことになる","ことにする・ことになる","koto ni suru, koto ni naru","ことにする・ことになる (deciding, being decided)"], y0:11, y1:11, years:"11", covers:["nominalisers-paragraphs"] }
   ],
   "Joining Ideas": [
-    { title:"が・から (but, because)", t:["が・から","が・から","ga, kara","が・から (but, because)"], y0:7, y1:8, years:"7–8", covers:["conjunctions-choices"] },
-    { title:"けれども・ので・と・のに", t:["けれども・ので・と・のに","けれども・ので・と・のに","keredomo, node, to, noni","けれども・ので・と・のに (however, so, when, although)"], y0:9, y1:10, years:"9–10", covers:["conjunctions-b4"], needs:["Sentences: plain forms (ので and のに attach to them)"] },
-    { title:"ために・ように・し・んです (purpose, reasons)", t:["ために・ように・し・んです","ために・ように・し・んです","tame ni, yō ni, shi, n desu","ために・ように・し・んです (purpose, reasons)"], y0:11, y1:11, years:"11", covers:["plain-form-expr-2-b3"] }
+    { title:"が・から (but, because)", en:"But, and because", jp:"が・から", level:"basics", t:["が・から","が・から","ga, kara","が・から (but, because)"], y0:7, y1:8, years:"7–8", covers:["conjunctions-choices"] },
+    { title:"けれども・ので・と・のに", en:"However, so, when, although", jp:"けれども・ので・と・のに", level:"intermediate", t:["けれども・ので・と・のに","けれども・ので・と・のに","keredomo, node, to, noni","けれども・ので・と・のに (however, so, when, although)"], y0:9, y1:10, years:"9–10", covers:["conjunctions-b4"], needs:["Sentences: plain forms (ので and のに attach to them)"] },
+    { title:"ために・ように・し・んです (purpose, reasons)", en:"Purpose, and reasons", jp:"ために・ように・し・んです", level:"advanced", t:["ために・ように・し・んです","ために・ように・し・んです","tame ni, yō ni, shi, n desu","ために・ように・し・んです (purpose, reasons)"], y0:11, y1:11, years:"11", covers:["plain-form-expr-2-b3"] }
   ],
   "Reporting and Guessing": [
-    { title:"と思う・と言う・とき", t:["と思う・と言う・とき","とおもう・という・とき","to omou, to iu, toki","と思う・と言う・とき (think, say, when)"], y0:9, y1:10, years:"9–10", covers:["pf-expr-1-links"], needs:["Sentences: plain forms"] },
-    { title:"そう（伝聞）・つもり・かもしれない・でしょう", t:["そう（伝聞）・つもり・かもしれない・でしょう","そう（でんぶん）・つもり・かもしれない・でしょう","sō (denbun), tsumori, kamoshirenai, deshō","そう（伝聞）・つもり・かもしれない・でしょう (heard that, intend, might, probably)"], y0:11, y1:11, years:"11", covers:["plain-form-expr-1-b3"] },
-    { title:"らしい・はず・べき", t:["らしい・はず・べき","らしい・はず・べき","rashii, hazu, beki","らしい・はず・べき (apparently, should be, ought)"], y0:12, y1:12, years:"12", covers:["pf-expr-2-argument"] }
+    { title:"と思う・と言う・とき", en:"Think, say, and when", jp:"と思う・と言う・とき", level:"intermediate", t:["と思う・と言う・とき","とおもう・という・とき","to omou, to iu, toki","と思う・と言う・とき (think, say, when)"], y0:9, y1:10, years:"9–10", covers:["pf-expr-1-links"], needs:["Sentences: plain forms"] },
+    { title:"そう（伝聞）・つもり・かもしれない・でしょう", en:"Heard that, intend, might, probably", jp:"そう・つもり・かもしれない・でしょう", level:"advanced", t:["そう（伝聞）・つもり・かもしれない・でしょう","そう（でんぶん）・つもり・かもしれない・でしょう","sō (denbun), tsumori, kamoshirenai, deshō","そう（伝聞）・つもり・かもしれない・でしょう (heard that, intend, might, probably)"], y0:11, y1:11, years:"11", covers:["plain-form-expr-1-b3"] },
+    { title:"らしい・はず・べき", en:"Apparently, should be, ought", jp:"らしい・はず・べき", level:"advanced", t:["らしい・はず・べき","らしい・はず・べき","rashii, hazu, beki","らしい・はず・べき (apparently, should be, ought)"], y0:12, y1:12, years:"12", covers:["pf-expr-2-argument"] }
   ],
   "Analysing and Persuading": [
-    { title:"によると・ことが分かります・一方で・たしかに", t:["によると・ことが分かります・一方で・たしかに","によると・ことがわかります・いっぽうで・たしかに","ni yoru to, koto ga wakarimasu, ippō de, tashika ni","によると・ことが分かります・一方で・たしかに (citing, concluding, contrasting)"], y0:11, y1:11, years:"11", covers:["comparative-paragraphs","persuasive-paragraphs"] },
-    { title:"という点では・とはかぎりません・全体的に・ぜひ", t:["という点では・とはかぎりません・全体的に・ぜひ","というてんでは・とはかぎりません・ぜんたいてきに・ぜひ","to iu ten de wa, to wa kagirimasen, zentaiteki ni, zehi","という点では・とはかぎりません・全体的に・ぜひ (evaluating and persuading)"], y0:12, y1:12, years:"12", covers:["comparative-analytical-b4","persuasive-evaluative-b4"] }
+    { title:"によると・ことが分かります・一方で・たしかに", en:"Citing, concluding, contrasting", jp:"によると・一方で・たしかに", level:"advanced", t:["によると・ことが分かります・一方で・たしかに","によると・ことがわかります・いっぽうで・たしかに","ni yoru to, koto ga wakarimasu, ippō de, tashika ni","によると・ことが分かります・一方で・たしかに (citing, concluding, contrasting)"], y0:11, y1:11, years:"11", covers:["comparative-paragraphs","persuasive-paragraphs"] },
+    { title:"という点では・とはかぎりません・全体的に・ぜひ", en:"Evaluating, and persuading", jp:"という点では・全体的に・ぜひ", level:"advanced", t:["という点では・とはかぎりません・全体的に・ぜひ","というてんでは・とはかぎりません・ぜんたいてきに・ぜひ","to iu ten de wa, to wa kagirimasen, zentaiteki ni, zehi","という点では・とはかぎりません・全体的に・ぜひ (evaluating and persuading)"], y0:12, y1:12, years:"12", covers:["comparative-analytical-b4","persuasive-evaluative-b4"] }
   ]
 };
+/* ---------------------------------------------------------------------------
+   HOW A STUDENT FINDS SOMETHING. Andrew's call, November 2026: year levels
+   are not categories and not columns. A student picks one of three levels,
+   and inside a level the patterns sit under plain English headings.
+
+   Each level is described by what it does, never by a year, because the one
+   room this has to work in holds Years 10, 11 and 12 at once.
+
+   Every tile reads English first with the Japanese pattern underneath: this
+   is not an immersion school, and a beginner cannot find じょし by looking
+   for it. A student who wants Japanese titles turns English off, and that
+   choice sticks.
+   ------------------------------------------------------------------------- */
+window.JP_LEVELS = [
+  { id:"basics",       name:"Grammar basics",
+    blurb:"Greetings, numbers, simple sentences, particles, polite verbs." },
+  { id:"intermediate", name:"Grammar intermediate",
+    blurb:"Plain forms, the て-form extended, if and when, joining sentences." },
+  { id:"advanced",     name:"Grammar advanced",
+    blurb:"Reporting what you heard, saying how likely, citing and persuading." }
+];
+
+/* The thirteen strands, grouped under the seven headings a student reads.
+   Strands stay as they are: they carry the sequence and the VCE flags. */
+window.JP_GROUPS = {
+  "Requests and Politeness": "Everyday phrases",
+  "Counting and Time":       "Numbers and time",
+  "Sentences":               "Describing things",
+  "Amounts and Comparing":   "Describing things",
+  "Particles":               "Particles",
+  "Questions":               "Particles",
+  "Verb Forms":              "Verb forms",
+  "Verb Endings":            "Verb forms",
+  "Past and If":             "Verb forms",
+  "Can and Must":            "Verb forms",
+  "Joining Ideas":           "Joining ideas",
+  "Reporting and Guessing":  "Joining ideas",
+  "Analysing and Persuading":"Writing an argument"
+};
+window.JP_GROUP_ORDER = ["Everyday phrases","Numbers and time","Describing things",
+  "Particles","Verb forms","Joining ideas","Writing an argument"];

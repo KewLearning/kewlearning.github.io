@@ -25,7 +25,14 @@ principles", is its source; edit there and recopy).
   Never move an existing tool's folder — links go out on worksheets. PoC
   folders may be deleted if Andrew rejects them (remove the card too).
 - A grammar deploy = copy `index.html`, `engine.js`, `tasktypes.js`,
-  `data/skills.js` verbatim from the dev repo root into `/grammar/` (after
-  its sanity check passes), bump the build tag date, commit, push to `main`.
+  `fonts.css`, `fonts/`, `hub.js` and `welcome.js` verbatim from the dev repo
+  root into `/grammar/` (after its sanity check passes), bump the build tag
+  date, commit, push to `main`.
+- **Never copy `data/skills.js` across.** This folder's copy has 424 items
+  against the dev repo's 360, and those 64 items exist nowhere else: copying
+  the file over deletes them, which has already happened once. Apply a
+  content change to this file by matching text, then run the SPEC §9 sanity
+  check against it (`problems 0`). See "Known drift" in the dev repo's
+  DEPLOYING.md.
 - Never commit anything here that isn't part of a running app. This repo is
   public: no teaching materials, no scans, no student data, no internal links.

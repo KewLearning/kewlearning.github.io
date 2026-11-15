@@ -8,6 +8,7 @@
      the exercise. Same rule as the EAL vocabulary drill. -->
 <meta name="google" content="notranslate">
 <title>Japanese Grammar Hub</title>
+<link rel="stylesheet" href="fonts.css?v=20261115a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%88%B7%3C/text%3E%3C/svg%3E">
 <style>
   /* Palette deliberately matches the Aussie Phonics Trainer so the two
@@ -18,14 +19,15 @@
     /* ---- typography: two scripts, two faces ----
        Calibri carries the English, UD Digi Kyokasho N-R carries the Japanese.
        UD Digi Kyokasho is the UD textbook face: correct stroke shapes for
-       handwriting models, which is why it is the classroom default. Both
-       fonts are already installed on the school machines (Windows/Office),
-       so nothing is downloaded and nothing breaks offline.
+       handwriting models, which is why it is the classroom default. A school
+       Windows laptop has it already. Klee One and Carlito ship in fonts/ for
+       the Macs, iPads and Chromebooks that do not, so the page looks the
+       same in front of every student (fonts.css).
        One stack does both jobs because the browser falls back per character:
        Latin resolves inside --font-en, kana and kanji fall straight through
        to --font-jp. Never write a font name outside this block. */
     --font-en:Calibri,Carlito,'Segoe UI',Tahoma,Geneva,Verdana;
-    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
+    --font-jp:'UD Digi Kyokasho N-R','UD Digi Kyokasho NP-R','UD Digi Kyokasho NK-R','UD デジタル教科書体 N-R','UDデジタル教科書体N-R','Klee One','HGP教科書体','HG教科書体','YuKyokasho Yoko',YuKyokasho,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',YuGothic,Meiryo;
     --font:var(--font-en),var(--font-jp),sans-serif;
 
     --bg:#f4efe6; --paper:#fbf7ee; --ink:#1f1f1f; --muted:#6b6256;
@@ -47,6 +49,8 @@
   /* the drill and report read better narrow; only the timeline needs the width */
   #taskScreen,#reportScreen{max-width:760px;margin:0 auto}
   h1{text-align:center;font-size:23px;font-family:var(--font);letter-spacing:.5px}
+  .jahead{display:block;font-size:13px;font-weight:600;color:var(--muted);
+       letter-spacing:.08em;margin-top:3px}
   h3{font-family:var(--font);font-size:15px;margin:18px 0 8px;color:var(--ink)}
   .subtitle{color:var(--muted);text-align:center;margin:6px 0 18px;font-size:13px}
   .muted{color:var(--muted);font-size:13px;line-height:1.5}
@@ -63,8 +67,11 @@
   .btn-ghost:hover{color:var(--ink);border-color:var(--ink)}
   .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
   .linkbtn:hover{text-decoration:underline}
-  /* The language lever and the four-form text machinery live in lever.js,
-     which is shared by every page of the hub and injects its own CSS. */
+  /* The spring-loaded language lever (lever.js) is no longer on this page:
+     it stepped every label through kanji, kana, romaji and English and then
+     crept back to kanji on its own, which is the wrong mechanism for a
+     student who came here to find the particles. One EN button now, in the
+     same corner as the twelve apps that already have one. */
 
   /* ---- select: filter + matrix ---- */
   .filter-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
@@ -73,68 +80,79 @@
   .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
   .filter-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
-  /* ---- year timeline: Prep to Year 12, one row per strand ----
-     The axis does the talking: year numbers with two grouped curriculum
-     bars (VIC outlined, VCE filled — same lightness+fill+word encoding as
-     the report exports), a faint line behind each row anchoring the steps,
-     and quiet cards: title plus one muted meta line. Row-level facts (on
-     the VCE prescribed list / school-designed) sit once on the strand
-     label, not on every card. */
-  .matrix{display:flex;flex-direction:column;gap:6px;overflow-x:auto;padding-bottom:4px}
-  .tl-row{display:grid;position:relative;
-       grid-template-columns:var(--label-w,118px) repeat(11,minmax(50px,1fr)) repeat(2,minmax(104px,1.7fr));
-       gap:4px 6px;min-width:1020px;align-items:stretch}
-  .tl-row:not(.tl-head):not(.tl-bars)::before{content:"";position:absolute;z-index:0;
-       left:calc(var(--label-w,118px) + 10px);right:4px;top:50%;
-       border-top:1px solid var(--line-soft)}
-  .tl-head{margin-bottom:-4px}
-  .tl-year{text-align:center;font-weight:700;font-size:11px;color:var(--muted);padding:2px 0}
-  .tl-bars{margin-bottom:6px}
-  .tl-bar{position:relative;text-align:center;padding-bottom:1px}
-  .tl-bar span{font-size:8.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
-       border-radius:8px;padding:0 7px;line-height:1.6;display:inline-block}
-  .tl-bar[data-cur="VIC"]{border-bottom:3px solid var(--vic)}
-  .tl-bar[data-cur="VIC"] span{color:var(--vic)}
-  .tl-bar[data-cur="VCE"]{border-bottom:3px double var(--vce)}
-  .tl-bar[data-cur="VCE"] span{background:var(--vce);color:var(--vce-ink)}
-  .tl-label{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:3px;
-       background:var(--paper);padding:4px 10px 4px 0;position:sticky;left:0;z-index:2}
-  .tl-strand{font-weight:700;font-size:11px;line-height:1.3;color:var(--ink)}
-  .row-chip{font-size:8px;font-weight:800;letter-spacing:.4px;border-radius:8px;padding:0 5px;
-       text-transform:uppercase}
-  .chip-vce{border:1px solid var(--vce);color:var(--vce)}
-  .chip-prog{border:1px dotted var(--prog);color:var(--prog)}
-  .tl-chunk{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;gap:3px;
-       border:1px solid var(--line-soft);border-radius:8px;background:var(--bg);
-       padding:7px 9px;min-height:48px;outline-offset:-2px}
-  .tl-chunk.has-items{cursor:pointer;transition:border-color .12s ease,background .12s ease}
-  .tl-chunk.has-items:hover{border-color:var(--accent);background:#faf5f0}
-  .tl-chunk.has-items.selected{outline:2px solid var(--accent);background:#faf5f0}
+  /* ---- the selector: three levels, then one level's patterns ----
+     Andrew's call: no year levels as columns or categories, English on the
+     tile with the pattern in Japanese under it, and as little scrolling as
+     the content allows. The first screen is three cards and a search box
+     and fits any laptop without moving.
+
+     EN off is the opt-in to Japanese: the English line goes, and the
+     Japanese line takes its place and its weight. Nothing is translated
+     away and nothing is hidden, so a student can switch mid-task without
+     losing their place. */
+  [hidden]{display:none !important}
+  body.noen .en{display:none}
+
+  .toprow{display:flex;align-items:center;gap:10px;justify-content:center;
+       flex-wrap:wrap;margin:0 0 16px}
+  .search{font-family:inherit;font-size:14px;padding:9px 13px;border:1px solid var(--line);
+       border-radius:20px;background:var(--bg);color:var(--ink);min-width:260px;flex:0 1 320px}
+  .search:focus{outline:none;border-color:var(--accent);background:var(--paper)}
+  .tool{border:1px solid var(--line);background:var(--bg);color:var(--muted);font-size:11px;
+       font-weight:700;letter-spacing:.06em;padding:7px 12px;border-radius:14px;cursor:pointer;
+       font-family:inherit}
+  .tool:hover{border-color:var(--accent);color:var(--accent)}
+  .tool.off{opacity:.5;text-decoration:line-through}
+
+  .pick-q{text-align:center;font-size:17px;font-weight:700;margin:4px 0 16px}
+  .pick-note{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6}
+  .levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .lvl{display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;
+       border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:16px 16px 14px;
+       font-family:inherit;transition:border-color .12s ease,background .12s ease,transform .12s ease}
+  .lvl:hover{border-color:var(--accent);background:#faf5f0;transform:translateY(-2px)}
+  .lvl-name{font-size:16px;font-weight:700;color:var(--ink);line-height:1.25}
+  .lvl-blurb{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .lvl-n{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--accent);
+       text-transform:uppercase;margin-top:2px}
+
+  .lvl-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .lvl-now{font-size:15px;font-weight:700}
+  h3.grp{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+       color:var(--muted);margin:16px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--line-soft)}
+  h3.grp:first-of-type{margin-top:6px}
+  .pats{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:8px}
+  .pat{position:relative;display:flex;flex-direction:column;gap:3px;text-align:left;
+       border:1px solid var(--line-soft);border-radius:9px;background:var(--bg);
+       padding:9px 11px;cursor:pointer;font-family:inherit;outline-offset:-2px;
+       transition:border-color .12s ease,background .12s ease}
+  .pat:hover{border-color:var(--accent);background:#faf5f0}
+  .pat.selected{outline:2px solid var(--accent);background:#faf5f0}
   /* ---- chosen, and come along as review ----
-     Andrew read the second state as a bug, and fairly: picking one step
-     also queues the step before it, and the two looked identical, so the
-     block beside the one you clicked lit up for no reason you could see.
-     Same rule, two looks now. Solid outline means you picked it; a dashed
-     one with the word on it means it arrived as review. */
-  .tl-chunk.has-items.review{outline:2px dashed var(--accent);outline-offset:-3px;
-       background:#fdfaf7}
-  .tl-chunk .tl-why{position:absolute;top:-7px;right:6px;font-size:7.5px;
-       font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-       color:var(--accent);background:var(--paper);padding:0 4px;border-radius:3px;
-       line-height:1.5;display:none}
-  .tl-chunk.review .tl-why{display:block}
+     Andrew read the second state as a bug, and fairly: picking one pattern
+     also queues the step before it, and the two looked identical, so a tile
+     he had not touched lit up for no reason he could see. Same rule, two
+     looks now: a solid outline means you picked it, a dashed one with the
+     word on it means it arrived as review. */
+  .pat.review{outline:2px dashed var(--accent);outline-offset:-3px;background:#fdfaf7}
+  .pat-why{position:absolute;top:-7px;right:7px;font-size:7.5px;font-weight:700;
+       letter-spacing:.06em;text-transform:uppercase;color:var(--accent);
+       background:var(--paper);padding:0 4px;border-radius:3px;line-height:1.5}
+  .pat-why-ja{display:none}
+  body.noen .pat-why-ja{display:inline}
+  .pat-en{font-size:13.5px;font-weight:700;line-height:1.3;color:var(--ink)}
+  .pat-ja{font-size:12.5px;line-height:1.35;color:var(--muted)}
+  body.noen .pat-ja{font-size:13.5px;font-weight:700;color:var(--ink)}
+  .pat-n{font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);
+       text-transform:uppercase}
+  .pat.empty{border-style:dashed;opacity:.6;cursor:not-allowed}
   /* arrived here from another tool's link: say so for a moment */
   @keyframes deeplink-ping{0%{box-shadow:0 0 0 0 rgba(168,50,50,.45)}100%{box-shadow:0 0 0 14px rgba(168,50,50,0)}}
-  .tl-chunk.deeplinked{animation:deeplink-ping 1.5s ease-out 2}
-  .tl-chunk.no-items{border-style:dashed;opacity:.7}
-  .tl-title{font-size:11px;font-weight:600;line-height:1.3;color:var(--ink)}
-  .tl-meta{font-size:8.5px;font-weight:600;letter-spacing:.2px;color:var(--muted)}
-
-  .matrix-legend{font-size:11px;color:var(--muted);line-height:1.6;margin:14px auto 0;
-       text-align:center;max-width:640px}
-  .legend-vic{color:var(--vic);font-weight:800}
-  .legend-vce{color:var(--vce);font-weight:800}
-  .band-toggle-row{text-align:center;margin-top:10px}
+  .pat.deeplinked{animation:deeplink-ping 1.5s ease-out 2}
+  @media (prefers-reduced-motion:reduce){
+    .pat.deeplinked{animation:none}
+    .lvl:hover{transform:none}
+  }
 
   .select-toolbar{display:flex;justify-content:space-between;align-items:center;margin:16px 0 0;flex-wrap:wrap;gap:8px}
   .count-pill{background:var(--bg);color:var(--accent);border:1px solid var(--line);border-radius:20px;
@@ -233,29 +251,33 @@
 </head>
 <body>
 <div class="container">
-  <h1 class="jt-tap" data-jt="title">Japanese Grammar Hub</h1>
-  <p class="subtitle jt-tap" data-jt="subtitle">Japanese grammar progression · pick skills, practise, get a report</p>
+  <h1>Grammar Hub<span class="jahead">文法ハブ</span></h1>
+  <p class="subtitle">Pick a level, choose the patterns you want, practise, get a report.</p>
 
   <!-- ============ SELECT ============ -->
   <section class="screen active" id="selectScreen">
-    <div class="filter-row" id="typeFilter"></div>
-    <div class="matrix" id="matrix"></div>
-    <p class="matrix-legend" id="matrixLegend"></p>
-    <div class="band-toggle-row">
-      <button class="linkbtn" id="bandToggleBtn"></button>
+    <div class="toprow">
+      <input type="search" id="patSearch" class="search" autocomplete="off"
+             placeholder="Search a pattern: て-form, たら, particles…"
+             aria-label="Search all 38 grammar patterns">
+      <button class="tool" id="enBtn" aria-pressed="true">EN</button>
     </div>
-    <div class="select-toolbar">
-      <span class="count-pill" id="selCount">0 skills · 0 items</span>
-      <span>
-        <button class="linkbtn" id="selectAllBtn" data-jt="selectAll">Select all ready</button>
-        <button class="linkbtn" id="selectNoneBtn" data-jt="clear">Clear</button>
-      </span>
-    </div>
-    <div class="pools-section" id="poolsSection">
-      <div id="poolsList"></div>
-    </div>
-    <div class="start-bar">
-      <button class="btn btn-primary" id="startBtn" data-jt="start" disabled>Start practising</button>
+    <div class="filter-row" id="typeFilter" hidden></div>
+    <div id="picker"></div>
+    <div id="selectTools" hidden>
+      <div class="select-toolbar">
+        <span class="count-pill" id="selCount">0 skills · 0 items</span>
+        <span>
+          <button class="linkbtn" id="selectAllBtn">Choose all of these</button>
+          <button class="linkbtn" id="selectNoneBtn">Clear</button>
+        </span>
+      </div>
+      <div class="pools-section" id="poolsSection">
+        <div id="poolsList"></div>
+      </div>
+      <div class="start-bar">
+        <button class="btn btn-primary" id="startBtn" disabled>Start practising</button>
+      </div>
     </div>
   </section>
 
@@ -263,7 +285,7 @@
   <section class="screen" id="taskScreen">
     <div class="progress-row">
       <span id="roundText">Main round</span>
-      <button class="exit-btn" id="quitBtn" data-jt="exit">Exit</button>
+      <button class="exit-btn" id="quitBtn">Exit</button>
     </div>
     <div class="progress-track"><div class="progress-fill" id="bar"></div></div>
     <div class="progress-row"><span></span><span id="remainText"></span></div>
@@ -276,16 +298,15 @@
     <div class="action-row">
       <span></span>
       <span>
-        <button class="btn btn-primary" id="checkBtn" data-jt="check" disabled>Check</button>
-        <button class="btn btn-primary" id="nextBtn" data-jt="next" style="display:none">Next</button>
-        <span id="taskLever" data-scope="#taskScreen"></span>
+        <button class="btn btn-primary" id="checkBtn" disabled>Check</button>
+        <button class="btn btn-primary" id="nextBtn" style="display:none">Next</button>
       </span>
     </div>
   </section>
 
   <!-- ============ REPORT ============ -->
   <section class="screen" id="reportScreen">
-    <div class="report-title jt-tap" data-jt="done">Session complete</div>
+    <div class="report-title">Session complete</div>
     <div id="reportSummary"></div>
     <div id="reportSkills"></div>
     <div id="reportRemediation"></div>
@@ -297,17 +318,17 @@
       <button class="btn btn-ghost" id="copyBtn">Copy teacher results</button>
       <button class="btn btn-ghost" id="downloadCsvBtn">Download CSV</button>
       <button class="btn btn-ghost" id="copyTsvBtn">Copy row for sheet</button>
-      <button class="btn btn-ghost" id="reviewBtn" data-jt="again">Run again</button>
-      <button class="btn btn-primary" id="restartBtn" data-jt="newSel">New selection</button>
-      <span id="reportLever" data-scope="#reportScreen"></span>
-    </div>
+      <button class="btn btn-ghost" id="reviewBtn">Run again</button>
+      <button class="btn btn-primary" id="restartBtn">New selection</button>
+      </div>
     <div id="copyNote"></div>
   </section>
 </div>
-<div class="build-tag" aria-hidden="true">JGH build 2026-11-14a</div>
+<div class="build-tag" aria-hidden="true">JGH build 2026-11-15a</div>
 
 <!-- load order matters: content, then task types, then engine -->
-<script src="lever.js"></script>
+<script src="hub.js?v=20261115a"></script>
+<script src="welcome.js?v=20261115a" data-ja="文法ハブ" data-en="GRAMMAR HUB"></script>
 <script src="data/skills.js"></script>
 <script src="tasktypes.js"></script>
 <script src="engine.js"></script>

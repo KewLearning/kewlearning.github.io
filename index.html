@@ -21,7 +21,7 @@
 <meta name="application-name" content="ジャプリ">
 <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#17140f" media="(prefers-color-scheme:dark)">
-<link rel="stylesheet" href="fonts.css?v=20261114">
+<link rel="stylesheet" href="fonts.css?v=20261115">
 <style>
   /* A LANDING PAGE IS A DOOR, NOT A PROSPECTUS.
 
@@ -97,6 +97,16 @@
      header rather than in the run of tiles, because it is the thing a
      teacher reaches for with a class already waiting. The tiles below
      still carry it, for anyone who meets the page the usual way. */
+  /* The EN switch, top right, the same control and the same corner as the
+     apps. Off means Japanese names only, and it is remembered for the whole
+     site, so a student sets it once here and every tool opens that way. */
+  .ensw{position:absolute;top:12px;right:12px;z-index:5;font-family:inherit;
+       border:1px solid var(--line);background:var(--paper);color:var(--muted);
+       font-size:.72rem;font-weight:700;letter-spacing:.07em;padding:7px 13px;
+       border-radius:999px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .ensw:hover{border-color:var(--accent);color:var(--accent)}
+  .ensw.off{opacity:.55;text-decoration:line-through}
+  @media (max-width:640px){.ensw{position:static;margin:12px 12px 0 0;float:right}}
   .corner{position:absolute;top:12px;left:12px;z-index:5;
        display:inline-flex;align-items:center;gap:6px;
        background:var(--paper);border:1px solid var(--line);border-radius:999px;
@@ -123,7 +133,9 @@
   @media (prefers-color-scheme:dark){ .band + .band{border-top-color:rgba(255,255,255,.07)} }
   .lab{font-size:.8rem;font-weight:700;color:var(--i);letter-spacing:.04em;
        margin-bottom:7px;display:flex;align-items:baseline;gap:7px}
-  .lab em{font-style:normal;font-weight:400;font-size:.76em;opacity:.8}
+  .lab em{display:block;font-style:normal;font-weight:400;font-size:.88em;opacity:.8}
+  body.noen .lab .en{display:none}
+  body.noen .lab em{font-size:1em;opacity:1}
   .grid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
   /* An older phone is 320 wide. One column there turns the page back
      into the scroll it just stopped being, so the band loses some of
@@ -149,10 +161,20 @@
          transition:transform .12s ease,border-color .12s ease}
   a.tile:hover{transform:translateY(-2px);border-color:var(--accent)}
   a.tile:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  /* ---- English first, Japanese under it ----
+     Andrew's call: this is not an immersion school, and a student looking
+     for particles cannot find じょし by looking for it. So the English name
+     is the heading and the Japanese sits under it in the textbook face.
+     A student who wants Japanese names turns EN off, and it stays off.
+     Nothing is translated away: both are always on the tile. */
   .tile h3{font-size:.98rem;font-weight:700;line-height:1.3}
   .tile h3 .e{font-weight:400;margin-right:5px}
-  .tile .en{display:block;font-size:.72rem;color:var(--muted);
-            letter-spacing:.02em;margin:1px 0 4px}
+  .tile h3 .en{letter-spacing:.01em}
+  .tile h3 .ja{display:block;font-size:.78rem;font-weight:600;color:var(--muted);
+            letter-spacing:.02em;margin:2px 0 4px}
+  body.noen .tile h3 .en{display:none}
+  body.noen .tile h3 .ja{font-size:.98rem;font-weight:700;color:var(--ink);margin-top:0}
+  body.noen .corner .en{display:none}
   .tile p{font-size:.78rem;color:var(--muted);line-height:1.35}
   /* The trial mark. Fourteen of sixteen tiles are trials, so a badge on
      each one would be the loudest thing on the page and would tell nobody
@@ -178,6 +200,8 @@
 
   <a class="corner" href="timer/"><span aria-hidden="true">⏳</span>
      <b>タイマー</b><span class="en">Classroom timer</span></a>
+  <button class="ensw" id="enBtn" type="button" aria-pressed="true"
+          title="Turn the English names off">EN</button>
 
   <header>
     <h1>ジャプリ</h1>
@@ -191,180 +215,126 @@
          at trip/ and still installs; it is only unlisted. -->
 
     <section class="band" style="--b:var(--b1);--i:var(--i1)">
-      <div class="lab">単元 <em>Units</em></div>
+      <div class="lab"><span class="en">Units</span><em>単元</em></div>
       <div class="grid">
         <a class="tile" href="jinbutsu/">
-          <h3><span class="e">🗾</span>れきしの人</h3>
-          <span class="en">Historical figures</span>
+          <h3><span class="e">🗾</span><span class="en">Historical figures</span><span class="ja">れきしの人</span></h3>
           <p>Year 9 Unit 12. Six people, the grammar, a pattern wheel, and write your own.</p>
         </a>
-        <a class="tile t" href="walk/">
-          <h3><span class="e">🚶</span>単元の道</h3>
-          <span class="en">Unit Walk</span>
-          <p>Any unit as a stepped walk, Years 7 to 12.</p>
-        </a>
         <a class="tile t" href="unit10/">
-          <h3><span class="e">🗂️</span>ユニット10</h3>
-          <span class="en">Unit 10</span>
+          <h3><span class="e">🗂️</span><span class="en">Unit 10</span><span class="ja">ユニット10</span></h3>
           <p>Abilities and preferences, start to finish.</p>
         </a>
         <a class="tile" href="hito/">
-          <h3><span class="e">🧑</span>ひと</h3>
-          <span class="en">Describing people</span>
+          <h3><span class="e">🧑</span><span class="en">Describing people</span><span class="ja">ひと</span></h3>
           <p>Year 8. Hair, eyes, clothes, and dress a figure by ear.</p>
         </a>
         <a class="tile" href="mega/">
-          <h3><span class="e">🚌</span>メガセンテンス</h3>
-          <span class="en">Megasentence</span>
+          <h3><span class="e">🚌</span><span class="en">Megasentence</span><span class="ja">メガセンテンス</span></h3>
           <p>Year 7 Unit 9. Day, who, transport, place, and the verb.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b1);--i:var(--i1)">
-      <div class="lab">しけん <em>Exams</em></div>
+      <div class="lab"><span class="en">Exams</span><em>しけん</em></div>
       <div class="grid">
         <a class="tile" href="exam10/">
-          <h3><span class="e">📝</span>しけん・十年生</h3>
-          <span class="en">Year 10 exam practice</span>
+          <h3><span class="e">📝</span><span class="en">Year 10 exam practice</span><span class="ja">しけん・十年生</span></h3>
           <p>The Semester 2 paper: reading, grammar, kanji, essay.</p>
         </a>
         <a class="tile" href="exam11/">
-          <h3><span class="e">📝</span>しけん・十一年生</h3>
-          <span class="en">Year 11 exam practice</span>
+          <h3><span class="e">📝</span><span class="en">Year 11 exam practice</span><span class="ja">しけん・十一年生</span></h3>
           <p>Unit 2: translation, two readings, essay.</p>
         </a>
         <a class="tile t" href="written/">
-          <h3><span class="e">🖊️</span>ひっきしけん</h3>
-          <span class="en">VCE written exam</span>
+          <h3><span class="e">🖊️</span><span class="en">VCE written exam</span><span class="ja">ひっきしけん</span></h3>
           <p>Units 3 and 4. Grammar, errors, listening, reading, writing.</p>
         </a>
         <a class="tile t" href="vcekanji/">
-          <h3><span class="e">漢</span>VCE漢字</h3>
-          <span class="en">The prescribed kanji</span>
+          <h3><span class="e">漢</span><span class="en">The prescribed kanji</span><span class="ja">VCE漢字</span></h3>
           <p>Years 11 and 12. Look one up, read it, then type it.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b2);--i:var(--i2)">
-      <div class="lab">文法 <em>Grammar</em></div>
+      <div class="lab"><span class="en">Grammar</span><em>文法</em></div>
       <div class="grid">
         <a class="tile" href="grammar/">
-          <h3><span class="e">🧩</span>文法ハブ</h3>
-          <span class="en">Grammar Hub</span>
-          <p>The Prep to Year 12 grammar timeline, drilled.</p>
+          <h3><span class="e">🧩</span><span class="en">Grammar Hub</span><span class="ja">文法ハブ</span></h3>
+          <p>Three levels, 38 patterns. Pick what you need and drill it.</p>
         </a>
         <a class="tile" href="kihon/">
-          <h3><span class="e">📅</span>きほん</h3>
-          <span class="en">Dates, times, counters</span>
+          <h3><span class="e">📅</span><span class="en">Dates, times, counters</span><span class="ja">きほん</span></h3>
           <p>Years 7 to 12. The irregular readings, drilled hardest.</p>
         </a>
         <a class="tile" href="joshi/">
-          <h3><span class="e">🔗</span>じょし</h3>
-          <span class="en">Particles</span>
+          <h3><span class="e">🔗</span><span class="en">Particles</span><span class="ja">じょし</span></h3>
           <p>Years 7 to 12. What each one marks, and spot the wrong one.</p>
         </a>
       </div>
     </section>
 
-    <section class="band" style="--b:var(--b3);--i:var(--i3)">
-      <div class="lab">ことば <em>Words</em></div>
-      <div class="grid">
-        <a class="tile t" href="vocab/">
-          <h3><span class="e">📚</span>ことばのホーム</h3>
-          <span class="en">Vocab Hub</span>
-          <p>Every word in the suite, by year or unit.</p>
-        </a>
-        <a class="tile t" href="yomiwake/">
-          <h3><span class="e">🔀</span>よみわけ</h3>
-          <span class="en">Which Reading?</span>
-          <p>兄 or お兄さん: which reading is it here?</p>
-        </a>
-      </div>
-    </section>
-
     <section class="band" style="--b:var(--b4);--i:var(--i4)">
-      <div class="lab">読む <em>Reading</em></div>
+      <div class="lab"><span class="en">Reading</span><em>読む</em></div>
       <div class="grid">
-        <a class="tile t" href="yomimono/">
-          <h3><span class="e">📖</span>よみもの</h3>
-          <span class="en">Reading Room</span>
-          <p>A folk tale with furigana, then the questions.</p>
-        </a>
         <a class="tile t" href="read/">
-          <h3><span class="e">⏱️</span>すらすら</h3>
-          <span class="en">Reading speed</span>
+          <h3><span class="e">⏱️</span><span class="en">Reading speed</span><span class="ja">すらすら</span></h3>
           <p>Short rounds against the clock.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b5);--i:var(--i5)">
-      <div class="lab">話す・聞く <em>Speaking</em></div>
+      <div class="lab"><span class="en">Speaking</span><em>話す・聞く</em></div>
       <div class="grid">
-        <a class="tile t" href="oral/">
-          <h3><span class="e">🎙️</span>話す練習</h3>
-          <span class="en">Oral practice</span>
-          <p>47 oral questions with audio, in three tiers.</p>
-        </a>
         <a class="tile t" href="oralexam/">
-          <h3><span class="e">🎤</span>オーラルしけん</h3>
-          <span class="en">VCE oral exam</span>
+          <h3><span class="e">🎤</span><span class="en">VCE oral exam</span><span class="ja">オーラルしけん</span></h3>
           <p>Units 3 and 4: question bank, mock exam, drills.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b6);--i:var(--i6)">
-      <div class="lab">書く <em>Writing</em></div>
+      <div class="lab"><span class="en">Writing</span><em>書く</em></div>
       <div class="grid">
         <a class="tile t" href="levelup/">
-          <h3><span class="e">🪜</span>レベルアップの壁</h3>
-          <span class="en">Level Up Wall</span>
+          <h3><span class="e">🪜</span><span class="en">Level Up Wall</span><span class="ja">レベルアップの壁</span></h3>
           <p>One task answered at every level, Prep to 12.</p>
-        </a>
-        <a class="tile t" href="writing/">
-          <h3><span class="e">✍️</span>書き方の壁</h3>
-          <span class="en">Writing Wall</span>
-          <p>What a top answer does, move by move.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b7);--i:var(--i7)">
-      <div class="lab">考える <em>Thinking</em></div>
+      <div class="lab"><span class="en">Thinking</span><em>考える</em></div>
       <div class="grid">
         <a class="tile" href="ronri/">
-          <h3><span class="e">🧩</span>論理パズル</h3>
-          <span class="en">Logic puzzles</span>
+          <h3><span class="e">🧩</span><span class="en">Logic puzzles</span><span class="ja">論理パズル</span></h3>
           <p>The clues are Japanese. One answer, and no guessing needed.</p>
         </a>
         <a class="tile" href="oto/">
-          <h3><span class="e">🔍</span>おとのきまり</h3>
-          <span class="en">Find the rule</span>
+          <h3><span class="e">🔍</span><span class="en">Find the rule</span><span class="ja">おとのきまり</span></h3>
           <p>Work out the て-form rule, then the page runs your rule.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b7);--i:var(--i7)">
-      <div class="lab">遊ぶ <em>Play</em></div>
+      <div class="lab"><span class="en">Play</span><em>遊ぶ</em></div>
       <div class="grid">
         <a class="tile" href="timer/">
-          <h3><span class="e">⏳</span>タイマー</h3>
-          <span class="en">Classroom timer</span>
+          <h3><span class="e">⏳</span><span class="en">Classroom timer</span><span class="ja">タイマー</span></h3>
           <p>Counts down in kanji numerals, big enough for the back row.</p>
         </a>
       </div>
     </section>
 
     <section class="band" style="--b:var(--b7);--i:var(--i7)">
-      <div class="lab">つかいかた <em>How to</em></div>
+      <div class="lab"><span class="en">How to</span><em>つかいかた</em></div>
       <div class="grid">
         <a class="tile" href="how/">
-          <h3><span class="e">❓</span>つかいかた</h3>
-          <span class="en">How to use ジャプリ</span>
+          <h3><span class="e">❓</span><span class="en">How to use ジャプリ</span><span class="ja">つかいかた</span></h3>
           <p>Turn the Japanese keyboard on, where your score lives, and
              getting around. The ? in any app opens this.</p>
         </a>
@@ -382,10 +352,33 @@
   </main>
 
   <footer>
-    <div class="build-tag">JH build 2026-11-14</div>
+    <div class="build-tag">JH build 2026-11-15</div>
   </footer>
 
 </div>
-<!-- Bilingual by design: no lever on the landing page. Each tool carries its own. -->
+<script>
+/* One switch, one key, whole site. The apps read the same key, so turning
+   English off here opens every tool in Japanese, and it survives a reload:
+   no spring, no kick back. Wrapped because localStorage throws rather than
+   returns null in a locked-down browser, and a throw here is a blank page. */
+(function () {
+  var KEY = "japuri:en", btn = document.getElementById("enBtn"), on = true;
+  function paint() {
+    document.body.classList.toggle("noen", !on);
+    btn.classList.toggle("off", !on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.title = on ? "Turn the English names off" : "Turn the English names back on";
+  }
+  try { on = window.localStorage.getItem(KEY) !== "0"; } catch (e) {}
+  paint();
+  btn.addEventListener("click", function () {
+    on = !on;
+    try { window.localStorage.setItem(KEY, on ? "1" : "0"); } catch (e) {}
+    paint();
+  });
+})();
+</script>
+<!-- Bilingual by design, English first: the EN switch above is the only
+     language control, and it is the same one the apps carry. -->
 </body>
 </html>
