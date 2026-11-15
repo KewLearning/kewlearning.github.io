@@ -258,7 +258,7 @@ window.SKILLS = [
       {
         type:"identify",
         prompt:"Which word means 'I'?",
-        sentence:"<b>わたし</b>はがくせいです。",
+        sentence:"わたしはがくせいです。",
         options:["わたし","は","がくせい","です"],
         answer:"わたし",
         explain:"わたし means I or me."
@@ -570,7 +570,7 @@ window.SKILLS = [
       {
         type:"identify",
         prompt:"Which of these time words does NOT take に?",
-        sentence:"三時<b>に</b> ／ 月よう日<b>に</b> ／ きょう",
+        sentence:"三時 ／ 月よう日 ／ きょう",
         options:["きょう (today)","三時 (3 o'clock)","月よう日 (Monday)","they all take に"],
         answer:"きょう (today)",
         explain:"Specific clock times and dates take に. Relative words like きょう, あした, まいにち do not."
