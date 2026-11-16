@@ -4119,7 +4119,15 @@
         return { id: "w:" + w.id, face: ruby(w.ja), say: w.ja, jp: true, en: w.en };
       });
   }
-  DRAW.karuta = function(){
+  /* ---- nothing is read out until a student asks for it ----
+     Andrew: "the sound should not play from the start ... I don't want
+     random words being read out and confusing students." Opening a tab
+     is not asking. So the deal is silent, the board waits, and はじめ is
+     the one button that speaks. Changing the set, the mode or the size
+     deals again, also silently, and also waits for はじめ.
+     go is true only from はじめ, which is a real tap, so the browser is
+     happy to make a sound and the student is expecting one. */
+  DRAW.karuta = function(go){
     var deck = shuffle(karutaDeck(KARUTA.kind, KARUTA.n));
     var left = deck.slice(), call = null, score = [0, 0], claim = null,
         tried = {}, began = 0, overYet = false, turn = 0;
@@ -4171,7 +4179,7 @@
       KARUTA.n = KARUTA.n === 9 ? 12 : (KARUTA.n === 12 ? 6 : 9);
       DRAW.karuta();
     };
-    $("deal").onclick = function(){ DRAW.karuta(); };
+    $("deal").onclick = function(){ DRAW.karuta(true); };
     $("again2").onclick = function(){ if (call) say(call.say, null, true); };
     KMODES.forEach(function(m){
       if (m.id === KARUTA.mode) $("howto2").textContent = m.how;
@@ -4217,7 +4225,7 @@
     };
 
     paintWho();
-    next();
+    if (go) next();
 
     /* ---- the scoreboard ----
        Andrew: "make the score cards bigger and a striking colour. The
@@ -4259,13 +4267,14 @@
         ? '<b>' + (score[0] + score[1]) + '</b> of ' + deck.length + ' taken'
         : '<b>' + (deck.length - left.length) + '</b> of ' + deck.length
           + (S.best && S.best[key] ? ' · best ' + S.best[key] + 's' : '');
-      $("note").textContent =
-          KARUTA.mode === "race"
+      $("note").textContent = !call
+          ? "Press はじめ to hear the first word."
+        : KARUTA.mode === "race"
             ? (claim === null ? "Press your Shift key first."
                               : (claim === 0 ? P0.ja + ", take it." : P1.ja + ", take it."))
         : KARUTA.mode === "turns"
             ? "Listen, then tap your card."
-        : "";
+        : "Listen, then tap the card.";
     }
     function next(){
       if (!left.length) return over();

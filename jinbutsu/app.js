@@ -3181,6 +3181,11 @@
     }).map(function(k){ return owners[k]; });
   }
   var dAt = null, dShown = false, dRun = 0;
+  /* Arriving at the tab is not asking to hear anything: the line is played
+     when a student presses Play the line, or straight away after they press
+     Another line, because that press is the asking. Andrew's rule, 2026-11-16:
+     no app reads a word out just because a tab opened. */
+  var dAsked = false;
   DRAW.dare = function(){
     var bank = dareBank();
     if (!bank.length){
@@ -3209,7 +3214,8 @@
 
     $("dplay").onclick = function(){ say(q.ja); };
     $("dnext").onclick = function(){
-      dAt = Math.floor(Math.random() * bank.length); dShown = false; draw();
+      dAt = Math.floor(Math.random() * bank.length); dShown = false;
+      dAsked = true; draw();
     };
     paintStreak();
     $("dsix").innerHTML = (K.people || []).map(function(p){
@@ -3237,7 +3243,8 @@
       },
       run:  function(){ return dRun; }
     };
-    if (!dShown) say(q.ja);
+    if (dAsked && !dShown) say(q.ja);
+    dAsked = false;
 
     function paintStreak(){
       $("dstreak").textContent = dRun > 1 ? dRun + " in a row" : "";

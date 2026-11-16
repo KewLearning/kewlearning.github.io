@@ -8,8 +8,8 @@
 <title>つかいかた · how to use ジャプリ</title>
 <meta name="description" content="How to type Japanese, where your score lives, and how to get around ジャプリ.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Ctext x='32' y='45' font-size='34' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3E%3F%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261114a">
-<link rel="stylesheet" href="shell.css?v=20261114a">
+<link rel="stylesheet" href="fonts.css?v=20261116a">
+<link rel="stylesheet" href="shell.css?v=20261116a">
 <style>
   /* A page of advice, not an activity: it scrolls like a document and
      borrows the shell for everything else. */
@@ -30,6 +30,10 @@
         padding:0 6px;font-size:13px;font-weight:700;background:var(--bg)}
   .card .jp{font-family:var(--jp)}
   .note{font-size:13.5px;color:var(--muted);margin-top:10px}
+  .card h3{font-size:14px;font-weight:700;margin:14px 0 6px;color:var(--deep)}
+  .card h3:first-of-type{margin-top:12px}
+  .card ol{margin:0 0 0 20px;line-height:1.65}
+  .card ol li{margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -47,6 +51,42 @@
     below are for the laptop you are reading this on, and the box at the end
     tells you whether it worked.</p>
     <div id="nyuu"></div>
+  </div>
+
+  <div class="card">
+    <h2>ホームがめん<i>Put an app on your phone</i></h2>
+    <p>Save any ジャプリ app to your home screen and it opens like an app:
+    full screen, its own icon, no address bar. It is still the website, so
+    it updates itself and takes almost no room on the phone.</p>
+
+    <h3>iPhone and iPad</h3>
+    <ol>
+      <li>Open the app in <b>Safari</b>. This does not work from a link
+      inside Instagram, Messages or another app's own browser.</li>
+      <li>Tap <b>Share</b>, the square with an arrow coming out of the top.
+      It is at the bottom of the screen on an iPhone and at the top on an
+      iPad.</li>
+      <li>Scroll down the list and tap <b>Add to Home Screen</b>.</li>
+      <li>Change the name if you want a shorter one, then tap <b>Add</b>.</li>
+    </ol>
+    <p class="note">Using Chrome on an iPhone? Tap the same Share button,
+    then <b>Add to Home Screen</b>. Older iPhones put Share in the menu
+    behind the three dots.</p>
+
+    <h3>Android</h3>
+    <ol>
+      <li>Open the app in <b>Chrome</b>.</li>
+      <li>Tap the three dots at the top right.</li>
+      <li>Tap <b>Add to Home screen</b>, then <b>Install</b> or <b>Add</b>.
+      Some phones show <b>Install app</b> straight away in that menu.</li>
+      <li>Drag the icon where you want it, or tap <b>Add automatically</b>.</li>
+    </ol>
+    <p class="note">On a Samsung using <b>Samsung Internet</b>, tap the three
+    lines at the bottom right, then <b>Add page to</b>, then <b>Home
+    screen</b>.</p>
+
+    <p class="note">Do it once for each app you use often. The hub itself can
+    go on there too, which gives you all of them behind one icon.</p>
   </div>
 
   <div class="card">
@@ -94,12 +134,12 @@
     fresh page.</p>
   </div>
 </main>
-<script src="hub.js?v=20261114a"></script>
-<script src="nyuuryoku.js?v=20261114a"></script>
+<script src="hub.js?v=20261116a"></script>
+<script src="nyuuryoku.js?v=20261116a"></script>
 <script>
   document.getElementById('nyuu').innerHTML = NYUURYOKU.html();
   NYUURYOKU.wire();
 </script>
-<div class="build" aria-hidden="true">build 2026-11-14a</div>
+<div class="build" aria-hidden="true">build 2026-11-16a</div>
 </body>
 </html>
