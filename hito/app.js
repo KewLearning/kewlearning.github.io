@@ -1892,6 +1892,11 @@
     { id:"yomu",  ja:"よむ",       en:"Read it" },
     { id:"spin",  ja:"ルーレット", en:"Spin a word" },
     { id:"katch", ja:"ことばキャッチ", en:"Catch the word" },
+    /* The keyboard tab sits immediately before かいて, because かいて is
+       the tab that needs it: a student who cannot type Japanese cannot
+       start it. Same content as れきしの人 and the three exam apps, from
+       the one shared file, so a correction is made once. */
+    { id:"nyuu",  ja:"にゅうりょく", en:"Japanese keyboard" },
     { id:"write", ja:"かいて",     en:"Write it" }
   ];
   /* Where the app opens: the tab a worksheet link asked for, then the one
@@ -3769,6 +3774,20 @@
 
   /* ---- 9. かいてみよう ----
      The only screen with no Japanese on it to copy. */
+  /* ---- にゅうりょく: turning the Japanese keyboard on ----
+     かいて asks students to type Japanese, and on a school Windows laptop
+     the keyboard is not there until somebody adds it. The steps, the
+     wording and the "is it working?" box all come from nyuuryoku.js,
+     which brings its own styles scoped under .nyuu, so this app adds no
+     CSS of its own and cannot drift from the other four apps that show
+     the same thing. */
+  DRAW.nyuu = function(){
+    var N = window.NYUURYOKU;
+    if (!N){ $("main").innerHTML = '<div class="rule">The keyboard guide did not load. Reload the page.</div>'; return; }
+    $("main").innerHTML = N.html();
+    N.wire();
+  };
+
   DRAW.write = function(){
     var np = P.people.length, p = P.people[dealt("write", np)];
     var fs = factsOf(p);
