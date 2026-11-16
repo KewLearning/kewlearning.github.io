@@ -340,6 +340,9 @@
 
   function draw(){
     document.onkeydown = null;
+    /* a clock left running in a rung nobody is looking at would go on
+       revealing a kanji that is no longer on the screen */
+    ateruStop();
     /* the page takes the rung's wash, and the rung's tab lights up in it */
     document.body.dataset.rung = STEPS[at].id;
     paintToggles(); paintSteps();
@@ -1782,6 +1785,28 @@
     { id:"kun",   ja:"訓読み",     en:"The kun reading" },
     { id:"mean",  ja:"いみ",       en:"The English meaning" }
   ];
+  /* ---- the clock ----
+     Andrew asked for a mode that reveals on its own. It is a setting, not
+     a mode: the same round, with the steps arriving by themselves. Off is
+     the default, because a student who has not met the game yet should
+     set the pace, and a clock that starts without being asked for is the
+     same fault as a word read out on arrival.
+
+     Pause is not a nicety. The whole task is looking at a shape and
+     thinking, and a countdown nobody can stop turns thinking into
+     hurrying. It also stops on its own when the page is hidden, so a
+     student who switches to another tab does not come back to the
+     answer. */
+  var CLOCKS = [
+    { secs: 0, ja:"じぶんで",  en:"I'll press it" },
+    { secs: 8, ja:"ゆっくり",  en:"Every 8 seconds" },
+    { secs: 5, ja:"ふつう",    en:"Every 5 seconds" },
+    { secs: 3, ja:"はやい",    en:"Every 3 seconds" }
+  ];
+  var ateruTimer = null;
+  function ateruStop(){
+    if (ateruTimer){ clearInterval(ateruTimer); ateruTimer = null; }
+  }
   var VEILS = [
     { id:"blur",    ja:"ぼんやり", en:"Out of focus" },
     { id:"pixel",   ja:"モザイク", en:"Pixels" },
@@ -1891,6 +1916,14 @@
               + '><b>' + esc(v.en) + '</b><span>' + esc(v.ja) + '</span></button>';
           }).join("")
         + '</div>'
+        + '<p class="startlead">Who turns the steps over?</p>'
+        + '<div class="catrow" id="clocks">'
+        + CLOCKS.map(function(c){
+            return '<button data-secs="' + c.secs + '"'
+              + (A.auto === c.secs ? ' class="on"' : "")
+              + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
+          }).join("")
+        + '</div>'
         + '<p class="startlead">Which clues are in play?</p>'
         + '<div class="catrow" id="clues">'
         + CLUES.map(function(c){
@@ -1918,10 +1951,15 @@
         + '<p class="startnote">' + left + ' of ' + mine.length
         + ' not guessed yet. Each round is ' + ateruSteps()
         + ' steps and starts at ' + ateruSteps() + ' points: every reveal costs one.'
+        + (A.auto ? ' The steps turn over by themselves every ' + A.auto
+                    + ' seconds, and Pause stops the clock.' : "")
         + '</p></div></div>'
         + foot("");
       each($("veils"), "[data-veil]", function(b){
         b.onclick = function(){ A.veil = b.dataset.veil; save(); DRAW.ateru(); };
+      });
+      each($("clocks"), "[data-secs]", function(b){
+        b.onclick = function(){ A.auto = +b.dataset.secs; save(); DRAW.ateru(); };
       });
       each($("clues"), "[data-clue]", function(b){
         b.onclick = function(){
@@ -1959,7 +1997,9 @@
     var steps = ateruSteps(), step = 0, over = false;
     var opts = ateruOpts(k);
     var ladder = ateruLadder();
-    var timer = null;
+    var secs = ateruState().auto || 0;   /* 0 means the student turns them */
+    var left = secs, paused = false;
+    ateruStop();
 
     $("main").innerHTML = ruleFor("ateru")
       + runBar("ateru")
@@ -1971,6 +2011,7 @@
         }).join("") + '</div>'
       + '<div id="fb"></div></div></div>'
       + foot('<span class="worth" id="worth"></span>'
+        + (secs ? '<button class="btn ghost sm" id="hold">Pause</button>' : "")
         + '<button class="btn sm" id="more">Show more</button>'
         + '<button class="btn ghost sm" id="skip">Skip this one</button>');
 
@@ -1985,18 +2026,36 @@
       }).join("");
       $("worth").innerHTML = over ? "" :
         '<b>' + Math.max(1, steps - step) + '</b> point'
-        + (Math.max(1, steps - step) === 1 ? "" : "s") + ' if you get it now';
+        + (Math.max(1, steps - step) === 1 ? "" : "s") + ' if you get it now'
+        + (secs && !over && step < steps - 1
+            ? '<i class="tick">' + (paused ? "paused"
+                : "next in " + left + "s") + '</i>' : "");
       $("more").disabled = over || step >= steps - 1;
+      if ($("hold")) $("hold").disabled = over || step >= steps - 1;
     }
     function reveal(){
       if (over || step >= steps - 1) return;
       step++;
+      left = secs;
       paint();
+      if (step >= steps - 1) ateruStop();
+    }
+    /* one tick a second, so the line under the button counts down rather
+       than sitting still and then jumping */
+    function runClock(){
+      ateruStop();
+      if (!secs || over) return;
+      left = secs;
+      ateruTimer = setInterval(function(){
+        if (over || paused || document.hidden) return;
+        left--;
+        if (left <= 0) reveal(); else paint();
+      }, 1000);
     }
     function finish(right, picked){
       if (over) return;
       over = true;
-      clearInterval(timer);
+      ateruStop();
       each($("opts"), "[data-o]", function(x){
         x.disabled = true;
         if (opts[+x.dataset.o].k === k.k) x.classList.add("yes");
@@ -2029,11 +2088,18 @@
       };
     });
     $("more").onclick = reveal;
+    if ($("hold")) $("hold").onclick = function(){
+      paused = !paused;
+      $("hold").textContent = paused ? "Go" : "Pause";
+      if (!paused) left = secs;
+      paint();
+    };
     $("skip").onclick = function(){
-      clearInterval(timer);
+      ateruStop();
       runMark("ateru", k, false); runNext("ateru"); DRAW.ateru();
     };
     paint();
+    runClock();
     ateruScore();
 
     /* hoisted, so the set-up and the end screen use it too */
@@ -2051,7 +2117,11 @@
       clues: function(){ return $("cluebox").children.length; },
       opts: function(){ return opts.map(function(o){ return o.k; }); },
       over: function(){ return over; },
-      veil: function(){ return ateruState().veil; }
+      veil: function(){ return ateruState().veil; },
+      secs: function(){ return secs; },
+      left: function(){ return left; },
+      paused: function(){ return paused; },
+      ticking: function(){ return !!ateruTimer; }
     };
   };
   DRAW.nyuu = function(){
