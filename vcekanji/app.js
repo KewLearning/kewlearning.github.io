@@ -1235,27 +1235,66 @@
         .slice(0, n - out.length).forEach(function(w){ out.push(w); });
     return out;
   }
+  /* ---- and a set can be one group ----
+     Andrew: "let a set be one category — 20 from 自然, say — rather than
+     always drawing from all 458." The words already carry the group of
+     the kanji they came from, so this is a filter rather than new data.
+     The group is remembered per rung, because a student revising 動物 is
+     revising it for more than one set. */
+  var CATOF = {};   /* rung id -> cat id, or "" for everything */
+  function catPool(pool, cat){
+    if (!cat) return pool;
+    return pool.filter(function(w){ return w.cat === cat; });
+  }
+  function catName(cat){
+    var c = null;
+    (K.cats || []).forEach(function(x){ if (x.id === cat) c = x; });
+    return c;
+  }
   /* the screen a rung shows when no set is running */
   function startPanel(id, lead, pool, keyOf, redraw){
-    var left = pool.filter(function(w){ return !S.won[keyOf(w)]; }).length;
+    var cat = CATOF[id] || "";
+    var mine = catPool(pool, cat);
+    var left = mine.filter(function(w){ return !S.won[keyOf(w)]; }).length;
+    var cats = (K.cats || []).filter(function(c){
+      return pool.some(function(w){ return w.cat === c.id; });
+    });
     return '<div class="work"><div class="ask">'
       + '<p class="startlead">' + esc(lead) + '</p>'
-      + '<div class="quick" id="sizes">'
-      + SIZES.map(function(n){
-          return '<button data-n="' + n + '"><b>' + n + ' words</b>'
-            + '<span>' + n + 'ご</span></button>';
+      + '<div class="catrow" id="cats">'
+      + '<button data-cat=""' + (cat ? "" : ' class="on"')
+      + '><b>Everything</b><span>ぜんぶ</span></button>'
+      + cats.map(function(c){
+          return '<button data-cat="' + esc(c.id) + '"'
+            + (cat === c.id ? ' class="on"' : "")
+            + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
         }).join("")
       + '</div>'
-      + '<p class="startnote">' + left + ' of ' + pool.length
+      + '<div class="quick" id="sizes">'
+      + SIZES.map(function(n){
+          var few = mine.length < n;
+          return '<button data-n="' + n + '"' + (few ? ' class="ghosty"' : "")
+            + '><b>' + (few ? mine.length : n) + ' word'
+            + ((few ? mine.length : n) === 1 ? "" : "s") + '</b>'
+            + '<span>' + (few ? mine.length : n) + 'ご</span></button>';
+        }).join("")
+      + '</div>'
+      + '<p class="startnote">' + left + ' of ' + mine.length + ' '
+      + (cat ? esc((catName(cat) || {}).en || "") + " words" : "words")
       + ' still to get right. A set takes the ones you have not had right yet.'
       + '</p></div></div>';
   }
   function wireStart(id, pool, keyOf, redraw){
+    each($("cats") || document.createElement("div"), "[data-cat]", function(b){
+      b.onclick = function(){ CATOF[id] = b.dataset.cat; redraw(); };
+    });
     var el = $("sizes");
     if (!el) return;
     each(el, "[data-n]", function(b){
       b.onclick = function(){
-        runStart(id, freshFirst(pool, +b.dataset.n, keyOf));
+        var mine = catPool(pool, CATOF[id] || "");
+        if (!mine.length) return;
+        runStart(id, freshFirst(mine, Math.min(+b.dataset.n, mine.length), keyOf));
         redraw();
       };
     });
@@ -1289,6 +1328,16 @@
         + (missed.length
             ? '<button data-again="1"><b>Do the ' + missed.length
               + ' I missed</b><span>もう一度</span></button>' : "")
+        /* ---- and the missed ones can go to the cards ----
+           Andrew: "the missed words should feed the flashcards." Doing
+           the same question again asks the same question again; a card
+           puts the kanji in front of the student with its readings and
+           its meaning, which is the other half of knowing it. Cards are
+           per kanji, so what goes across is the kanji those words are
+           built from: miss 子馬 and you get 子 and 馬. */
+        + (missed.length
+            ? '<button data-cards="1" class="ghosty"><b>Put them on flashcards</b>'
+              + '<span>カードにする</span></button>' : "")
         + '<button data-new="1"' + (missed.length ? ' class="ghosty"' : "")
         + '><b>Another ' + n + '</b><span>つぎのセット</span></button>'
         + '</div></div></div>',
@@ -1296,10 +1345,27 @@
         each($("main"), "[data-again]", function(b){
           b.onclick = function(){ runStart(id, missed); redraw(); };
         });
+        each($("main"), "[data-cards]", function(b){
+          b.onclick = function(){ toCards(missed); };
+        });
         each($("main"), "[data-new]", function(b){
           b.onclick = function(){ runStop(id); redraw(); };
         });
       } };
+  }
+  /* Tick the kanji behind these words on the cards, clear whatever was
+     ticked before so the deck is the missed ones and nothing else, and
+     open カード at it. Andrew's loop: get it wrong here, revise it there. */
+  function toCards(words){
+    var C = cardsState();
+    C.pick = {};
+    words.forEach(function(w){
+      (w.from || []).forEach(function(ch){ if (BYK[ch]) C.pick[ch] = 1; });
+    });
+    save();
+    var i = -1;
+    STEPS.forEach(function(st, n){ if (st.id === "cards") i = n; });
+    if (i >= 0){ at = i; draw(); }
   }
   /* called when a question in a set has been answered */
   /* One mark per question. かく can reach this twice for the same word —
@@ -1684,6 +1750,14 @@
   window.VCE_KANJI = {
     kanji: function(){ return K.kanji.length; },
     words: function(){ return WORDS.length; },
+    /* every word with the kanji behind it, so a check can work out for
+       itself which cards a set of missed words should produce rather
+       than asking the app the same sum twice */
+    wordlist: function(){
+      return WORDS.map(function(w){
+        return { w: w.w, y: w.y, cat: w.cat, from: w.from.slice() };
+      });
+    },
     at: function(){ return STEPS[at].id; },
     /* the word on the screen now, which since 2026-11-16 is the one the
        set is up to rather than the next off an endless deck */
