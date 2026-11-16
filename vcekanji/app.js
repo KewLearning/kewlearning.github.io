@@ -235,6 +235,7 @@
     { id:"cards", ja:"カード",     en:"Flashcards" },
     { id:"yomi",  ja:"よみかた",   en:"Which reading" },
     { id:"kaku",  ja:"かく",       en:"Write it" },
+    { id:"ateru", ja:"あてる",     en:"Guess the kanji" },
     { id:"nyuu",  ja:"にゅうりょく", en:"Typing Japanese" }
   ];
   var RULES = {
@@ -259,6 +260,10 @@
         + "written. Typing pays 2. Stuck? Tap Show four choices and pick "
         + "one, which pays 1. At the end of the set you get your score and "
         + "the ones to look at again.",
+    ateru: "A kanji comes out of the fog one step at a time, with a clue "
+         + "each step. Guess it as early as you dare: the fewer steps you "
+         + "use, the more it pays. Choose which clues are in play and how "
+         + "the kanji appears before you start.",
     nyuu: "Turn the Japanese keyboard on once and the laptop types かな and "
         + "漢字 all year. The written examination needs it."
   };
@@ -1738,6 +1743,317 @@
      The same module the Year 10, 11 and 12 examination apps carry, with
      its own styles. A student cannot type an answer to the written
      examination until this is done, and this app asks them to type. */
+  /* ================= あてる =================
+     Andrew's idea: "slowly reveal a kanji (like a puzzle) until the
+     student can guess which kanji it is ... These parameters should be
+     student-customisable."
+
+     WHAT COMES OUT OF THE FOG. There is no stroke-order data in this
+     repo and none that can be fetched, so a stroke-by-stroke reveal is
+     not available. What is available is the glyph itself, and three
+     honest ways to take it away and give it back: blur it, pixelate it
+     on a canvas, or draw a curtain down it. All three are the real
+     character the whole time, which matters: a student is learning to
+     recognise the shape, so the shape has to be the thing they see.
+
+     AND THE CLUES, which are the part that teaches. Each step hands over
+     one more fact — the group it belongs to, the year it is taught, a
+     word it appears in with the kanji blanked out, the on reading, the
+     kun reading, the English. A student who guesses from the group and
+     one word has done something harder, and worth more, than one who
+     waited for the meaning.
+
+     EVERY ONE OF THOSE IS A TICK BOX, because Andrew asked for that and
+     because the right ladder is different for a Year 7 and a Year 12: a
+     junior might want the picture to sharpen fast with the meaning early,
+     and a VCE student might turn the glyph off altogether and work from
+     the readings alone. Turn the kanji off and it is a different game
+     with the same furniture, which is the point of making it a setting
+     rather than two apps.
+
+     SCORING. The round starts at as many points as there are steps and
+     loses one with each reveal, so guessing early pays. A wrong answer
+     ends the round and shows the kanji: a guess is a guess.            */
+  var CLUES = [
+    { id:"cat",   ja:"グループ",   en:"Its group" },
+    { id:"grade", ja:"がくねん",   en:"The year it is taught" },
+    { id:"word",  ja:"ことば",     en:"A word it is in" },
+    { id:"on",    ja:"音読み",     en:"The on reading" },
+    { id:"kun",   ja:"訓読み",     en:"The kun reading" },
+    { id:"mean",  ja:"いみ",       en:"The English meaning" }
+  ];
+  var VEILS = [
+    { id:"blur",    ja:"ぼんやり", en:"Out of focus" },
+    { id:"pixel",   ja:"モザイク", en:"Pixels" },
+    { id:"curtain", ja:"カーテン", en:"A curtain" },
+    { id:"off",     ja:"なし",     en:"No kanji at all" }
+  ];
+  function ateruState(){
+    if (!S.ateru) S.ateru = {};
+    var A = S.ateru;
+    if (!A.clues) A.clues = { cat:1, word:1, on:1, kun:1, mean:1 };
+    if (!A.veil) A.veil = "blur";
+    if (A.auto === undefined) A.auto = 0;
+    return A;
+  }
+  function ateruLadder(){
+    var A = ateruState();
+    return CLUES.filter(function(c){ return A.clues[c.id]; });
+  }
+  /* the steps of one round: the veil lifts a little at each one, and the
+     clues come in the order they are listed */
+  function ateruSteps(){
+    var n = ateruLadder().length;
+    return Math.max(2, (ateruState().veil === "off" ? 0 : 3) + n);
+  }
+  function clueText(k, id){
+    if (id === "cat"){ var c = catName(k.cat); return c ? c.en + " · " + c.ja : ""; }
+    if (id === "grade"){
+      var g = (window.KANJI_LEVELS && KANJI_LEVELS.grade) ? KANJI_LEVELS.grade[k.k] : null;
+      return g ? ("Taught in year " + g + " in Japan") : "Not in the primary six hundred";
+    }
+    if (id === "word"){
+      var w = (k.words || [])[0];
+      if (!w) return "";
+      /* The kanji blanked out, and no reading beside it. 夏休み as
+         〇休み (なつやすみ) hands over なつ, which is the kun reading and
+         a later rung of the ladder: a clue that gives away the clue
+         after it is not a ladder. */
+      return w.w.split(k.k).join("〇");
+    }
+    if (id === "on") return (k.on || []).join("・") || "no on reading in use";
+    if (id === "kun") return (k.kun || []).join("・") || "no kun reading in use";
+    if (id === "mean") return k.en || "";
+    return "";
+  }
+  /* four kanji to choose between: ones from the same group read alike
+     enough to be a real choice */
+  function ateruOpts(k){
+    var same = K.kanji.filter(function(x){ return x.cat === k.cat && x.k !== k.k; });
+    var out = shuffle(same.slice()).slice(0, 3);
+    if (out.length < 3)
+      shuffle(K.kanji.filter(function(x){ return x.k !== k.k && out.indexOf(x) < 0; }))
+        .slice(0, 3 - out.length).forEach(function(x){ out.push(x); });
+    return shuffle(out.concat([k]));
+  }
+  /* the glyph, veiled by how far through the round we are. 0 is hidden
+     and 1 is plain. Canvas for the pixels because text cannot pixelate
+     itself; CSS for the other two, which is cheaper and sharper. */
+  function veilHtml(k, show){
+    var A = ateruState();
+    if (A.veil === "off")
+      return '<div class="veil"><span class="noglyph">？</span></div>';
+    if (A.veil === "pixel")
+      return '<div class="veil"><canvas id="pxl" width="240" height="240"></canvas></div>';
+    if (A.veil === "curtain")
+      return '<div class="veil"><span class="glyph" style="clip-path:inset(0 0 '
+        + Math.round((1 - show) * 100) + '% 0)">' + esc(k.k) + '</span></div>';
+    return '<div class="veil"><span class="glyph" style="filter:blur('
+      + (26 * (1 - show)).toFixed(1) + 'px)">' + esc(k.k) + '</span></div>';
+  }
+  function paintPixels(k, show){
+    var c = $("pxl");
+    if (!c || !c.getContext) return;
+    var g = c.getContext("2d");
+    /* how many blocks across: 2 at the start, the full 240 at the end */
+    var n = Math.max(2, Math.round(2 + show * 58));
+    var off = document.createElement("canvas");
+    off.width = off.height = n;
+    var og = off.getContext("2d");
+    og.fillStyle = "#ffffff";
+    og.fillRect(0, 0, n, n);
+    og.fillStyle = "#1a1a1a";
+    og.textAlign = "center";
+    og.textBaseline = "middle";
+    og.font = Math.round(n * 0.92) + 'px "Klee One", serif';
+    og.fillText(k.k, n / 2, n / 2 + n * 0.04);
+    g.imageSmoothingEnabled = false;
+    g.clearRect(0, 0, 240, 240);
+    g.drawImage(off, 0, 0, n, n, 0, 0, 240, 240);
+  }
+
+  DRAW.ateru = function(){
+    var A = ateruState();
+    var pool = K.kanji;
+    var KEY = function(k){ return "ateru:" + k.k; };
+
+    /* ---- the set-up, which is most of what Andrew asked for ---- */
+    if (!runOf("ateru")){
+      var cat = CATOF.ateru || "";
+      var mine = cat ? pool.filter(function(k){ return k.cat === cat; }) : pool;
+      var left = mine.filter(function(k){ return !S.won[KEY(k)]; }).length;
+      $("main").innerHTML = ruleFor("ateru")
+        + '<div class="work"><div class="ask">'
+        + '<p class="startlead">How does the kanji appear?</p>'
+        + '<div class="catrow" id="veils">'
+        + VEILS.map(function(v){
+            return '<button data-veil="' + v.id + '"' + (A.veil === v.id ? ' class="on"' : "")
+              + '><b>' + esc(v.en) + '</b><span>' + esc(v.ja) + '</span></button>';
+          }).join("")
+        + '</div>'
+        + '<p class="startlead">Which clues are in play?</p>'
+        + '<div class="catrow" id="clues">'
+        + CLUES.map(function(c){
+            return '<button data-clue="' + c.id + '"' + (A.clues[c.id] ? ' class="on"' : "")
+              + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
+          }).join("")
+        + '</div>'
+        + '<p class="startlead">Which kanji?</p>'
+        + '<div class="catrow" id="cats">'
+        + '<button data-cat=""' + (cat ? "" : ' class="on"')
+        + '><b>Everything</b><span>ぜんぶ</span></button>'
+        + (K.cats || []).map(function(c){
+            return '<button data-cat="' + esc(c.id) + '"' + (cat === c.id ? ' class="on"' : "")
+              + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
+          }).join("")
+        + '</div>'
+        + '<div class="quick" id="sizes">'
+        + SIZES.map(function(n){
+            var few = mine.length < n;
+            return '<button data-n="' + n + '"' + (few ? ' class="ghosty"' : "")
+              + '><b>' + (few ? mine.length : n) + ' kanji</b>'
+              + '<span>' + (few ? mine.length : n) + 'じ</span></button>';
+          }).join("")
+        + '</div>'
+        + '<p class="startnote">' + left + ' of ' + mine.length
+        + ' not guessed yet. Each round is ' + ateruSteps()
+        + ' steps and starts at ' + ateruSteps() + ' points: every reveal costs one.'
+        + '</p></div></div>'
+        + foot("");
+      each($("veils"), "[data-veil]", function(b){
+        b.onclick = function(){ A.veil = b.dataset.veil; save(); DRAW.ateru(); };
+      });
+      each($("clues"), "[data-clue]", function(b){
+        b.onclick = function(){
+          A.clues[b.dataset.clue] = A.clues[b.dataset.clue] ? 0 : 1;
+          /* something has to be given away, or the round is a coin toss */
+          if (!ateruLadder().length && A.veil === "off") A.clues[b.dataset.clue] = 1;
+          save(); DRAW.ateru();
+        };
+      });
+      each($("cats"), "[data-cat]", function(b){
+        b.onclick = function(){ CATOF.ateru = b.dataset.cat; DRAW.ateru(); };
+      });
+      each($("sizes"), "[data-n]", function(b){
+        b.onclick = function(){
+          if (!mine.length) return;
+          runStart("ateru", freshFirst(mine, Math.min(+b.dataset.n, mine.length), KEY));
+          DRAW.ateru();
+        };
+      });
+      ateruScore();
+      return;
+    }
+
+    if (runOver("ateru")){
+      var end = runEnd("ateru", "Guess the kanji", DRAW.ateru);
+      $("main").innerHTML = ruleFor("ateru") + end.html + foot("");
+      end.wire();
+      ateruScore();
+      return;
+    }
+
+    /* ---- one round ---- */
+    var run = runOf("ateru");
+    var k = run.list[run.i];
+    var steps = ateruSteps(), step = 0, over = false;
+    var opts = ateruOpts(k);
+    var ladder = ateruLadder();
+    var timer = null;
+
+    $("main").innerHTML = ruleFor("ateru")
+      + runBar("ateru")
+      + '<div class="work"><div class="ask">'
+      + '<div id="veilbox"></div>'
+      + '<div class="clues" id="cluebox"></div>'
+      + '<div class="opts" id="opts">' + opts.map(function(o, i){
+          return '<button class="opt jp" data-o="' + i + '">' + esc(o.k) + '</button>';
+        }).join("") + '</div>'
+      + '<div id="fb"></div></div></div>'
+      + foot('<span class="worth" id="worth"></span>'
+        + '<button class="btn sm" id="more">Show more</button>'
+        + '<button class="btn ghost sm" id="skip">Skip this one</button>');
+
+    function paint(){
+      var show = steps <= 1 ? 1 : step / (steps - 1);
+      $("veilbox").innerHTML = veilHtml(k, show);
+      if (ateruState().veil === "pixel") paintPixels(k, show);
+      var told = ladder.slice(0, Math.max(0, step - (ateruState().veil === "off" ? 0 : 1)));
+      $("cluebox").innerHTML = told.map(function(c){
+        return '<div class="clue"><i>' + esc(c.en) + '</i><b>'
+          + esc(clueText(k, c.id)) + '</b></div>';
+      }).join("");
+      $("worth").innerHTML = over ? "" :
+        '<b>' + Math.max(1, steps - step) + '</b> point'
+        + (Math.max(1, steps - step) === 1 ? "" : "s") + ' if you get it now';
+      $("more").disabled = over || step >= steps - 1;
+    }
+    function reveal(){
+      if (over || step >= steps - 1) return;
+      step++;
+      paint();
+    }
+    function finish(right, picked){
+      if (over) return;
+      over = true;
+      clearInterval(timer);
+      each($("opts"), "[data-o]", function(x){
+        x.disabled = true;
+        if (opts[+x.dataset.o].k === k.k) x.classList.add("yes");
+        else if (picked && opts[+x.dataset.o].k === picked.k) x.classList.add("no");
+      });
+      /* what it was worth when they answered, not after the reveal that
+         the answer itself triggers */
+      var pay = right ? Math.max(1, steps - finish.at) : 0;
+      step = steps - 1;
+      paint();
+      if (right) first(KEY(k), pay, "guessed");
+      runMark("ateru", k, right);
+      $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
+        + '<b>' + (right ? "Yes, " + pay + " point" + (pay === 1 ? "" : "s") : "It was") + '</b>'
+        + '<span class="jp">' + esc(k.k) + '</span>'
+        + '<em class="gl">' + esc(k.en) + '<i>'
+        + ((k.on || []).join("・") || "—") + ' · ' + ((k.kun || []).join("・") || "—")
+        + '</i></em></div>';
+      $("skip").textContent = "Next kanji";
+      $("skip").onclick = function(){ runNext("ateru"); DRAW.ateru(); };
+      ateruScore();
+    }
+    finish.at = 0;
+
+    each($("opts"), "[data-o]", function(b){
+      b.onclick = function(){
+        if (over) return;
+        finish.at = step;
+        finish(opts[+b.dataset.o].k === k.k, opts[+b.dataset.o]);
+      };
+    });
+    $("more").onclick = reveal;
+    $("skip").onclick = function(){
+      clearInterval(timer);
+      runMark("ateru", k, false); runNext("ateru"); DRAW.ateru();
+    };
+    paint();
+    ateruScore();
+
+    /* hoisted, so the set-up and the end screen use it too */
+    function ateruScore(){
+      var got = K.kanji.filter(function(x){ return S.won[KEY(x)]; }).length;
+      $("sc").innerHTML = '<b>' + got + '</b> of ' + K.kanji.length
+        + ' guessed, all time';
+      if (got >= K.kanji.length) done("ateru");
+    }
+    /* a seam for the check */
+    window.VCE_ATERU = {
+      kanji: function(){ return k.k; },
+      step: function(){ return step; },
+      steps: function(){ return steps; },
+      clues: function(){ return $("cluebox").children.length; },
+      opts: function(){ return opts.map(function(o){ return o.k; }); },
+      over: function(){ return over; },
+      veil: function(){ return ateruState().veil; }
+    };
+  };
   DRAW.nyuu = function(){
     $("main").innerHTML = ruleFor("nyuu")
       + '<div class="work">' + NYUURYOKU.html() + '</div>' + foot("");
