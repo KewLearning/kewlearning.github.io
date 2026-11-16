@@ -249,13 +249,16 @@
     find: "Search the whole list: type a kanji, a reading, a meaning or a "
         + "word. Filter by group with the buttons. Keep this open while you "
         + "write.",
-    yomi: "Read the word and choose its reading. The wrong answers are the "
-        + "readings the same kanji takes in other words, which is where the "
-        + "marks go.",
-    kaku: "Write the word in kanji and type it. The prompt alternates: the "
-        + "reading one turn, the English meaning the next, so it asks what "
-        + "the word means as well as how it is written. Typing pays 2. "
-        + "Stuck? Tap Show four choices and pick one, which pays 1.",
+    yomi: "Pick how many words, then read each one and choose its reading. "
+        + "The wrong answers are the readings the same kanji takes in other "
+        + "words, which is where the marks go. At the end of the set you "
+        + "get your score and the ones to look at again.",
+    kaku: "Pick how many words, then write each one in kanji and type it. "
+        + "The prompt alternates: the reading one turn, the English meaning "
+        + "the next, so it asks what the word means as well as how it is "
+        + "written. Typing pays 2. Stuck? Tap Show four choices and pick "
+        + "one, which pays 1. At the end of the set you get your score and "
+        + "the ones to look at again.",
     nyuu: "Turn the Japanese keyboard on once and the laptop types かな and "
         + "漢字 all year. The written examination needs it."
   };
@@ -1192,6 +1195,132 @@
      examiners' reports name. Where the list cannot supply three such
      readings the round falls back to readings of other words the same
      length, which at least keeps the shape of the question.             */
+  /* ================= a drill is a set, not a stream =================
+     Andrew opened よみかた, answered eighty words, and stopped because he
+     was tired: "there was no instruction on how many kanji and no
+     progress bar. As a result I kept clicking answers until I got tired
+     (on the 80th word!)."
+
+     He is right, and it was not a small thing. A task with no end is not
+     a task, it is a tap you leave running: no reason to start, no reason
+     to stop, no idea whether you did well, and the one number on the
+     screen counted every word on the list, so a good session moved it
+     from 74 to 80 and looked like nothing. The flashcards already knew
+     this and deal a set of ten or twenty; よみかた and かく did not.
+
+     So both of them run through this. A student picks how many, works
+     that many, and gets told how it went and which ones to look at
+     again. The lifetime count stays, because 80 of 458 is worth knowing,
+     but it is the second line now, not the only one.
+
+     The missed words are the point of the end screen. "Do the 6 I
+     missed" is the button a student should press, so it is first and it
+     is the filled one.                                                  */
+  var SIZES = [10, 20, 40];
+  var RUN = {};   /* rung id -> the set in progress, or null */
+
+  function runOf(id){ return RUN[id] || null; }
+  function runStart(id, list){
+    RUN[id] = { list: list.slice(), i: 0, right: 0, missed: [], marked: -1 };
+    return RUN[id];
+  }
+  function runStop(id){ RUN[id] = null; }
+  /* the words to put in a set: ones not read correctly before come first,
+     the same rule the flashcards' Quick start uses */
+  function freshFirst(pool, n, keyOf){
+    var fresh = pool.filter(function(w){ return !S.won[keyOf(w)]; });
+    var out = shuffle(fresh.slice()).slice(0, n);
+    if (out.length < n)
+      shuffle(pool.filter(function(w){ return out.indexOf(w) < 0; }))
+        .slice(0, n - out.length).forEach(function(w){ out.push(w); });
+    return out;
+  }
+  /* the screen a rung shows when no set is running */
+  function startPanel(id, lead, pool, keyOf, redraw){
+    var left = pool.filter(function(w){ return !S.won[keyOf(w)]; }).length;
+    return '<div class="work"><div class="ask">'
+      + '<p class="startlead">' + esc(lead) + '</p>'
+      + '<div class="quick" id="sizes">'
+      + SIZES.map(function(n){
+          return '<button data-n="' + n + '"><b>' + n + ' words</b>'
+            + '<span>' + n + 'ご</span></button>';
+        }).join("")
+      + '</div>'
+      + '<p class="startnote">' + left + ' of ' + pool.length
+      + ' still to get right. A set takes the ones you have not had right yet.'
+      + '</p></div></div>';
+  }
+  function wireStart(id, pool, keyOf, redraw){
+    var el = $("sizes");
+    if (!el) return;
+    each(el, "[data-n]", function(b){
+      b.onclick = function(){
+        runStart(id, freshFirst(pool, +b.dataset.n, keyOf));
+        redraw();
+      };
+    });
+  }
+  /* the bar across the top of a set, so a student can see the end */
+  function runBar(id){
+    var r = runOf(id);
+    if (!r) return "";
+    var pct = Math.round((r.i / r.list.length) * 100);
+    return '<div class="runbar"><div class="runfill" style="width:' + pct + '%"></div>'
+      + '<span class="runsay">' + Math.min(r.i + 1, r.list.length) + ' of '
+      + r.list.length + '</span></div>';
+  }
+  /* the end of a set */
+  function runEnd(id, title, redraw){
+    var r = runOf(id);
+    var missed = r.missed.slice();
+    var n = r.list.length, got = r.right;
+    sfx("ki");
+    return { html: '<div class="work"><div class="ask">'
+        + '<div class="mark ' + (got === n ? "yes" : "") + '">'
+        + '<b>' + got + ' of ' + n + ' first time</b></div>'
+        + (missed.length
+            ? '<p class="startlead">Look at these again:</p>'
+              + '<div class="misslist">' + missed.map(function(w){
+                  return '<span class="missw">' + esc(w.w)
+                    + '<i>' + esc(w.y) + '</i></span>';
+                }).join("") + '</div>'
+            : '<p class="startlead">Every one of them, first time.</p>')
+        + '<div class="quick endq">'
+        + (missed.length
+            ? '<button data-again="1"><b>Do the ' + missed.length
+              + ' I missed</b><span>もう一度</span></button>' : "")
+        + '<button data-new="1"' + (missed.length ? ' class="ghosty"' : "")
+        + '><b>Another ' + n + '</b><span>つぎのセット</span></button>'
+        + '</div></div></div>',
+      wire: function(){
+        each($("main"), "[data-again]", function(b){
+          b.onclick = function(){ runStart(id, missed); redraw(); };
+        });
+        each($("main"), "[data-new]", function(b){
+          b.onclick = function(){ runStop(id); redraw(); };
+        });
+      } };
+  }
+  /* called when a question in a set has been answered */
+  /* One mark per question. かく can reach this twice for the same word —
+     four choices first, then typing it — and a word counted twice would
+     show up as two misses in a set of twenty. The first answer is the one
+     that counts, which is also the honest one. */
+  function runMark(id, word, right){
+    var r = runOf(id);
+    if (!r || r.marked === r.i) return;
+    r.marked = r.i;
+    if (right) r.right++; else r.missed.push(word);
+  }
+  function runNext(id){
+    var r = runOf(id);
+    if (r) r.i++;
+  }
+  function runOver(id){
+    var r = runOf(id);
+    return !!r && r.i >= r.list.length;
+  }
+
   var yomiDeck = null, yomiAt = 0;
   function dealYomi(){
     if (!yomiDeck || yomiAt >= yomiDeck.length){
@@ -1223,11 +1352,31 @@
     }
     return near.slice(0, 3);
   }
+  var YKEY = function(w){ return "yomi:" + w.w + w.y; };
   DRAW.yomi = function(){
-    var word = dealYomi();
+    /* no set running: ask how many, and say how many are left */
+    if (!runOf("yomi")){
+      $("main").innerHTML = ruleFor("yomi")
+        + startPanel("yomi", "How many words this time?", WORDS, YKEY)
+        + foot("");
+      wireStart("yomi", WORDS, YKEY, DRAW.yomi);
+      paintScore();
+      return;
+    }
+    /* the set is finished: say how it went before anything else */
+    if (runOver("yomi")){
+      var end = runEnd("yomi", "Which reading", DRAW.yomi);
+      $("main").innerHTML = ruleFor("yomi") + end.html + foot("");
+      end.wire();
+      paintScore();
+      return;
+    }
+    var run = runOf("yomi");
+    var word = run.list[run.i];
     var opts = shuffle(readingsNear(word).concat([word.y]));
     var answered = false;
     $("main").innerHTML = ruleFor("yomi")
+      + runBar("yomi")
       + '<div class="work"><div class="ask">'
       + '<div class="qtag">how is it read</div>'
       + '<div class="prompt">' + esc(word.w) + '</div>'
@@ -1235,9 +1384,11 @@
           return '<button class="opt" data-o="' + i + '">' + esc(o) + '</button>';
         }).join("") + '</div>'
       + '<div id="fb"></div></div></div>'
-      + foot('<button class="btn ghost sm" id="skip">Another word</button>');
+      + foot('<button class="btn ghost sm" id="skip">Skip this one</button>');
     paintScore();
-    $("skip").onclick = function(){ yomiAt++; DRAW.yomi(); };
+    $("skip").onclick = function(){
+      runMark("yomi", word, false); runNext("yomi"); DRAW.yomi();
+    };
     each($("opts"), "[data-o]", function(b){
       b.onclick = function(){
         if (answered) return;
@@ -1252,7 +1403,8 @@
         }
         answered = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right) first("yomi:" + word.w + word.y, 1, "reading");
+        if (right) first(YKEY(word), 1, "reading");
+        runMark("yomi", word, right);
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1260,13 +1412,14 @@
           + '</div>' + breakdown(word);
         paintScore();
         $("skip").textContent = "Next word";
+        $("skip").onclick = function(){ nextKaku(); runNext("kaku"); DRAW.kaku(); };
+        $("skip").onclick = function(){ runNext("yomi"); DRAW.yomi(); };
       };
     });
     function paintScore(){
-      var got = WORDS.filter(function(w){
-        return S.won["yomi:" + w.w + w.y];
-      }).length;
-      $("sc").innerHTML = '<b>' + got + '</b> of ' + WORDS.length + ' words read';
+      var got = WORDS.filter(function(w){ return S.won[YKEY(w)]; }).length;
+      $("sc").innerHTML = '<b>' + got + '</b> of ' + WORDS.length
+        + ' words read, all time';
       if (got >= WORDS.length) done("yomi");
     }
   };
@@ -1381,11 +1534,34 @@
     }
     return out.slice(0, 3);
   }
+  /* かく had the same fault as よみかた and gets the same answer. The
+     prompt still alternates between the reading and the English, so the
+     set is dealt from the words that carry kanji and the turn counter
+     decides which way each one is asked. */
+  var KKEY = function(w){ return "kaku:type:" + w.w; };
   DRAW.kaku = function(){
-    var word = dealKaku(), inEnglish = kakuAsksEnglish();
+    var KPOOL = kakuPool(false);
+    if (!runOf("kaku")){
+      $("main").innerHTML = ruleFor("kaku")
+        + startPanel("kaku", "How many words this time?", KPOOL, KKEY)
+        + foot("");
+      wireStart("kaku", KPOOL, KKEY, DRAW.kaku);
+      paintScore();
+      return;
+    }
+    if (runOver("kaku")){
+      var end = runEnd("kaku", "Write it", DRAW.kaku);
+      $("main").innerHTML = ruleFor("kaku") + end.html + foot("");
+      end.wire();
+      paintScore();
+      return;
+    }
+    var run = runOf("kaku");
+    var word = run.list[run.i], inEnglish = kakuAsksEnglish() && !!(word.en && word.en.length);
     var opts = shuffle(lookalikes(word).concat([word]));
     var shown = false, chosen = false, typed = false;
     $("main").innerHTML = ruleFor("kaku")
+      + runBar("kaku")
       + '<div class="work"><div class="ask">'
       + '<div class="qtag">' + (inEnglish ? "write this word in Japanese"
                                           : "write this in kanji") + '</div>'
@@ -1404,9 +1580,11 @@
           return '<button class="opt" data-o="' + i + '">' + esc(o.w) + '</button>';
         }).join("") + '</div>'
       + '<div id="fb"></div></div></div>'
-      + foot('<button class="btn ghost sm" id="skip">Another word</button>');
+      + foot('<button class="btn ghost sm" id="skip">Skip this one</button>');
     paintScore();
-    $("skip").onclick = function(){ nextKaku(); DRAW.kaku(); };
+    $("skip").onclick = function(){
+      runMark("kaku", word, false); nextKaku(); runNext("kaku"); DRAW.kaku();
+    };
     $("ta").focus();
 
     /* Asking for the four is the support, so it says what it costs
@@ -1430,6 +1608,7 @@
         chosen = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
         if (right) first("kaku:pick:" + word.w, 1, "chosen");
+        runMark("kaku", word, false);   /* four choices is not writing it */
         $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
           + '<b>' + (right ? "That is the one" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
@@ -1452,7 +1631,7 @@
         if (got !== word.w) word = wordNamed(got) || word;
         /* 2 for typing it unaided, 1 for typing it with the four on
            screen, nothing if the choice already paid. */
-        if (!shown) first("kaku:type:" + word.w, 2, "typed");
+        if (!shown){ first("kaku:type:" + word.w, 2, "typed"); runMark("kaku", word, true); }
         else { S.won["kaku:type:" + word.w] = 1; save();
                first("kaku:pick:" + word.w, 1, "typed with help"); }
         $("fb").innerHTML = '<div class="mark yes"><b>Typed</b>'
@@ -1484,7 +1663,7 @@
       });
       var all = WORDS.filter(function(w){ return hasKanji(w.w); }).length;
       $("sc").innerHTML = '<b>' + type + '</b> typed · <b>' + pick
-        + '</b> chosen · of ' + all;
+        + '</b> chosen · of ' + all + ', all time';
       if (got >= all) done("kaku");
     }
   };
@@ -1506,8 +1685,20 @@
     kanji: function(){ return K.kanji.length; },
     words: function(){ return WORDS.length; },
     at: function(){ return STEPS[at].id; },
-    word: function(){ return STEPS[at].id === "yomi" ? dealYomi()
-                           : (STEPS[at].id === "kaku" ? dealKaku() : null); },
+    /* the word on the screen now, which since 2026-11-16 is the one the
+       set is up to rather than the next off an endless deck */
+    word: function(){
+      var r = runOf(STEPS[at].id);
+      if (r && r.i < r.list.length) return r.list[r.i];
+      return STEPS[at].id === "yomi" ? dealYomi()
+           : (STEPS[at].id === "kaku" ? dealKaku() : null);
+    },
+    /* the set in progress, for the check: how many, how far, how it went */
+    set: function(){
+      var r = runOf(STEPS[at].id);
+      return r ? { n: r.list.length, at: r.i, right: r.right,
+                   missed: r.missed.length, over: r.i >= r.list.length } : null;
+    },
     near: readingsNear,
     alike: lookalikes,
     yomu: function(){ return Y ? Y.passages.length : 0; },
