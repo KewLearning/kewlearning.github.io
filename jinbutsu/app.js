@@ -1729,27 +1729,52 @@
      nothing. にゅうりょく sits in front of じぶんで, because that
      is where a student first has to type Japanese.
 
-     つくる sits at the front beside the game rather than next to
-     じぶんで. Andrew: "put 'Build it' near the first tab because it
-     is quite good." The two rungs a student meets first are now the
-     two that ask nothing of them beforehand: one is a game, and the
-     other hands them the Japanese and asks only for the order. */
+     THE ORDER, as Andrew set it on 2026-11-16: the article first, then
+     the exercises, then the games. The four reading rungs lead, because
+     the article is the thing the unit is about and the paper's own
+     questions sit beside it. Everything that works on the article comes
+     next. The three that are games go last, where a student who has
+     done the work can find them, rather than first, where they were the
+     thing a student did instead of the work.
+
+     つくる keeps its place at the head of the exercises. Andrew, earlier:
+     "put 'Build it' near the first tab because it is quite good." It is
+     the exercise that asks least of a student beforehand, so it is the
+     one to meet first once the reading is done.
+
+     The ids do not change, so a student's saved tab and any ?tab=<name>
+     link on a worksheet still land where they always did. A ?tab=<number>
+     link would not; names are the stable way to link a rung. */
   var STEPS = [
-    { id:"katch", ja:"ことばキャッチ", en:"Catch it", whole:true,
-      grp:{ ja:"はじめに", en:"start here" } },
+    /* the article */
+    { id:"yomu",   ja:"よむ",     en:"Read it",
+      grp:{ ja:"きじ", en:"the article" } },
+    { id:"toi",    ja:"しつもん", en:"Questions",
+      grp:{ ja:"きじ", en:"the article" } },
+    { id:"yaku",   ja:"やくす",   en:"Translate",
+      grp:{ ja:"きじ", en:"the article" } },
+    { id:"hayaku", ja:"はやく",   en:"Read it again",
+      grp:{ ja:"きじ", en:"the article" } },
+    /* the exercises */
     { id:"tsukuru", ja:"つくる", en:"Build it", whole:true,
-      grp:{ ja:"はじめに", en:"start here" } },
-    { id:"kotoba", ja:"ことば",   en:"The words" },
-    { id:"yomu",   ja:"よむ",     en:"Read it" },
-    { id:"toi",    ja:"しつもん", en:"Questions" },
-    { id:"yaku",   ja:"やくす",   en:"Translate" },
-    { id:"hayaku", ja:"はやく",   en:"Read it again" },
-    { id:"bunpou", ja:"ぶんぽう", en:"Grammar", whole:true },
-    { id:"roulette", ja:"ルーレット", en:"Spin a pattern", whole:true },
-    { id:"dare", ja:"だれ", en:"Who said it?", whole:true },
-    { id:"nyuu", ja:"にゅうりょく", en:"Japanese keyboard", whole:true },
-    { id:"jibun",  ja:"じぶんで", en:"Write your own", whole:true },
-    { id:"kuraberu", ja:"くらべる", en:"All six", whole:true }
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    { id:"kotoba", ja:"ことば",   en:"The words",
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    { id:"bunpou", ja:"ぶんぽう", en:"Grammar", whole:true,
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    { id:"nyuu", ja:"にゅうりょく", en:"Japanese keyboard", whole:true,
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    { id:"jibun",  ja:"じぶんで", en:"Write your own", whole:true,
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    { id:"kuraberu", ja:"くらべる", en:"All six", whole:true,
+      grp:{ ja:"れんしゅう", en:"practice" } },
+    /* the games */
+    { id:"katch", ja:"ことばキャッチ", en:"Catch it", whole:true,
+      grp:{ ja:"ゲーム", en:"games" } },
+    { id:"roulette", ja:"ルーレット", en:"Spin a pattern", whole:true,
+      grp:{ ja:"ゲーム", en:"games" } },
+    { id:"dare", ja:"だれ", en:"Who said it?", whole:true,
+      grp:{ ja:"ゲーム", en:"games" } }
   ];
   /* Where the app opens: the tab a worksheet link asked for, then the one
      this device was last on, then the first. The order of the bar is set
