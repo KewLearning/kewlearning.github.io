@@ -260,10 +260,12 @@
         + "written. Typing pays 2. Stuck? Tap Show four choices and pick "
         + "one, which pays 1. At the end of the set you get your score and "
         + "the ones to look at again.",
-    ateru: "A kanji comes out of the fog one step at a time, with a clue "
-         + "each step. Guess it as early as you dare: the fewer steps you "
-         + "use, the more it pays. Choose which clues are in play and how "
-         + "the kanji appears before you start.",
+    ateru: "A kanji comes out from behind sixteen tiles, a few at a time. "
+         + "Say what it means, or how it is read, before you can see all "
+         + "of it: the fewer tiles you use, the more it pays. The four "
+         + "answers belong to the four kanji that look most like it. Add "
+         + "clues, change how it appears, or set it running on a clock "
+         + "before you start.",
     nyuu: "Turn the Japanese keyboard on once and the laptop types かな and "
         + "漢字 all year. The written examination needs it."
   };
@@ -1777,14 +1779,6 @@
      SCORING. The round starts at as many points as there are steps and
      loses one with each reveal, so guessing early pays. A wrong answer
      ends the round and shows the kanji: a guess is a guess.            */
-  var CLUES = [
-    { id:"cat",   ja:"グループ",   en:"Its group" },
-    { id:"grade", ja:"がくねん",   en:"The year it is taught" },
-    { id:"word",  ja:"ことば",     en:"A word it is in" },
-    { id:"on",    ja:"音読み",     en:"The on reading" },
-    { id:"kun",   ja:"訓読み",     en:"The kun reading" },
-    { id:"mean",  ja:"いみ",       en:"The English meaning" }
-  ];
   /* ---- the clock ----
      Andrew asked for a mode that reveals on its own. It is a setting, not
      a mode: the same round, with the steps arriving by themselves. Off is
@@ -1807,29 +1801,76 @@
   function ateruStop(){
     if (ateruTimer){ clearInterval(ateruTimer); ateruTimer = null; }
   }
-  var VEILS = [
-    { id:"blur",    ja:"ぼんやり", en:"Out of focus" },
-    { id:"pixel",   ja:"モザイク", en:"Pixels" },
-    { id:"curtain", ja:"カーテン", en:"A curtain" },
-    { id:"off",     ja:"なし",     en:"No kanji at all" }
+
+  /* ---- what the student is actually asked ----
+     Andrew, after playing it: the four kanji underneath gave it away.
+     He was right, and the fault was deeper than the buttons. The clues
+     name the kanji — group, a word it is in, its readings — so by the
+     time the picture had cleared enough to matter the answer was already
+     on the screen, and the reveal was decoration.
+
+     So the shape is the question now. The student is asked what it MEANS
+     or how it is READ, the four answers belong to the four kanji that
+     look most like this one, and the clues are off until somebody turns
+     them on. Tell 日 from 目 from 白 from 自 and you have done the thing
+     the activity is for.                                              */
+  var ANSWERS = [
+    { id:"mean", ja:"いみ",   en:"What does it mean?" },
+    { id:"read", ja:"よみかた", en:"How is it read?" }
   ];
+  var CLUES = [
+    { id:"cat",   ja:"グループ", en:"Its group" },
+    { id:"grade", ja:"がくねん", en:"The year it is taught" },
+    { id:"word",  ja:"ことば",   en:"A word it is in" },
+    { id:"on",    ja:"音読み",   en:"The on reading" },
+    { id:"kun",   ja:"訓読み",   en:"The kun reading" },
+    { id:"mean",  ja:"いみ",     en:"The English meaning" }
+  ];
+  /* ---- how the kanji comes out ----
+     Jigsaw leads, because Andrew asked for it and because it is the only
+     one of the four that is honestly partial: a blurred or half-curtained
+     kanji still shows its silhouette, which for 200 characters is most of
+     the answer. Sixteen tiles arriving in a random order show real
+     fragments of real strokes and nothing else.
+
+     Pixels start at 2 blocks across, which is four grey squares, and the
+     curtain still exists for anyone who likes it. Both were too generous
+     on the first step; both now clear on a curve that does most of its
+     work at the end. */
+  var VEILS = [
+    { id:"jigsaw",  ja:"パズル",   en:"Jigsaw pieces", steps:8 },
+    { id:"pixel",   ja:"モザイク", en:"Pixels",        steps:6 },
+    { id:"curtain", ja:"カーテン", en:"A curtain",     steps:6 },
+    { id:"off",     ja:"なし",     en:"No kanji at all", steps:0 }
+  ];
+  function veilOf(id){
+    var v = VEILS[0];
+    VEILS.forEach(function(x){ if (x.id === id) v = x; });
+    return v;
+  }
   function ateruState(){
     if (!S.ateru) S.ateru = {};
     var A = S.ateru;
-    if (!A.clues) A.clues = { cat:1, word:1, on:1, kun:1, mean:1 };
-    if (!A.veil) A.veil = "blur";
+    /* Clues start OFF. The picture is the question; a clue is help a
+       student asks for, and a round that hands over the readings before
+       anybody looks at the shape is the fault Andrew found. */
+    if (!A.clues) A.clues = {};
+    if (!A.veil) A.veil = "jigsaw";
+    if (!A.ask) A.ask = "mean";
     if (A.auto === undefined) A.auto = 0;
     return A;
   }
   function ateruLadder(){
     var A = ateruState();
-    return CLUES.filter(function(c){ return A.clues[c.id]; });
+    /* whatever is being asked for cannot also be a clue */
+    return CLUES.filter(function(c){
+      if (A.ask === "mean" && c.id === "mean") return false;
+      if (A.ask === "read" && (c.id === "on" || c.id === "kun")) return false;
+      return A.clues[c.id];
+    });
   }
-  /* the steps of one round: the veil lifts a little at each one, and the
-     clues come in the order they are listed */
   function ateruSteps(){
-    var n = ateruLadder().length;
-    return Math.max(2, (ateruState().veil === "off" ? 0 : 3) + n);
+    return Math.max(2, veilOf(ateruState().veil).steps + ateruLadder().length);
   }
   function clueText(k, id){
     if (id === "cat"){ var c = catName(k.cat); return c ? c.en + " · " + c.ja : ""; }
@@ -1851,20 +1892,106 @@
     if (id === "mean") return k.en || "";
     return "";
   }
-  /* four kanji to choose between: ones from the same group read alike
-     enough to be a real choice */
-  function ateruOpts(k){
-    var same = K.kanji.filter(function(x){ return x.cat === k.cat && x.k !== k.k; });
-    var out = shuffle(same.slice()).slice(0, 3);
-    if (out.length < 3)
-      shuffle(K.kanji.filter(function(x){ return x.k !== k.k && out.indexOf(x) < 0; }))
-        .slice(0, 3 - out.length).forEach(function(x){ out.push(x); });
-    return shuffle(out.concat([k]));
+
+  /* ================= which kanji look alike =================
+     Andrew: "unless using kanji that are very similar in shape, students
+     will easily guess." Quite so, and the old version picked the other
+     three out of the same topic group, which is a similarity of meaning
+     and no help at all when the question is a shape.
+
+     There is no stroke data here, but there is the font, and the font
+     knows exactly what each character looks like. So each of the 200 is
+     drawn once into a 16x16 square and kept as 256 numbers, and two
+     kanji are alike when those numbers are. It finds 日 目 白 自, 人 入
+     八, 土 士, 大 犬 太, 未 末 — the pairs a student actually confuses,
+     worked out from the shapes themselves rather than from a list
+     somebody would have to maintain.
+
+     Built once, on the first round, after the font has loaded: asking
+     before that measures the fallback face and gets the wrong answer.
+     If there is no canvas at all it falls back to the topic group, which
+     is the old behaviour and still a game.                            */
+  var SHAPES = null;
+  function buildShapes(){
+    if (SHAPES) return SHAPES;
+    var N = 16, out = {};
+    var cv = document.createElement("canvas");
+    cv.width = cv.height = N;
+    var g = cv.getContext && cv.getContext("2d");
+    if (!g) return (SHAPES = {});
+    K.kanji.forEach(function(k){
+      g.fillStyle = "#fff"; g.fillRect(0, 0, N, N);
+      g.fillStyle = "#000";
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.font = Math.round(N * 0.92) + 'px "Klee One", serif';
+      g.fillText(k.k, N / 2, N / 2 + N * 0.04);
+      var d = g.getImageData(0, 0, N, N).data, v = new Float32Array(N * N), sum = 0;
+      for (var i = 0, j = 0; i < d.length; i += 4, j++){
+        v[j] = (255 - d[i]) / 255;      /* ink, not paper */
+        sum += v[j];
+      }
+      out[k.k] = { v: v, ink: sum };
+    });
+    return (SHAPES = out);
   }
-  /* the glyph, veiled by how far through the round we are. 0 is hidden
-     and 1 is plain. Canvas for the pixels because text cannot pixelate
-     itself; CSS for the other two, which is cheaper and sharper. */
-  function veilHtml(k, show){
+  function shapeGap(a, b){
+    var A = SHAPES[a], B = SHAPES[b];
+    if (!A || !B) return 1e9;
+    var d = 0;
+    for (var i = 0; i < A.v.length; i++){
+      var x = A.v[i] - B.v[i];
+      d += x * x;
+    }
+    /* a character with far more ink than another is not a look-alike
+       however the squares fall */
+    return d + Math.abs(A.ink - B.ink) * 0.6;
+  }
+  function lookalikeKanji(k, n){
+    buildShapes();
+    if (!SHAPES[k.k]){
+      var same = K.kanji.filter(function(x){ return x.cat === k.cat && x.k !== k.k; });
+      return shuffle(same).slice(0, n);
+    }
+    var rest = K.kanji.filter(function(x){ return x.k !== k.k; });
+    rest.sort(function(x, y){ return shapeGap(k.k, x.k) - shapeGap(k.k, y.k); });
+    /* the nearest six, three of them taken at random, so the same kanji
+       does not come with the same three every time */
+    return shuffle(rest.slice(0, Math.max(n, 6))).slice(0, n);
+  }
+  /* The four answers, which are what those look-alikes MEAN or how they
+     are READ. Duplicates are dropped: two kanji glossed the same way
+     would be two right answers. */
+  function ateruOpts(k){
+    var A = ateruState();
+    var say = function(x){
+      return A.ask === "mean" ? (x.en || "")
+           : ((x.on || []).concat(x.kun || []).join("・") || "");
+    };
+    var mine = say(k);
+    var out = [], seen = {};
+    seen[mine] = 1;
+    lookalikeKanji(k, 8).forEach(function(x){
+      var t = say(x);
+      if (!t || seen[t] || out.length >= 3) return;
+      seen[t] = 1; out.push({ k: x, text: t });
+    });
+    /* if the look-alikes glossed thin, fill from anywhere rather than
+       asking a question with two answers on it */
+    if (out.length < 3)
+      shuffle(K.kanji.slice()).forEach(function(x){
+        var t = say(x);
+        if (!t || seen[t] || out.length >= 3) return;
+        seen[t] = 1; out.push({ k: x, text: t });
+      });
+    return shuffle(out.concat([{ k: k, text: mine }]));
+  }
+
+  /* ---- the glyph, as far out as the round has got ----
+     show runs 0 to 1. The two old veils cleared in a straight line and
+     were readable a third of the way in, so both now sit on a curve that
+     does most of its work at the end. */
+  function veilEase(show){ return Math.pow(show, 2.2); }
+  function veilHtml(k, show, order){
     var A = ateruState();
     if (A.veil === "off")
       return '<div class="veil"><span class="noglyph">？</span></div>';
@@ -1872,16 +1999,30 @@
       return '<div class="veil"><canvas id="pxl" width="240" height="240"></canvas></div>';
     if (A.veil === "curtain")
       return '<div class="veil"><span class="glyph" style="clip-path:inset(0 0 '
-        + Math.round((1 - show) * 100) + '% 0)">' + esc(k.k) + '</span></div>';
+        + Math.round((1 - veilEase(show)) * 100) + '% 0)">' + esc(k.k) + '</span></div>';
+    if (A.veil === "jigsaw"){
+      /* sixteen tiles over the kanji; the ones already turned over are
+         holes in the cover, in the order this round shuffled them */
+      var open = Math.round(show * 16);
+      var cells = [];
+      for (var i = 0; i < 16; i++){
+        var at = order.indexOf(i);
+        cells.push('<span class="jcell' + (at < open ? " off" : "") + '"></span>');
+      }
+      return '<div class="veil jig"><span class="glyph">' + esc(k.k) + '</span>'
+        + '<span class="jgrid">' + cells.join("") + '</span></div>';
+    }
     return '<div class="veil"><span class="glyph" style="filter:blur('
-      + (26 * (1 - show)).toFixed(1) + 'px)">' + esc(k.k) + '</span></div>';
+      + (26 * (1 - veilEase(show))).toFixed(1) + 'px)">' + esc(k.k) + '</span></div>';
   }
   function paintPixels(k, show){
     var c = $("pxl");
     if (!c || !c.getContext) return;
     var g = c.getContext("2d");
-    /* how many blocks across: 2 at the start, the full 240 at the end */
-    var n = Math.max(2, Math.round(2 + show * 58));
+    /* Andrew: the first step gave too much away. It starts at two blocks
+       across now and stays coarse for longer, so the early steps are four
+       grey squares rather than a readable character behind a filter. */
+    var n = Math.max(2, Math.round(2 + veilEase(show) * 58));
     var off = document.createElement("canvas");
     off.width = off.height = n;
     var og = off.getContext("2d");
@@ -1909,6 +2050,13 @@
       var left = mine.filter(function(k){ return !S.won[KEY(k)]; }).length;
       $("main").innerHTML = ruleFor("ateru")
         + '<div class="work"><div class="ask">'
+        + '<p class="startlead">What is the question?</p>'
+        + '<div class="catrow" id="asks">'
+        + ANSWERS.map(function(x){
+            return '<button data-ask="' + x.id + '"' + (A.ask === x.id ? ' class="on"' : "")
+              + '><b>' + esc(x.en) + '</b><span>' + esc(x.ja) + '</span></button>';
+          }).join("")
+        + '</div>'
         + '<p class="startlead">How does the kanji appear?</p>'
         + '<div class="catrow" id="veils">'
         + VEILS.map(function(v){
@@ -1926,7 +2074,12 @@
         + '</div>'
         + '<p class="startlead">Which clues are in play?</p>'
         + '<div class="catrow" id="clues">'
-        + CLUES.map(function(c){
+        + CLUES.filter(function(c){
+            /* what is being asked for is not offered as a clue to itself */
+            if (A.ask === "mean" && c.id === "mean") return false;
+            if (A.ask === "read" && (c.id === "on" || c.id === "kun")) return false;
+            return true;
+          }).map(function(c){
             return '<button data-clue="' + c.id + '"' + (A.clues[c.id] ? ' class="on"' : "")
               + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
           }).join("")
@@ -1948,13 +2101,18 @@
               + '<span>' + (few ? mine.length : n) + 'じ</span></button>';
           }).join("")
         + '</div>'
-        + '<p class="startnote">' + left + ' of ' + mine.length
+        + '<p class="startnote">The four answers belong to the four kanji '
+        + 'that look most like it, so the shape is the question. '
+        + left + ' of ' + mine.length
         + ' not guessed yet. Each round is ' + ateruSteps()
         + ' steps and starts at ' + ateruSteps() + ' points: every reveal costs one.'
         + (A.auto ? ' The steps turn over by themselves every ' + A.auto
                     + ' seconds, and Pause stops the clock.' : "")
         + '</p></div></div>'
         + foot("");
+      each($("asks"), "[data-ask]", function(b){
+        b.onclick = function(){ A.ask = b.dataset.ask; save(); DRAW.ateru(); };
+      });
       each($("veils"), "[data-veil]", function(b){
         b.onclick = function(){ A.veil = b.dataset.veil; save(); DRAW.ateru(); };
       });
@@ -1964,7 +2122,8 @@
       each($("clues"), "[data-clue]", function(b){
         b.onclick = function(){
           A.clues[b.dataset.clue] = A.clues[b.dataset.clue] ? 0 : 1;
-          /* something has to be given away, or the round is a coin toss */
+          /* with no kanji AND no clues there is nothing to go on, so the
+             last one off stays on */
           if (!ateruLadder().length && A.veil === "off") A.clues[b.dataset.clue] = 1;
           save(); DRAW.ateru();
         };
@@ -1997,8 +2156,12 @@
     var steps = ateruSteps(), step = 0, over = false;
     var opts = ateruOpts(k);
     var ladder = ateruLadder();
+    var asking = ateruState().ask;
     var secs = ateruState().auto || 0;   /* 0 means the student turns them */
     var left = secs, paused = false;
+    /* which tile of the jigsaw turns over when: shuffled per round, so
+       the same kanji does not uncover the same way twice */
+    var order = shuffle([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
     ateruStop();
 
     $("main").innerHTML = ruleFor("ateru")
@@ -2006,8 +2169,11 @@
       + '<div class="work"><div class="ask">'
       + '<div id="veilbox"></div>'
       + '<div class="clues" id="cluebox"></div>'
+      + '<div class="qtag">' + (asking === "mean" ? "what does it mean"
+                                                     : "how is it read") + '</div>'
       + '<div class="opts" id="opts">' + opts.map(function(o, i){
-          return '<button class="opt jp" data-o="' + i + '">' + esc(o.k) + '</button>';
+          return '<button class="opt' + (asking === "read" ? " jp" : " lat")
+            + '" data-o="' + i + '">' + esc(o.text) + '</button>';
         }).join("") + '</div>'
       + '<div id="fb"></div></div></div>'
       + foot('<span class="worth" id="worth"></span>'
@@ -2017,9 +2183,12 @@
 
     function paint(){
       var show = steps <= 1 ? 1 : step / (steps - 1);
-      $("veilbox").innerHTML = veilHtml(k, show);
+      $("veilbox").innerHTML = veilHtml(k, show, order);
       if (ateruState().veil === "pixel") paintPixels(k, show);
-      var told = ladder.slice(0, Math.max(0, step - (ateruState().veil === "off" ? 0 : 1)));
+      /* a clue per step, once the picture has had the first few to
+         itself: the shape is meant to be looked at before help arrives */
+      var head = Math.max(0, steps - ladder.length);
+      var told = ladder.slice(0, Math.max(0, step - head + 1));
       $("cluebox").innerHTML = told.map(function(c){
         return '<div class="clue"><i>' + esc(c.en) + '</i><b>'
           + esc(clueText(k, c.id)) + '</b></div>';
@@ -2058,18 +2227,23 @@
       ateruStop();
       each($("opts"), "[data-o]", function(x){
         x.disabled = true;
-        if (opts[+x.dataset.o].k === k.k) x.classList.add("yes");
-        else if (picked && opts[+x.dataset.o].k === picked.k) x.classList.add("no");
+        if (opts[+x.dataset.o].k.k === k.k) x.classList.add("yes");
+        else if (picked && opts[+x.dataset.o].k.k === picked.k.k) x.classList.add("no");
       });
       /* what it was worth when they answered, not after the reveal that
          the answer itself triggers */
       var pay = right ? Math.max(1, steps - finish.at) : 0;
       step = steps - 1;
       paint();
-      if (right) first(KEY(k), pay, "guessed");
+      /* first() pays once per kanji ever, so a kanji already banked adds
+         nothing — and saying "Yes, 4 points" over a score that did not
+         move is a small lie the student can see. */
+      var banked = right && first(KEY(k), pay, "guessed");
       runMark("ateru", k, right);
       $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
-        + '<b>' + (right ? "Yes, " + pay + " point" + (pay === 1 ? "" : "s") : "It was") + '</b>'
+        + '<b>' + (!right ? "It was"
+                   : banked ? "Yes, " + pay + " point" + (pay === 1 ? "" : "s")
+                   : "Yes, and you had this one already") + '</b>'
         + '<span class="jp">' + esc(k.k) + '</span>'
         + '<em class="gl">' + esc(k.en) + '<i>'
         + ((k.on || []).join("・") || "—") + ' · ' + ((k.kun || []).join("・") || "—")
@@ -2084,7 +2258,7 @@
       b.onclick = function(){
         if (over) return;
         finish.at = step;
-        finish(opts[+b.dataset.o].k === k.k, opts[+b.dataset.o]);
+        finish(opts[+b.dataset.o].k.k === k.k, opts[+b.dataset.o]);
       };
     });
     $("more").onclick = reveal;
@@ -2115,9 +2289,33 @@
       step: function(){ return step; },
       steps: function(){ return steps; },
       clues: function(){ return $("cluebox").children.length; },
-      opts: function(){ return opts.map(function(o){ return o.k; }); },
+      opts: function(){ return opts.map(function(o){ return o.text; }); },
+      optKanji: function(){ return opts.map(function(o){ return o.k.k; }); },
       over: function(){ return over; },
       veil: function(){ return ateruState().veil; },
+      answer: function(){
+        var me = null;
+        opts.forEach(function(o){ if (o.k.k === k.k) me = o.text; });
+        return me;
+      },
+      /* how far the three wrong answers are from this kanji by shape,
+         against four taken at random, so a check can tell a look-alike
+         from a coincidence */
+      gaps: function(){
+        buildShapes();
+        if (!SHAPES[k.k]) return null;
+        var near = 0, n = 0;
+        opts.forEach(function(o){
+          if (o.k.k === k.k) return;
+          near += shapeGap(k.k, o.k.k); n++;
+        });
+        var rnd = 0, m = 0;
+        shuffle(K.kanji.slice()).slice(0, 40).forEach(function(x){
+          if (x.k === k.k) return;
+          rnd += shapeGap(k.k, x.k); m++;
+        });
+        return { near: n ? near / n : 0, random: m ? rnd / m : 0 };
+      },
       secs: function(){ return secs; },
       left: function(){ return left; },
       paused: function(){ return paused; },
