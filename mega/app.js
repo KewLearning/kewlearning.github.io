@@ -2923,11 +2923,22 @@
         var fc = el.querySelector(".fc");
         if (!fc) return;
         el.style.fontSize = "";
+        fc.style.lineHeight = "";
         var size = parseFloat(window.getComputedStyle(el).fontSize) || 15;
         var guard = 0;
+        /* Two questions, because they are not the same question. The
+           first asks whether the words are taller than the card with a
+           little room to spare, which is what makes a card look right.
+           The second asks whether the FACE is overflowing at all, which
+           is what a card looking wrong actually is, and is what the
+           check measures. The fitter used to ask only the first, and a
+           long kana word with ruby over it could satisfy it while still
+           hanging two pixels out of the bottom. */
         function spills(){
           return fc.scrollHeight > el.clientHeight - 6
-              || fc.scrollWidth > el.clientWidth - 6;
+              || fc.scrollWidth > el.clientWidth - 6
+              || el.scrollHeight > el.clientHeight + 1
+              || el.scrollWidth > el.clientWidth + 1;
         }
         /* Seven, not eight. On an older phone on its side the board gets
            ninety pixels of height, which is a 39px card, and
@@ -2950,7 +2961,34 @@
           el.style.fontSize = size + "px";
           line = parseFloat(window.getComputedStyle(el).lineHeight) || size * 1.3;
         }
-        if (spills() && size > 7) el.style.fontSize = (size - 1) + "px";
+        /* One last pass, and a loop rather than a single pixel. The two
+           line rule above stops at ten, and a long kana word with ruby
+           over it — フットボールのしあい, 友[ともだち]のうち — still hung
+           four pixels out of a forty pixel card on a phone held
+           sideways. A face that does not fit is worth more than a face
+           that is one point bigger, so this keeps going. */
+        /* Budget enough to walk all the way down from the picture
+           faces, which start at 46px: twelve tries got a word with an
+           icon as far as eight and stopped there, still over. */
+        var tries = 0;
+        /* Seven is the floor on a card with room to be read in. On a
+           phone held sideways some boards come out at about thirty
+           pixels a card, and there is no size at which ten kana fit one
+           of those and still look like words. Given the choice between
+           a face one pixel smaller and a face hanging out of the bottom
+           of its card, the small one wins: a student can lean in, and
+           nothing can be done about a word with its tail cut off. */
+        var floor = el.clientHeight < 34 ? 6 : 7;
+        while (tries++ < 60 && size > floor && spills()){
+          size -= 1;
+          el.style.fontSize = size + "px";
+        }
+        /* and if it is still over at the floor, take the leading rather
+           than the letters. At seven pixels the space between lines is
+           decoration; the words are not. Seven is where this stops,
+           because below that a card is not holding a word, it is holding
+           a smudge. */
+        if (spills()) fc.style.lineHeight = "1";
       });
     }
     /* ---- the whole deck on the screen at once ----

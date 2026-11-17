@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#16375e">
 <title>メガセンテンス · Unit 9</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Ccircle cx='32' cy='24' r='11' fill='%2316375e'/%3E%3Cpath d='M13 56c0-11 8-18 19-18s19 7 19 18z' fill='%2316375e'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261116a">
-<link rel="stylesheet" href="shell.css?v=20261116a">
+<link rel="stylesheet" href="fonts.css?v=20261117a">
+<link rel="stylesheet" href="shell.css?v=20261117a">
 <style>
   /* Built to a school laptop: 1366 by 768 before the browser takes its
      cut. One step fills the screen, the page itself never scrolls, and
@@ -601,14 +601,29 @@
   .card .front{background:var(--paper);font-size:21px;opacity:0;transform:scale(.94)}
   /* the face's own box: what the fitting measures, and the only thing in
      the card that knows how tall the words actually are */
-  /* No breaking inside a word. "Wednesday" split across two lines as
-     "Wednesda / y" reads as a typo, and a student matching words should
-     not have to work out which one they are looking at. An English word
-     that will not fit on a line overflows instead, which the fitting
-     sees and answers by making the type smaller until the word fits.
-     Japanese needs nothing here: it breaks between characters anyway. */
-  .card .front .fc{display:block;max-width:100%;
-       word-break:normal;overflow-wrap:normal}
+  /* ---- a long English word takes two lines rather than hanging out ----
+     This used not to break at all. "Wednesday" split as "Wednesda / y"
+     reads as a typo, so the fitting was left to shrink the type until
+     the word fitted on one line — and on a phone held sideways, where a
+     card is about forty pixels tall, it ran out of room first: "the
+     supermarket" hung nine pixels out of its card.
+
+     Andrew said yes to two lines, so the answer is hyphens rather than
+     a chop: super-market tells a student what they are looking at and
+     "supermarke / t" does not. break-word is underneath it for the
+     words no dictionary can split and for a browser with no hyphenation
+     at all, because a word with its tail cut off is worse than either.
+     Japanese needs none of this: it breaks between characters anyway. */
+  /* Tight leading, because this is a word on a card rather than a
+     paragraph. On a phone held sideways a card is about forty pixels
+     tall, and the difference between 1.5 and 1.12 over three lines is
+     the difference between しんかんせん fitting and hanging out of the
+     bottom. The fitting still shrinks the type; it now has room to
+     stop sooner, which leaves the words bigger rather than smaller. */
+  .card .front .fc{display:block;max-width:100%;line-height:1.12;
+       word-break:normal;overflow-wrap:break-word;
+       -webkit-hyphens:auto;hyphens:auto}
+  .card .front.jp .fc,.card .front.pic .fc{hyphens:none;-webkit-hyphens:none}
   /* These are starting sizes for a full-size card, not final ones. The
      page measures each face and brings it down until it fits the card it
      is actually in, so a generous start costs nothing and a mean one
@@ -985,12 +1000,12 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261116a"></script>
-<script src="welcome.js?v=20261116a" data-ja="メガセンテンス" data-en="MEGASENTENCE"></script>
-<script src="tabs.js?v=20261116a"></script>
-<script src="data/mega.js?v=20261116a"></script>
-<script src="data/audio.js?v=20261116a"></script>
-<script src="app.js?v=20261116a"></script>
-<div class="build" aria-hidden="true">build 2026-11-16a</div>
+<script src="hub.js?v=20261117a"></script>
+<script src="welcome.js?v=20261117a" data-ja="メガセンテンス" data-en="MEGASENTENCE"></script>
+<script src="tabs.js?v=20261117a"></script>
+<script src="data/mega.js?v=20261117a"></script>
+<script src="data/audio.js?v=20261117a"></script>
+<script src="app.js?v=20261117a"></script>
+<div class="build" aria-hidden="true">build 2026-11-17a</div>
 </body>
 </html>
