@@ -187,7 +187,13 @@ window.FANFARE = (function(){
   function render(secs, fn, rate){
     var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (!OAC) return Promise.resolve(null);
+    /* wet and dry belong to whichever context built them, and room()
+       below rebuilds them for the offline one. Without putting the old
+       pair back, the next real sound tries to connect a node from one
+       context to a node from another, which throws. It only ever showed
+       once a check played something after rendering something. */
     var keepCtx = ctx, keepNoise = noise, keepOff = off, keepBuf = buf;
+    var keepWet = wet, keepDry = dry;
     rate = rate || 44100;
     off = false; offline = true;
     ctx = new OAC(2, Math.ceil((secs || 2) * rate), rate);
@@ -208,6 +214,7 @@ window.FANFARE = (function(){
       return c.startRendering();
     }).then(function (out){
       ctx = keepCtx; noise = keepNoise; off = keepOff; buf = keepBuf;
+      wet = keepWet; dry = keepDry;
       offline = false;
       return out;
     });
@@ -308,12 +315,17 @@ window.FANFARE = (function(){
     var at = (when || 0) + ctx.currentTime, v = loud === undefined ? 1 : loud;
     /* deeper than the first build, and most of it goes into the room: a
        big drum in a hall is mostly the hall. */
-    burst(at, 0.05, 700, 0.8, 0.26 * v, "lowpass", 0.5);
-    partial(at, 96, 42, 1.15, 0.60 * v, "sine", 0.9);
-    partial(at + 0.004, 150, 70, 0.5, 0.20 * v, "sine", 0.8);
-    partial(at + 0.008, 250, 140, 0.2, 0.07 * v, "triangle", 0.6);
+    /* Levels trimmed on 2026-11-17. Five voices land on the same sample
+       and the room adds its own, and a check running under load caught
+       the sum at 1.03, which is a crackle rather than a drum. The
+       recordings peak at 0.72, so the fallback now sits near them
+       instead of above full scale. */
+    burst(at, 0.05, 700, 0.8, 0.21 * v, "lowpass", 0.5);
+    partial(at, 96, 42, 1.15, 0.48 * v, "sine", 0.9);
+    partial(at + 0.004, 150, 70, 0.5, 0.16 * v, "sine", 0.8);
+    partial(at + 0.008, 250, 140, 0.2, 0.06 * v, "triangle", 0.6);
     /* the sub: felt more than heard, and the reason it reads as big */
-    partial(at, 58, 36, 1.4, 0.30 * v, "sine", 0.7);
+    partial(at, 58, 36, 1.4, 0.24 * v, "sine", 0.7);
     return true;
   }
   /* ---- 掛け声 ----

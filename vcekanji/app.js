@@ -260,7 +260,7 @@
         + "written. Typing pays 2. Stuck? Tap Show four choices and pick "
         + "one, which pays 1. At the end of the set you get your score and "
         + "the ones to look at again.",
-    ateru: "A kanji comes out from behind sixteen tiles, a few at a time. "
+    ateru: "A kanji comes out from behind its tiles, a few at a time. "
          + "Say what it means, or how it is read, before you can see all "
          + "of it: the fewer tiles you use, the more it pays. The four "
          + "answers belong to the four kanji that look most like it. Add "
@@ -1843,6 +1843,23 @@
     { id:"curtain", ja:"カーテン", en:"A curtain",     steps:6 },
     { id:"off",     ja:"なし",     en:"No kanji at all", steps:0 }
   ];
+  /* ---- how many pieces ----
+     Andrew asked to try eight. The round stays eight steps either way,
+     so the same fraction of the kanji is uncovered at the same point and
+     the scoring is comparable: what changes is the size of what arrives.
+     Eight pieces hand over a quarter of a stroke at a time instead of an
+     eighth, which is the easier and sharper game, and it is one piece per
+     step, which is what a jigsaw actually feels like. */
+  var PIECES = [
+    { n: 8,  cols: 4, ja:"8ピース",  en:"8 pieces" },
+    { n: 16, cols: 4, ja:"16ピース", en:"16 pieces" }
+  ];
+  function piecesOf(){
+    var want = ateruState().pieces;
+    var p = PIECES[0];
+    PIECES.forEach(function(x){ if (x.n === want) p = x; });
+    return p;
+  }
   function veilOf(id){
     var v = VEILS[0];
     VEILS.forEach(function(x){ if (x.id === id) v = x; });
@@ -1856,6 +1873,7 @@
        anybody looks at the shape is the fault Andrew found. */
     if (!A.clues) A.clues = {};
     if (!A.veil) A.veil = "jigsaw";
+    if (!A.pieces) A.pieces = 8;
     if (!A.ask) A.ask = "mean";
     if (A.auto === undefined) A.auto = 0;
     return A;
@@ -2001,16 +2019,19 @@
       return '<div class="veil"><span class="glyph" style="clip-path:inset(0 0 '
         + Math.round((1 - veilEase(show)) * 100) + '% 0)">' + esc(k.k) + '</span></div>';
     if (A.veil === "jigsaw"){
-      /* sixteen tiles over the kanji; the ones already turned over are
-         holes in the cover, in the order this round shuffled them */
-      var open = Math.round(show * 16);
+      /* tiles over the kanji; the ones already turned over are holes in
+         the cover, in the order this round shuffled them */
+      var P = piecesOf();
+      var openN = Math.round(show * P.n);
       var cells = [];
-      for (var i = 0; i < 16; i++){
+      for (var i = 0; i < P.n; i++){
         var at = order.indexOf(i);
-        cells.push('<span class="jcell' + (at < open ? " off" : "") + '"></span>');
+        cells.push('<span class="jcell' + (at < openN ? " off" : "") + '"></span>');
       }
       return '<div class="veil jig"><span class="glyph">' + esc(k.k) + '</span>'
-        + '<span class="jgrid">' + cells.join("") + '</span></div>';
+        + '<span class="jgrid" style="grid-template-columns:repeat(' + P.cols
+        + ',1fr);grid-template-rows:repeat(' + (P.n / P.cols) + ',1fr)">'
+        + cells.join("") + '</span></div>';
     }
     return '<div class="veil"><span class="glyph" style="filter:blur('
       + (26 * (1 - veilEase(show))).toFixed(1) + 'px)">' + esc(k.k) + '</span></div>';
@@ -2064,6 +2085,15 @@
               + '><b>' + esc(v.en) + '</b><span>' + esc(v.ja) + '</span></button>';
           }).join("")
         + '</div>'
+        + (A.veil === "jigsaw"
+            ? '<div class="catrow" id="pieces">'
+              + PIECES.map(function(x){
+                  return '<button data-pieces="' + x.n + '"'
+                    + (A.pieces === x.n ? ' class="on"' : "")
+                    + '><b>' + esc(x.en) + '</b><span>' + esc(x.ja) + '</span></button>';
+                }).join("")
+              + '</div>'
+            : "")
         + '<p class="startlead">Who turns the steps over?</p>'
         + '<div class="catrow" id="clocks">'
         + CLOCKS.map(function(c){
@@ -2116,6 +2146,9 @@
       each($("veils"), "[data-veil]", function(b){
         b.onclick = function(){ A.veil = b.dataset.veil; save(); DRAW.ateru(); };
       });
+      each($("pieces") || document.createElement("div"), "[data-pieces]", function(b){
+        b.onclick = function(){ A.pieces = +b.dataset.pieces; save(); DRAW.ateru(); };
+      });
       each($("clocks"), "[data-secs]", function(b){
         b.onclick = function(){ A.auto = +b.dataset.secs; save(); DRAW.ateru(); };
       });
@@ -2161,7 +2194,11 @@
     var left = secs, paused = false;
     /* which tile of the jigsaw turns over when: shuffled per round, so
        the same kanji does not uncover the same way twice */
-    var order = shuffle([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
+    var order = shuffle((function(){
+      var a = [], n = piecesOf().n;
+      for (var i = 0; i < n; i++) a.push(i);
+      return a;
+    })());
     ateruStop();
 
     $("main").innerHTML = ruleFor("ateru")
@@ -2316,6 +2353,7 @@
         });
         return { near: n ? near / n : 0, random: m ? rnd / m : 0 };
       },
+      pieces: function(){ return piecesOf().n; },
       secs: function(){ return secs; },
       left: function(){ return left; },
       paused: function(){ return paused; },
