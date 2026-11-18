@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%99%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261114a">
+<link rel="stylesheet" href="fonts.css?v=20261118a">
 <style>
   /* A Year 12 student practising on a phone, often standing up, often the
      night before. Nothing below 15px, body copy at 17, tap targets at 44.
@@ -510,9 +510,15 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .recbar audio{height:38px;max-width:100%}
   .btn.sm{min-height:44px;padding:0 13px;font-size:15px}
+  /* Four tools, one of them wide, and three chrome controls: at 390px the
+     row came to 395px the day the full screen button joined it, and the
+     last tool went 5px off the right edge. The gap was already 7px below
+     360px, so it closes from 430px instead. The chrome keeps its size. */
+  @media (max-width:430px){
+    .bar{gap:7px;padding-left:10px;padding-right:10px}
+  }
   @media (max-width:360px){
     .ja{font-size:18px} body{font-size:16.5px}
-    .bar{gap:7px;padding-left:10px;padding-right:10px}
   }
 </style>
 </head>
@@ -574,8 +580,8 @@
   <button id="uplater">Later</button>
 </div>
 
-<script src="hub.js?v=20261114a"></script>
-<script src="welcome.js?v=20261114a" data-ja="オーラルしけん" data-en="ORAL EXAM"></script>
+<script src="hub.js?v=20261118a"></script>
+<script src="welcome.js?v=20261118a" data-ja="オーラルしけん" data-en="ORAL EXAM"></script>
 <script src="data/criteria.js"></script>
 <script src="data/readings.js"></script>
 <script src="data/audio.js"></script>
@@ -3821,6 +3827,6 @@
   go(route, true);
 })();
 </script>
-<div class="build" aria-hidden="true">build 2026-11-14a</div>
+<div class="build" aria-hidden="true">build 2026-11-18a</div>
 </body>
 </html>

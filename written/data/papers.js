@@ -31,8 +31,10 @@
             sample response: the quotations are short, attributed, and
             about what students did rather than about what the paper said.
 
-            A paper is added only when its paper and its report are both
-            in the repo. Nothing here is invented.
+            A paper is added only when the paper itself is in the repo.
+            Where its examination report is not published yet, the
+            questions carry no report field and the app shows the
+            asks/high lines alone. Nothing here is invented.
 
    Pure JSON after the single window. line.
    ========================================================================== */
@@ -215,6 +217,156 @@ window.HIKKI_PAPERS = {
     }
   ],
   "papers": [
+    {
+      "year": 2026,
+      "name": "2026 VCAA",
+      "note": "Section 3 is one question of four. Add only the one you answered. The 2026 examination report is not published yet, so this paper carries no assessor quotations.",
+      "source": "VCE Japanese Second Language written examination 2026, VCAA. Its examination report is not published yet.",
+      "choice": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "questions": [
+        {
+          "sec": "s1a",
+          "q": "1a",
+          "marks": 2,
+          "skill": "detail",
+          "asks": "Say when the flea market is on.",
+          "high": "Give the day and both times. Do not write only the day."
+        },
+        {
+          "sec": "s1a",
+          "q": "1b",
+          "marks": 2,
+          "skill": "detail",
+          "asks": "Say where the flea market is held.",
+          "high": "Name the kind of place and where it is. Both are marked."
+        },
+        {
+          "sec": "s1a",
+          "q": "1c",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Describe the products Hideki says you can buy.",
+          "high": "3 marks equals 3 products. Name each one."
+        },
+        {
+          "sec": "s1a",
+          "q": "1d",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Explain the benefits of kimono upcycling.",
+          "high": "State the 3 benefits separately. Use the ideas you heard."
+        },
+        {
+          "sec": "s1b",
+          "q": "2a",
+          "marks": 2,
+          "skill": "convey_ja",
+          "asks": "Say in Japanese what is special about the restaurant.",
+          "high": "Give both features. One is not enough for 2 marks."
+        },
+        {
+          "sec": "s1b",
+          "q": "2b",
+          "marks": 3,
+          "skill": "convey_ja",
+          "asks": "Outline the purpose of the excursion in Japanese.",
+          "high": "Give all 3 purposes. Join them with 〜たり〜たりする."
+        },
+        {
+          "sec": "s1b",
+          "q": "2c",
+          "marks": 5,
+          "skill": "convey_ja",
+          "asks": "Say in Japanese what the teacher asks the students to do.",
+          "high": "5 marks equals 5 instructions. Missing one costs a mark."
+        },
+        {
+          "sec": "s2a",
+          "q": "3a",
+          "marks": 5,
+          "skill": "detail",
+          "asks": "Outline the problems that population decline causes on the isolated islands.",
+          "high": "5 marks equals 5 different problems. Do not count one idea twice."
+        },
+        {
+          "sec": "s2a",
+          "q": "3b",
+          "marks": 4,
+          "skill": "detail",
+          "asks": "Say what the benefits of living on an isolated island are.",
+          "high": "4 marks equals the 4 benefits in the article."
+        },
+        {
+          "sec": "s2a",
+          "q": "3c",
+          "marks": 2,
+          "skill": "detail",
+          "asks": "Say what Stephanie plans to do after Year 12.",
+          "high": "Say where she wants to live and what she wants to study."
+        },
+        {
+          "sec": "s2a",
+          "q": "3d",
+          "marks": 3,
+          "skill": "detail",
+          "asks": "Say why Stephanie is very interested in Takaikamishima.",
+          "high": "Give 3 reasons. The school and its teachers are separate points."
+        },
+        {
+          "sec": "s2a",
+          "q": "3e",
+          "marks": 6,
+          "skill": "gather",
+          "asks": "Explain what is being done to attract families to the islands, using the article and the interview.",
+          "high": "Use both texts, as the question says. 6 marks equals 6 measures."
+        },
+        {
+          "sec": "s2b",
+          "q": "4",
+          "marks": 15,
+          "skill": "texttype",
+          "asks": "Write a formal letter persuading the principal of the Kobe English Education Centre to choose you as a volunteer.",
+          "high": "Persuade the principal. Use the advertisement and the image in your own words."
+        },
+        {
+          "sec": "s3",
+          "q": "5",
+          "marks": 20,
+          "skill": "depth",
+          "asks": "Write an evaluative review of a new Japanese department store for a community newspaper.",
+          "high": "Evaluate, do not describe. Give good and bad points with examples, then recommend."
+        },
+        {
+          "sec": "s3",
+          "q": "6",
+          "marks": 20,
+          "skill": "texttype",
+          "asks": "Write an imaginative story about becoming famous in Japan and the moment everything changed.",
+          "high": "Tell a story, not an explanation. Make the turning point a scene."
+        },
+        {
+          "sec": "s3",
+          "q": "7",
+          "marks": 20,
+          "skill": "relevance",
+          "asks": "Write the script of an informative speech on a celebration important to you and your family.",
+          "high": "Choose a celebration other than Christmas. Inform, do not persuade."
+        },
+        {
+          "sec": "s3",
+          "q": "8",
+          "marks": 20,
+          "skill": "depth",
+          "asks": "Write a personal journal entry reflecting on a weekend spent at home because of the weather.",
+          "high": "Reflect, do not list. Say what you realised, not just what you did."
+        }
+      ]
+    },
     {
       "year": 2025,
       "name": "2025 VCAA",

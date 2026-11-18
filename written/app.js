@@ -1280,10 +1280,16 @@
                            return '<div class="kq1"><p class="kasks"><b>Q' + esc(o.q)
                              + '</b> ' + esc(o.asks) + '</p>'
                              + '<p class="khigh">' + esc(o.high) + '</p>'
-                             + '<details class="krep"><summary>What the assessors said</summary>'
-                             + '<p class="kquote">\u201c' + esc(o.report) + '\u201d'
-                             + '<span class="ksrc">VCAA examination report</span></p>'
-                             + '</details></div>';
+                             /* A paper sat this year has no examination
+                                report yet, so there is nothing to quote.
+                                Say so rather than open an empty panel. */
+                             + (o.report
+                                ? '<details class="krep"><summary>What the assessors said</summary>'
+                                  + '<p class="kquote">\u201c' + esc(o.report) + '\u201d'
+                                  + '<span class="ksrc">VCAA examination report</span></p>'
+                                  + '</details>'
+                                : '<p class="knorep">No examination report for this paper yet.</p>')
+                             + '</div>';
                          }).join("")
                        : '<p class="kasks">' + esc(k.asks) + '</p>'
                          + '<p class="khigh">' + esc(k.high) + '</p>')
