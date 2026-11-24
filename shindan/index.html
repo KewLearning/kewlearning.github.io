@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-AU" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#16375e">
+<title>しんだん · where am I up to?</title>
+<meta name="description" content="Year 10 into Year 11: tick what you can do, and get a page telling you where you are.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Cpath d='M20 34l8 8 16-18' stroke='%23fff' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts.css?v=20261124e">
+<link rel="stylesheet" href="shell.css?v=20261124e">
+<style>
+  /* The same shell as the rest of ジャプリ, so a student who has used
+     VCE漢字 already knows this one. What is different is that nothing
+     here is marked: there is no points box in the bar, because a student
+     ticking their own boxes has not got anything right, and a number that
+     went up for ticking would teach them to tick. */
+  :root{
+    --w-bunpou:#f1f0ec;  --w-kekka:#eef2f8;
+    --i-bunpou:#4a5a52;  --i-kekka:#2f5fa8;
+  }
+  [hidden]{display:none !important}
+  body[data-rung="bunpou"]{background:var(--w-bunpou);--rung:var(--i-bunpou)}
+  body[data-rung="kekka"]{background:var(--w-kekka);--rung:var(--i-kekka)}
+
+  /* ---- the quick way in, the same box VCE漢字 uses ---- */
+  .allrow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+       border:2px solid var(--deep);border-radius:12px;background:var(--paper);
+       padding:9px 12px;margin:0 2px 13px}
+  .allrow b{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;
+       color:var(--deep)}
+  .allrow span{flex-basis:100%;font-size:12.5px;color:var(--muted)}
+  @media (max-width:520px){ .allrow .btn{flex:1 1 auto} }
+
+  /* ---- a group of patterns ---- */
+  .grp{margin:0 0 18px}
+  .grp h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+       font-size:14.5px;font-weight:700;color:var(--deep);margin:0 0 7px;
+       padding-bottom:5px;border-bottom:2px solid var(--line)}
+  .grp h2 i{font-style:normal;font-size:11.5px;font-weight:700;
+       color:var(--muted);border:1.5px solid var(--line);border-radius:999px;
+       padding:1px 8px}
+  .grpall{font-family:inherit;font-size:11.5px;font-weight:700;
+       color:var(--deep);background:var(--paper);border:1.5px solid var(--line);
+       border-radius:999px;padding:2px 10px;cursor:pointer}
+  .grpall:first-of-type{margin-left:auto}
+  .grpall:hover,.grpall:focus-visible{border-color:var(--deep);outline:none}
+  .grpall[aria-pressed="true"]{background:color-mix(in srgb,var(--deep) 12%,var(--paper));
+       border-color:var(--deep)}
+
+  .rows{display:flex;flex-direction:column;gap:7px}
+  .prow{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr) auto;
+       gap:11px;align-items:start;border:1.5px solid var(--line);
+       border-radius:11px;background:var(--paper);padding:9px 11px}
+  .pat b{display:block;font-family:var(--jp);font-size:16px;font-weight:700;
+       color:var(--deep);line-height:1.35}
+  .pat span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+  .pat em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);
+       margin-top:4px;line-height:1.4}
+  .eg p{margin:0;font-family:var(--jp);font-size:14.5px;line-height:1.5}
+  .eg .een{font-family:var(--font);font-size:12.5px;color:var(--muted);
+       margin:0 0 5px;line-height:1.4}
+  .eg p:last-child{margin-bottom:0}
+  .pticks{display:flex;flex-direction:column;gap:5px;flex:none}
+  .ptick{display:flex;align-items:center;gap:7px;border:1.5px solid var(--line);
+       border-radius:9px;background:var(--paper);padding:6px 9px;cursor:pointer;
+       font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink);
+       white-space:nowrap;min-height:34px}
+  .ptick b{flex:none;width:17px;height:17px;border:2px solid var(--line);
+       border-radius:4px;background:var(--paper)}
+  .ptick.on{border-color:var(--deep);background:#eef3f9}
+  .ptick.on b{background:var(--deep);border-color:var(--deep)}
+  @media (max-width:620px){
+    .prow{grid-template-columns:1fr;gap:7px}
+    .pticks{flex-direction:row}
+    .ptick{flex:1;justify-content:center}
+  }
+
+  /* ---- the report ---- */
+  .head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+       border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:11px}
+  .head b{font-size:40px;line-height:1;color:var(--deep)}
+  .head span{font-size:15px;color:var(--muted)}
+  .head i{font-style:normal;font-size:12.5px;font-weight:700;color:var(--deep);
+       border:1.5px solid var(--line);border-radius:999px;padding:2px 9px}
+  .lead{margin:0 0 12px;font-size:14.5px;line-height:1.5}
+  .lvl{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;
+       color:var(--muted);margin:2px 0 7px}
+  .prof{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+  .prow2{display:grid;grid-template-columns:minmax(120px,1.3fr) 1fr auto;gap:9px;
+       align-items:center;font-size:13px}
+  .prow2 b{font-weight:700;line-height:1.25}
+  /* NOT .bar: shell.css owns that name for the bar across the top of
+     every app, and calling this one .bar squashed that bar to 10px. */
+  .meter{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+  .meter i{display:block;height:100%;background:var(--deep);border-radius:999px}
+  .prow2 u{text-decoration:none;color:var(--muted);white-space:nowrap}
+  .hand{border:2px solid var(--deep);border-radius:12px;background:var(--paper);
+       padding:11px 13px;margin:0 0 14px}
+  .hand b{display:block;font-size:12.5px;letter-spacing:.07em;
+       text-transform:uppercase;color:var(--deep);margin-bottom:5px}
+  .hand p{margin:0 0 9px;font-size:13.5px;line-height:1.5}
+  .hand .btn{margin-right:7px}
+  .runs{margin:12px 0 2px;font-size:13px;color:var(--muted)}
+  .runs b{display:block;font-size:12.5px;letter-spacing:.07em;
+       text-transform:uppercase;margin-bottom:5px}
+  .run{display:inline-flex;align-items:baseline;gap:7px;margin:0 7px 5px 0;
+       border:1.5px solid var(--line);border-radius:999px;padding:2px 10px}
+  .run i{font-style:normal;font-weight:700;color:var(--deep)}
+  .note{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff;display:block;overflow:visible;font-size:12pt}
+    .bar,.steps,.foot,.rule,.howto,.hubhome,.hubhelp,.hubfull,.build,
+    .hand .btn{display:none !important}
+    main,.work,.ask{display:block;overflow:visible;padding:0;margin:0;
+         max-height:none;height:auto;border:0;background:#fff}
+    .meter{border:1px solid #999}
+    .meter i{background:#444}
+  }
+</style>
+</head>
+<body class="showen">
+<div class="bar">
+  <h1>しんだん<span>where am I up to? · year 10 into year 11</span></h1>
+  <div class="sp"></div>
+</div>
+<nav class="steps" id="steps"></nav>
+<main id="main"></main>
+<script src="hub.js?v=20261124e"></script>
+<script src="welcome.js?v=20261124e" data-ja="しんだん" data-en="WHERE AM I UP TO?"></script>
+<script src="tabs.js?v=20261124e"></script>
+<script src="data/grammar.js?v=20261124e"></script>
+<script src="app.js?v=20261124e"></script>
+<div class="build" aria-hidden="true">build 2026-11-24e</div>
+</body>
+</html>
