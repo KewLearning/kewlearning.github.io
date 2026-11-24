@@ -245,10 +245,12 @@
     { id:"nyuu",  ja:"にゅうりょく", en:"Typing Japanese" }
   ];
   var RULES = {
-    shin: "Tap every kanji you can read, easiest first. Then answer five "
-        + "questions about eight of them. You get a page showing how many "
-        + "of the 200 you know, where your kanji thin out, and what to "
-        + "open next. Nothing is marked and nothing is sent anywhere.",
+    shin: "Tap every kanji you can read, easiest first. Know most of "
+        + "them? Tick all 200 and untick the ones you cannot read. Then "
+        + "answer five questions about eight of them. You get a page "
+        + "showing how many of the 200 you know, where your kanji thin "
+        + "out, and what to open next. Nothing is marked and nothing is "
+        + "sent anywhere.",
     yomu: "Read the passage. Tap any word for its reading and its meaning, "
         + "free and as often as you like. Then answer the three questions. "
         + "There is no furigana: working the reading out is the task.",
@@ -2516,12 +2518,32 @@
 
   function shinPick(){
     var st = shinState;
+    var bands = shinBands();
+    /* ---- tick everything, then take away what you do not know ----
+       Andrew: "students can then uncheck ones they don't know. This will
+       be much more efficient ... so they don't waste time clicking 179
+       kanji." A Year 11 who knows most of the list was doing nearly two
+       hundred taps to say so. The row sits above the kanji, before the
+       first tap, because a shortcut found at the end is no shortcut, and
+       each year gets its own as well: knowing all of year 1 and none of
+       year 3 is the ordinary shape of this, and the whole-list button
+       alone would make that two hundred taps again. */
     $("main").innerHTML = ruleFor("shin")
-      + '<div class="work"><div class="shinwrap" id="bands"></div></div>'
+      + '<div class="work">'
+      + '<div class="shinall">'
+      + '<b>Quick way in</b>'
+      + '<button class="btn sm" id="shinall">Tick all '
+      + SHIN_ORDER.length + '</button>'
+      + '<button class="btn ghost sm" id="shinnone">Clear all</button>'
+      + '<span>Tick the lot, then untick the ones you cannot read.</span>'
+      + '</div>'
+      + '<div class="shinwrap" id="bands"></div></div>'
       + foot('<button class="btn sm" id="shindone">See my result</button>');
-    $("bands").innerHTML = shinBands().map(function(b){
+    $("bands").innerHTML = bands.map(function(b, i){
       return '<div class="shinband"><div class="lvl">'
-        + esc(GRADE_EN[b.g] || "No year") + ' <i>' + b.list.length + '</i></div>'
+        + esc(GRADE_EN[b.g] || "No year") + ' <i>' + b.list.length + '</i>'
+        + '<button class="shinband-all" data-band="' + i + '"></button>'
+        + '</div>'
         + '<div class="chips">' + b.list.map(function(k){
             return '<button class="chip cat-' + esc(k.cat)
               + (st.known[k.k] ? " on" : "") + '" data-k="' + esc(k.k)
@@ -2536,13 +2558,40 @@
       b.onclick = function(){
         var k = b.dataset.k;
         if (st.known[k]) delete st.known[k]; else st.known[k] = 1;
-        b.classList.toggle("on", !!st.known[k]);
-        b.setAttribute("aria-pressed", st.known[k] ? "true" : "false");
-        count();
+        paint();
       };
     });
-    count();
-    function count(){
+    each($("bands"), "[data-band]", function(b){
+      b.onclick = function(){
+        var band = bands[+b.dataset.band];
+        var all = band.list.every(function(k){ return st.known[k.k]; });
+        band.list.forEach(function(k){
+          if (all) delete st.known[k.k]; else st.known[k.k] = 1;
+        });
+        paint();
+      };
+    });
+    $("shinall").onclick = function(){
+      SHIN_ORDER.forEach(function(k){ st.known[k.k] = 1; });
+      paint();
+    };
+    $("shinnone").onclick = function(){ st.known = {}; paint(); };
+    paint();
+    /* One pass over the page rather than a redraw, so the list does not
+       jump back to the top under a student halfway down it. */
+    function paint(){
+      each($("bands"), "[data-k]", function(b){
+        var on = !!st.known[b.dataset.k];
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      each($("bands"), "[data-band]", function(b){
+        var band = bands[+b.dataset.band];
+        var n = band.list.filter(function(k){ return st.known[k.k]; }).length;
+        b.textContent = n === band.list.length
+          ? "Untick these" : "Tick all " + band.list.length;
+        b.setAttribute("aria-pressed", n === band.list.length ? "true" : "false");
+      });
       $("sc").innerHTML = '<b>' + Object.keys(st.known).length + '</b> of '
         + SHIN_ORDER.length + ' ticked';
     }
