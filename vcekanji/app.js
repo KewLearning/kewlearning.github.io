@@ -2416,12 +2416,23 @@
   var SHIN_SAMPLE = 8;      /* how many kanji pass 2 asks all five about */
   var SHIN_WIN = 10;        /* the window the ceiling is measured over */
 
+  /* Andrew, on the first build: "it says 'I know the 音読み・訓読み'.
+     Most students won't know what this is." A question a student cannot
+     read is not a diagnostic, it is a guess. So each one carries a plain
+     English name and a line saying what the thing is. The Japanese term
+     stays as the heading, because it is the word he uses in class and
+     the word the study design uses. */
   var FACETS = [
-    { id:"mean",  ja:"いみ",    en:"what it means" },
-    { id:"write", ja:"かく",    en:"how to write it" },
-    { id:"on",    ja:"音読み",  en:"its 音読み" },
-    { id:"kun",   ja:"訓読み",  en:"its 訓読み" },
-    { id:"word",  ja:"ことば",  en:"a word it is in" }
+    { id:"mean",  ja:"いみ",   en:"Meaning",
+      note:"What it means in English." },
+    { id:"write", ja:"かく",   en:"Writing",
+      note:"How to write it from memory, strokes and all." },
+    { id:"on",    ja:"音読み", en:"On reading",
+      note:"The sound borrowed from Chinese. Most compound words use it." },
+    { id:"kun",   ja:"訓読み", en:"Kun reading",
+      note:"The original Japanese word. The kanji on its own usually uses it." },
+    { id:"word",  ja:"ことば", en:"A word it is in",
+      note:"Any word this kanji appears in, and what that word means." }
   ];
   /* A kanji with no 音読み on Andrew's list cannot be asked for one, and
      counting it as a gap would mark a student down for his data. */
@@ -2614,12 +2625,12 @@
       + '</span></div>'
       + '<p class="startlead">Which of these do you have for this kanji?</p>'
       + '<div class="shinbig cat-' + esc(k.cat) + '">' + esc(k.k) + '</div>'
-      + '<div class="ticks">' + fits.map(function(f){
+      + '<div class="ticks shinfive">' + fits.map(function(f){
           var on = (st.facets[k.k] || {})[f.id];
           return '<button class="tick' + (on ? " on" : "") + '" data-f="'
             + esc(f.id) + '" aria-pressed="' + (on ? "true" : "false") + '">'
-            + '<b>' + esc(f.ja) + '</b><span>I know ' + esc(f.en)
-            + '</span></button>';
+            + '<b></b>' + esc(f.en) + '<span>' + esc(f.ja) + '</span>'
+            + '<i class="tnote">' + esc(f.note) + '</i></button>';
         }).join("") + '</div>'
       + '<div class="quick"><button id="shinnext"><b>'
       + (st.at + 1 >= st.sample.length ? "See my result" : "Next")
@@ -2712,14 +2723,15 @@
       + r.sample.length + '</i></div>'
       + '<div class="shinprof">' + prof.map(function(p){
           var pc = Math.round((p.got / p.ask) * 100);
-          return '<div class="shinrow"><b>' + esc(p.f.ja) + '</b>'
+          return '<div class="shinrow"><b>' + esc(p.f.en)
+            + '<u>' + esc(p.f.ja) + '</u></b>'
             + '<span class="shinbar"><i style="width:' + pc + '%"></i></span>'
             + '<u>' + p.got + ' of ' + p.ask + '</u>'
             + '<em>about ' + p.across + ' of your ' + r.n + '</em></div>';
         }).join("") + '</div>'
       + (weakest
           ? '<p class="startnote">Weakest of the five is <b>'
-            + esc(weakest.f.ja) + '</b> — ' + esc(weakest.f.en) + '. '
+            + esc(weakest.f.en) + '</b> (' + esc(weakest.f.ja) + '). '
             + esc(shinNext(weakest.f.id)) + '</p>'
           : "")
       + '<div class="lvl">Still ahead of you <i>' + ahead.length + '</i></div>'
@@ -2733,13 +2745,62 @@
       + '</div>'
       + shinHistory()
       + '<p class="startnote">This page lives in this browser only. Clearing '
-      + 'your browser, or using a different device, loses it. Print it or '
-      + 'save it as a PDF if you want it in March.</p>'
+      + 'your browser, or using a different device, loses it. Copy it into a '
+      + 'document or an email if you want it in March.</p>'
       + '</div></div>'
-      + foot('<button class="btn ghost sm" id="shinprint">Print</button>'
+      + foot('<button class="btn ghost sm" id="shincopy">Copy my result</button>'
              + '<button class="btn sm" id="shinagain">Do it again</button>');
-    $("shinprint").onclick = function(){ window.print(); };
+    /* Andrew: "I don't think we need a print option but instead make it
+       easily copied and pasted." Plain text, no markup, so it lands the
+       same in an email, a Word file or a Google Doc. The clipboard needs
+       a permission a school browser sometimes refuses, so a refusal puts
+       the text in a box the student can select by hand rather than
+       failing silently. */
+    $("shincopy").onclick = function(){
+      var txt = shinText(r, prof, ahead, band);
+      function fallback(){ window.prompt("Copy this", txt); }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(txt).then(function(){
+            flash("up", "copied");
+          }, fallback);
+        } else fallback();
+      } catch (e){ fallback(); }
+    };
     $("shinagain").onclick = function(){ shinState = null; DRAW.shin(); };
+  }
+  /* The report as plain text. Columns are padded with spaces rather than
+     tabs, because a tab lands differently in every editor a student might
+     paste into. */
+  function shinText(r, prof, ahead, band){
+    function pad(s, n){
+      s = String(s);
+      while (s.length < n) s += " ";
+      return s;
+    }
+    var out = [];
+    out.push("VCE\u6f22\u5b57 \u3057\u3093\u3060\u3093 \u00b7 " + r.at);
+    out.push(r.n + " of " + SHIN_ORDER.length + " VCE kanji ticked");
+    out.push(band ? "Ticks thin out around: " + band
+                  : "Ticked to the end of the list without thinning out");
+    out.push("");
+    out.push("What a tick means, on a sample of " + r.sample.length + ":");
+    prof.forEach(function(x){
+      out.push("  " + pad(x.f.en, 16) + pad(x.got + " of " + x.ask, 9)
+               + "about " + x.across + " of " + r.n);
+    });
+    out.push("");
+    out.push("Still ahead (" + ahead.length + "):");
+    out.push("  " + ahead.map(function(k){ return k.k; }).join(" "));
+    var runs = shinStore().runs;
+    if (runs.length > 1){
+      out.push("");
+      out.push("Every run:");
+      runs.forEach(function(x){
+        out.push("  " + x.at + "  " + x.n + " of " + SHIN_ORDER.length);
+      });
+    }
+    return out.join("\n");
   }
   /* Which rung fixes which gap. The diagnostic is only worth doing if it
      ends by naming the next thing to open. */

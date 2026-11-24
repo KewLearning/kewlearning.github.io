@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#16375e">
 <title>VCE漢字 · the prescribed kanji</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Crect x='18' y='20' width='28' height='4' fill='%23fff'/%3E%3Crect x='30' y='20' width='4' height='26' fill='%23fff'/%3E%3Crect x='18' y='33' width='28' height='4' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261124b">
-<link rel="stylesheet" href="shell.css?v=20261124b">
+<link rel="stylesheet" href="fonts.css?v=20261124c">
+<link rel="stylesheet" href="shell.css?v=20261124c">
 <style>
   /* The same shell as the rest of ジャプリ: one screen, one scrolling
      region, the textbook font stack, and colour that carries meaning
@@ -501,6 +501,10 @@
   .shinband-all:hover,.shinband-all:focus-visible{border-color:var(--deep);
        outline:none}
   .shinband .lvl{display:flex;align-items:center;gap:8px}
+  .shinfive .tick{flex-wrap:wrap;align-items:flex-start}
+  .shinfive .tick b{margin-top:2px}
+  .tnote{flex-basis:100%;font-style:normal;font-weight:500;font-size:12.5px;
+       color:var(--muted);line-height:1.4;padding-left:29px;margin-top:2px}
   .shinwrap{display:block}
   .shinband{margin-bottom:12px}
   .shinband .chips{max-height:none;overflow:visible}
@@ -514,9 +518,12 @@
        color:var(--deep);border:1.5px solid var(--line);border-radius:999px;
        padding:2px 9px}
   .shinprof{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
-  .shinrow{display:grid;grid-template-columns:72px 1fr auto;gap:9px;
+  .shinrow{display:grid;grid-template-columns:104px 1fr auto;gap:9px;
        align-items:center;font-size:13.5px}
-  .shinrow b{font-family:var(--jp);font-size:15px;font-weight:700}
+  .shinrow b{display:flex;flex-direction:column;font-size:12.5px;
+       font-weight:700;line-height:1.25}
+  .shinrow b u{text-decoration:none;font-family:var(--jp);font-size:12px;
+       font-weight:600;color:var(--muted)}
   .shinbar{grid-column:2;height:10px;border-radius:999px;background:var(--line);
        overflow:hidden}
   .shinbar i{display:block;height:100%;background:var(--deep);border-radius:999px}
@@ -566,16 +573,16 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261124b"></script>
-<script src="fanfare.js?v=20261124b"></script>
-<script src="welcome.js?v=20261124b" data-ja="VCE漢字" data-en="VCE KANJI"></script>
-<script src="tabs.js?v=20261124b"></script>
-<script src="nyuuryoku.js?v=20261124b"></script>
-<script src="data/kanji.js?v=20261124b"></script>
-<script src="data/levels.js?v=20261124b"></script>
-<script src="data/words-en.js?v=20261124b"></script>
-<script src="data/yomu.js?v=20261124b"></script>
-<script src="app.js?v=20261124b"></script>
-<div class="build" aria-hidden="true">build 2026-11-24b</div>
+<script src="hub.js?v=20261124c"></script>
+<script src="fanfare.js?v=20261124c"></script>
+<script src="welcome.js?v=20261124c" data-ja="VCE漢字" data-en="VCE KANJI"></script>
+<script src="tabs.js?v=20261124c"></script>
+<script src="nyuuryoku.js?v=20261124c"></script>
+<script src="data/kanji.js?v=20261124c"></script>
+<script src="data/levels.js?v=20261124c"></script>
+<script src="data/words-en.js?v=20261124c"></script>
+<script src="data/yomu.js?v=20261124c"></script>
+<script src="app.js?v=20261124c"></script>
+<div class="build" aria-hidden="true">build 2026-11-24c</div>
 </body>
 </html>
