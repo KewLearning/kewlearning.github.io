@@ -231,6 +231,12 @@
   /* ================= the rungs ================= */
   var STEPS = [
     { id:"yomu",  ja:"よむ",       en:"Read it" },
+    /* しんだん sits second, not first. A diagnostic is the thing you do
+       once in February before anything else, so first was the tempting
+       place for it — but よむ is the rung Andrew asked to lead and the
+       app opens on it, which tools/browser-check.js holds him to. One
+       line moves it if he wants it leading. */
+    { id:"shin",  ja:"しんだん",   en:"What do you know?" },
     { id:"find",  ja:"さがす",     en:"Look it up" },
     { id:"cards", ja:"カード",     en:"Flashcards" },
     { id:"yomi",  ja:"よみかた",   en:"Which reading" },
@@ -239,6 +245,10 @@
     { id:"nyuu",  ja:"にゅうりょく", en:"Typing Japanese" }
   ];
   var RULES = {
+    shin: "Tap every kanji you can read, easiest first. Then answer five "
+        + "questions about eight of them. You get a page showing how many "
+        + "of the 200 you know, where your kanji thin out, and what to "
+        + "open next. Nothing is marked and nothing is sent anywhere.",
     yomu: "Read the passage. Tap any word for its reading and its meaning, "
         + "free and as often as you like. Then answer the three questions. "
         + "There is no furigana: working the reading out is the task.",
@@ -290,6 +300,14 @@
        the sticks rather than one beat of the drum */
     var all = STEPS.every(function(st){ return S.done[st.id]; });
     sfx(all ? "finale" : "taiko");
+  }
+  /* Finishing the diagnostic marks the rung done and stops there. The
+     ledger pays for getting something right, and a student who ticked all
+     200 boxes has not got anything right — paying for that would put them
+     top of the class for optimism. Same reason there is no drum. */
+  function doneQuiet(id){
+    if (S.done[id]) return;
+    S.done[id] = 1; save(); paintSteps();
   }
   function ruleFor(id){
     return '<div class="rule"><b>' + esc(STEPS[at].en) + '</b>'
@@ -2360,6 +2378,330 @@
       ticking: function(){ return !!ateruTimer; }
     };
   };
+
+  /* ================= 0. しんだん =================
+     The kanji half of the Head Start booklet, on a screen. Andrew's paper
+     version asks five things about each of the 200 — meaning, can write,
+     音読み, 訓読み, and a word it appears in — and he wants all five kept.
+     Five times two hundred is a thousand decisions and nobody finishes
+     that, so this asks them in two passes:
+
+       pass 1   every kanji, one tap: can you read this one at all?
+       pass 2   eight of the ones ticked, all five questions each
+
+     Pass 1 gives the number that matters for VCE, which is a count out of
+     200 and needs no arithmetic. Pass 2 gives the shape of what a tick
+     means for this student, because "I know 一" covers everything from
+     recognising it to writing いち、ひと（つ）、一日 from memory.
+
+     THE ORDER IS EASIEST FIRST, and easiest means the school year a kanji
+     is taught in Japan, out of data/levels.js. It is a published fact
+     rather than anyone's judgement, it is not the order Andrew teaches
+     them in, and the page says so where a student reads it. Q34 would
+     replace it with his own sequence.
+
+     NO POINTS AND NO SOUND. The ledger pays for getting something right,
+     and ticking a box you marked yourself is not that: a student who
+     ticked all 200 would be the highest scorer in the class. Finishing
+     marks the rung done and nothing else.
+
+     EVERY RUN IS KEPT. Andrew, 2026-11-24: "sit the March run beside the
+     one now (do not overwrite)." So the store holds a list of dated runs
+     from the start, because history cannot be added to a single record
+     after the fact — by the time anyone wants it, the early runs are gone.
+     localStorage still forgets when a browser is cleared, so the report
+     says to print it.                                                   */
+  var SHIN_SAMPLE = 8;      /* how many kanji pass 2 asks all five about */
+  var SHIN_WIN = 10;        /* the window the ceiling is measured over */
+
+  var FACETS = [
+    { id:"mean",  ja:"いみ",    en:"what it means" },
+    { id:"write", ja:"かく",    en:"how to write it" },
+    { id:"on",    ja:"音読み",  en:"its 音読み" },
+    { id:"kun",   ja:"訓読み",  en:"its 訓読み" },
+    { id:"word",  ja:"ことば",  en:"a word it is in" }
+  ];
+  /* A kanji with no 音読み on Andrew's list cannot be asked for one, and
+     counting it as a gap would mark a student down for his data. */
+  function facetFits(k, f){
+    if (f === "on") return k.on.length > 0;
+    if (f === "kun") return k.kun.length > 0;
+    if (f === "word") return k.words.length > 0;
+    return true;
+  }
+  var GRADE_EN = { 1:"Year 1 in Japan", 2:"Year 2 in Japan",
+                   3:"Year 3 in Japan", 4:"Year 4 in Japan",
+                   5:"Year 5 in Japan", 6:"Year 6 in Japan",
+                   8:"Junior high in Japan", 0:"Not a kanji" };
+  function gradeOf(k){ return LV[k.k] || 0; }
+  /* The 200 in order, easiest first; 々 has no year and goes last. */
+  var SHIN_ORDER = K.kanji.slice().sort(function(a, b){
+    var ga = gradeOf(a) || 99, gb = gradeOf(b) || 99;
+    return ga - gb || K.kanji.indexOf(a) - K.kanji.indexOf(b);
+  });
+  function shinBands(){
+    var out = [], last = null;
+    SHIN_ORDER.forEach(function(k){
+      var g = gradeOf(k);
+      if (!last || last.g !== g){ last = { g: g, list: [] }; out.push(last); }
+      last.list.push(k);
+    });
+    return out;
+  }
+
+  var shinState = null;     /* null = not started; else the run in progress */
+  function shinStore(){
+    if (!S.shin || !S.shin.runs) S.shin = { runs: [] };
+    return S.shin;
+  }
+  function shinToday(){
+    var d = new Date();
+    function two(n){ return (n < 10 ? "0" : "") + n; }
+    return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate());
+  }
+  /* Where the ticks thin out: the first place in the ordered list where
+     fewer than half of the next ten are ticked. That is a ceiling in the
+     running-record sense — the point where a reader stops being fluent —
+     and it is more use to a student than a raw total. */
+  function shinCeiling(known){
+    var n = SHIN_ORDER.length;
+    for (var i = 0; i + SHIN_WIN <= n; i++){
+      var hit = 0;
+      for (var j = i; j < i + SHIN_WIN; j++)
+        if (known[SHIN_ORDER[j].k]) hit++;
+      if (hit * 2 < SHIN_WIN) return i;
+    }
+    return n;
+  }
+  /* Eight spread across what they ticked, not eight from the front: a
+     sample taken off the easy end would say everybody can write anything. */
+  function shinSample(known){
+    var yes = SHIN_ORDER.filter(function(k){ return known[k.k]; });
+    if (yes.length <= SHIN_SAMPLE) return yes.slice();
+    var out = [], step = yes.length / SHIN_SAMPLE;
+    for (var i = 0; i < SHIN_SAMPLE; i++) out.push(yes[Math.floor(i * step)]);
+    return out;
+  }
+
+  DRAW.shin = function(){
+    var st = shinState;
+    if (!st) return shinStart();
+    if (st.phase === "pick") return shinPick();
+    if (st.phase === "five") return shinFive();
+    return shinReport();
+  };
+
+  function shinStart(){
+    var runs = shinStore().runs;
+    var last = runs.length ? runs[runs.length - 1] : null;
+    $("main").innerHTML = ruleFor("shin")
+      + '<div class="work"><div class="ask">'
+      + '<p class="startlead">Tap every kanji you can read. Then answer five '
+      + 'questions about eight of them. It takes about three minutes.</p>'
+      + (last
+          ? '<p class="startnote">Last time, on ' + esc(last.at) + ', you ticked '
+            + last.n + ' of ' + SHIN_ORDER.length + '. This run sits beside '
+            + 'that one and does not replace it.</p>'
+          : '<p class="startnote">Nothing here is marked and nothing is sent '
+            + 'anywhere. The result is yours.</p>')
+      + '<div class="quick"><button id="shingo"><b>Start</b>'
+      + '<span>はじめる</span></button></div>'
+      + (runs.length ? shinHistory() : "")
+      + '</div></div>' + foot("");
+    $("shingo").onclick = function(){
+      shinState = { phase:"pick", known:{}, at:0, facets:{}, sample:[] };
+      DRAW.shin();
+    };
+  }
+
+  function shinPick(){
+    var st = shinState;
+    $("main").innerHTML = ruleFor("shin")
+      + '<div class="work"><div class="shinwrap" id="bands"></div></div>'
+      + foot('<button class="btn sm" id="shindone">See my result</button>');
+    $("bands").innerHTML = shinBands().map(function(b){
+      return '<div class="shinband"><div class="lvl">'
+        + esc(GRADE_EN[b.g] || "No year") + ' <i>' + b.list.length + '</i></div>'
+        + '<div class="chips">' + b.list.map(function(k){
+            return '<button class="chip cat-' + esc(k.cat)
+              + (st.known[k.k] ? " on" : "") + '" data-k="' + esc(k.k)
+              + '" aria-pressed="' + (st.known[k.k] ? "true" : "false")
+              + '" title="' + esc(k.en) + '">' + esc(k.k) + '</button>';
+          }).join("") + '</div></div>';
+    }).join("")
+      + '<p class="startnote">Easiest first. The order is the school year '
+      + 'each kanji is taught in Japan, which is the only published measure '
+      + 'of difficulty. It is not the order you met them in class.</p>';
+    each($("bands"), "[data-k]", function(b){
+      b.onclick = function(){
+        var k = b.dataset.k;
+        if (st.known[k]) delete st.known[k]; else st.known[k] = 1;
+        b.classList.toggle("on", !!st.known[k]);
+        b.setAttribute("aria-pressed", st.known[k] ? "true" : "false");
+        count();
+      };
+    });
+    count();
+    function count(){
+      $("sc").innerHTML = '<b>' + Object.keys(st.known).length + '</b> of '
+        + SHIN_ORDER.length + ' ticked';
+    }
+    $("shindone").onclick = function(){
+      st.sample = shinSample(st.known);
+      st.at = 0;
+      st.phase = st.sample.length ? "five" : "report";
+      DRAW.shin();
+    };
+  }
+
+  function shinFive(){
+    var st = shinState, k = st.sample[st.at];
+    var fits = FACETS.filter(function(f){ return facetFits(k, f.id); });
+    $("main").innerHTML = ruleFor("shin")
+      + '<div class="work"><div class="ask">'
+      + '<div class="runbar"><div class="runfill" style="width:'
+      + Math.round((st.at / st.sample.length) * 100) + '%"></div>'
+      + '<span class="runsay">' + (st.at + 1) + ' of ' + st.sample.length
+      + '</span></div>'
+      + '<p class="startlead">Which of these do you have for this kanji?</p>'
+      + '<div class="shinbig cat-' + esc(k.cat) + '">' + esc(k.k) + '</div>'
+      + '<div class="ticks">' + fits.map(function(f){
+          var on = (st.facets[k.k] || {})[f.id];
+          return '<button class="tick' + (on ? " on" : "") + '" data-f="'
+            + esc(f.id) + '" aria-pressed="' + (on ? "true" : "false") + '">'
+            + '<b>' + esc(f.ja) + '</b><span>I know ' + esc(f.en)
+            + '</span></button>';
+        }).join("") + '</div>'
+      + '<div class="quick"><button id="shinnext"><b>'
+      + (st.at + 1 >= st.sample.length ? "See my result" : "Next")
+      + '</b><span>' + (st.at + 1 >= st.sample.length ? "けっか" : "つぎ")
+      + '</span></button></div>'
+      + '</div></div>' + foot("");
+    each($("main"), "[data-f]", function(b){
+      b.onclick = function(){
+        var box = st.facets[k.k] || (st.facets[k.k] = {});
+        var f = b.dataset.f;
+        if (box[f]) delete box[f]; else box[f] = 1;
+        b.classList.toggle("on", !!box[f]);
+        b.setAttribute("aria-pressed", box[f] ? "true" : "false");
+      };
+    });
+    $("shinnext").onclick = function(){
+      st.at++;
+      if (st.at >= st.sample.length){ st.phase = "report"; shinSave(); }
+      DRAW.shin();
+    };
+  }
+
+  /* The run goes in as a dated entry of its own. Nothing is overwritten. */
+  function shinSave(){
+    var st = shinState, store = shinStore();
+    var known = SHIN_ORDER.filter(function(k){ return st.known[k.k]; })
+                          .map(function(k){ return k.k; });
+    var tally = {}, asked = {};
+    FACETS.forEach(function(f){ tally[f.id] = 0; asked[f.id] = 0; });
+    st.sample.forEach(function(k){
+      FACETS.forEach(function(f){
+        if (!facetFits(k, f.id)) return;
+        asked[f.id]++;
+        if ((st.facets[k.k] || {})[f.id]) tally[f.id]++;
+      });
+    });
+    store.runs.push({ at: shinToday(), n: known.length, known: known.join(""),
+                      sample: st.sample.map(function(k){ return k.k; }).join(""),
+                      tally: tally, asked: asked,
+                      ceil: shinCeiling(st.known) });
+    save();
+    doneQuiet("shin");
+  }
+
+  function shinHistory(){
+    var runs = shinStore().runs;
+    if (!runs.length) return "";
+    return '<div class="shinruns"><b>Every run you have done</b>'
+      + runs.map(function(r){
+          return '<span class="shinrun">' + esc(r.at) + '<i>' + r.n + ' of '
+            + SHIN_ORDER.length + '</i></span>';
+        }).join("") + '</div>';
+  }
+
+  function shinReport(){
+    var st = shinState;
+    var runs = shinStore().runs, r = runs[runs.length - 1];
+    var prev = runs.length > 1 ? runs[runs.length - 2] : null;
+    var ceilAt = r.ceil, n = SHIN_ORDER.length;
+    var ahead = SHIN_ORDER.filter(function(k){ return !st.known[k.k]; });
+    var band = ceilAt < n ? GRADE_EN[gradeOf(SHIN_ORDER[ceilAt])] : null;
+
+    /* The five facets, measured on the sample and carried across the
+       whole tick list as a proportion. The sample is eight, so the figure
+       is a rough one and the page says the sample size next to it rather
+       than printing a number that looks surveyed. */
+    var prof = FACETS.map(function(f){
+      var got = r.tally[f.id], ask = r.asked[f.id];
+      var across = ask ? Math.round((got / ask) * r.n) : null;
+      return { f: f, got: got, ask: ask, across: across };
+    }).filter(function(p){ return p.ask > 0; });
+    var weakest = prof.slice().sort(function(a, b){
+      return (a.got / a.ask) - (b.got / b.ask);
+    })[0];
+
+    $("main").innerHTML = ruleFor("shin")
+      + '<div class="work"><div class="ask shinrep" id="rep">'
+      + '<div class="shinhead"><b>' + r.n + '</b><span>of ' + n
+      + ' VCE kanji ticked</span>'
+      + (prev ? '<i>' + (r.n - prev.n >= 0 ? "+" : "") + (r.n - prev.n)
+                + ' since ' + esc(prev.at) + '</i>' : '')
+      + '</div>'
+      + '<p class="startlead">'
+      + (band
+          ? 'Your ticks thin out around <b>' + esc(band) + '</b>. That is where '
+            + 'to start, not the beginning of the list.'
+          : 'You ticked your way to the end of the list without thinning out.')
+      + '</p>'
+      + '<div class="lvl">What a tick means for you <i>sample of '
+      + r.sample.length + '</i></div>'
+      + '<div class="shinprof">' + prof.map(function(p){
+          var pc = Math.round((p.got / p.ask) * 100);
+          return '<div class="shinrow"><b>' + esc(p.f.ja) + '</b>'
+            + '<span class="shinbar"><i style="width:' + pc + '%"></i></span>'
+            + '<u>' + p.got + ' of ' + p.ask + '</u>'
+            + '<em>about ' + p.across + ' of your ' + r.n + '</em></div>';
+        }).join("") + '</div>'
+      + (weakest
+          ? '<p class="startnote">Weakest of the five is <b>'
+            + esc(weakest.f.ja) + '</b> — ' + esc(weakest.f.en) + '. '
+            + esc(shinNext(weakest.f.id)) + '</p>'
+          : "")
+      + '<div class="lvl">Still ahead of you <i>' + ahead.length + '</i></div>'
+      + '<div class="chips shinahead">' + ahead.slice(0, 60).map(function(k){
+          return '<span class="chip cat-' + esc(k.cat) + '" title="'
+            + esc(k.en) + '">' + esc(k.k) + '</span>';
+        }).join("")
+        + (ahead.length > 60
+            ? '<span class="shinmore">and ' + (ahead.length - 60) + ' more</span>'
+            : "")
+      + '</div>'
+      + shinHistory()
+      + '<p class="startnote">This page lives in this browser only. Clearing '
+      + 'your browser, or using a different device, loses it. Print it or '
+      + 'save it as a PDF if you want it in March.</p>'
+      + '</div></div>'
+      + foot('<button class="btn ghost sm" id="shinprint">Print</button>'
+             + '<button class="btn sm" id="shinagain">Do it again</button>');
+    $("shinprint").onclick = function(){ window.print(); };
+    $("shinagain").onclick = function(){ shinState = null; DRAW.shin(); };
+  }
+  /* Which rung fixes which gap. The diagnostic is only worth doing if it
+     ends by naming the next thing to open. */
+  function shinNext(id){
+    if (id === "write") return "かく asks you to produce the kanji, not pick it.";
+    if (id === "on" || id === "kun")
+      return "よみかた drills which reading a kanji takes in which word.";
+    if (id === "word") return "さがす lists every word each kanji appears in.";
+    return "カード puts the ones you did not tick on flashcards.";
+  }
+
   DRAW.nyuu = function(){
     $("main").innerHTML = ruleFor("nyuu")
       + '<div class="work">' + NYUURYOKU.html() + '</div>' + foot("");
@@ -2405,6 +2747,24 @@
                                 testing: !!cardTest }; },
     english: function(){ return kakuAsksEnglish(); },
     read: function(i){ yomuOn = i; draw(); },
+    shin: function(){
+      var st = shinState;
+      return { phase: st ? st.phase : null,
+               order: SHIN_ORDER.map(function(k){ return k.k; }),
+               grades: SHIN_ORDER.map(gradeOf),
+               ticked: st ? Object.keys(st.known).length : 0,
+               sample: st ? st.sample.map(function(k){ return k.k; }) : [],
+               runs: (S.shin && S.shin.runs ? S.shin.runs : []).map(function(r){
+                 return { at: r.at, n: r.n, ceil: r.ceil,
+                          tally: r.tally, asked: r.asked };
+               }),
+               ceiling: st ? shinCeiling(st.known) : null };
+    },
+    shinTick: function(ks){
+      if (!shinState) return false;
+      ks.split("").forEach(function(c){ shinState.known[c] = 1; });
+      return true;
+    },
     tokens: function(line){ return readable(line); }
   };
 

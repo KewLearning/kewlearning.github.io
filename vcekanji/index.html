@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#16375e">
 <title>VCE漢字 · the prescribed kanji</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Crect x='18' y='20' width='28' height='4' fill='%23fff'/%3E%3Crect x='30' y='20' width='4' height='26' fill='%23fff'/%3E%3Crect x='18' y='33' width='28' height='4' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261118a">
-<link rel="stylesheet" href="shell.css?v=20261118a">
+<link rel="stylesheet" href="fonts.css?v=20261124a">
+<link rel="stylesheet" href="shell.css?v=20261124a">
 <style>
   /* The same shell as the rest of ジャプリ: one screen, one scrolling
      region, the textbook font stack, and colour that carries meaning
@@ -41,8 +41,10 @@
        like a verdict is a page that argues with its own marks. */
     --w-yomu:#eef2f8;  --w-find:#f4f1e9;  --w-cards:#f2effa;
     --w-yomi:#e9f3f4;  --w-kaku:#eef0f3;  --w-nyuu:#f5f1ef;
+    --w-shin:#f1f0ec;
     --i-yomu:#2f5fa8;  --i-find:#7a5230;  --i-cards:#5a4fb0;
-    --i-yomi:#1f6f8f;  --i-kaku:#45506b;  --i-nyuu:#58616e;}
+    --i-yomi:#1f6f8f;  --i-kaku:#45506b;  --i-nyuu:#58616e;
+    --i-shin:#4a5a52;}
   
   /* A display: rule beats the hidden attribute, and .opts and .typebox
      both set one. Without this line a box the app has hidden stays on
@@ -59,6 +61,7 @@
   body[data-rung="yomi"]{background:var(--w-yomi);--rung:var(--i-yomi)}
   body[data-rung="kaku"]{background:var(--w-kaku);--rung:var(--i-kaku)}
   body[data-rung="nyuu"]{background:var(--w-nyuu);--rung:var(--i-nyuu)}
+  body[data-rung="shin"]{background:var(--w-shin);--rung:var(--i-shin)}
   @media (prefers-reduced-motion:reduce){ body{transition:none} }
 
   
@@ -476,6 +479,61 @@
     .rule{max-height:72px;overflow:auto}
     .prompt{font-size:clamp(28px,6vw,40px)}
   }
+
+  /* ---- しんだん ----
+     Two hundred chips a student taps through, then a report they can take
+     away. The chips are the ones カード already uses, so the tap target
+     and the group colours are the same hand. */
+  .shinwrap{display:block}
+  .shinband{margin-bottom:12px}
+  .shinband .chips{max-height:none;overflow:visible}
+  .shinbig{font-family:var(--jp);font-size:92px;line-height:1.05;text-align:center;
+       color:var(--c,var(--deep));margin:4px 0 12px}
+  .shinhead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+       border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:11px}
+  .shinhead b{font-size:40px;line-height:1;color:var(--deep)}
+  .shinhead span{font-size:15px;color:var(--muted)}
+  .shinhead i{font-style:normal;font-size:12.5px;font-weight:700;
+       color:var(--deep);border:1.5px solid var(--line);border-radius:999px;
+       padding:2px 9px}
+  .shinprof{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .shinrow{display:grid;grid-template-columns:72px 1fr auto;gap:9px;
+       align-items:center;font-size:13.5px}
+  .shinrow b{font-family:var(--jp);font-size:15px;font-weight:700}
+  .shinbar{grid-column:2;height:10px;border-radius:999px;background:var(--line);
+       overflow:hidden}
+  .shinbar i{display:block;height:100%;background:var(--deep);border-radius:999px}
+  .shinrow u{text-decoration:none;color:var(--muted);white-space:nowrap}
+  .shinrow em{grid-column:2 / -1;font-style:normal;font-size:12px;
+       color:var(--muted)}
+  .shinahead .chip{cursor:default}
+  .shinmore{align-self:center;font-size:12.5px;color:var(--muted);padding:0 6px}
+  .shinruns{margin:12px 0 2px;font-size:13px;color:var(--muted)}
+  .shinruns b{display:block;font-size:12.5px;letter-spacing:.07em;
+       text-transform:uppercase;margin-bottom:5px}
+  .shinrun{display:inline-flex;align-items:baseline;gap:7px;margin:0 7px 5px 0;
+       border:1.5px solid var(--line);border-radius:999px;padding:2px 10px}
+  .shinrun i{font-style:normal;font-weight:700;color:var(--deep)}
+
+  /* ---- the report on paper ----
+     Andrew asked for "a nicely formatted, easy to understand page,
+     printout or summary", and the browser storage can be cleared, so the
+     print is the copy that survives to March. Everything that is a
+     control on screen comes off the page. */
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff;display:block;overflow:visible;font-size:12pt}
+    .bar,.steps,.foot,.rule,.howto,.tip,#ptstip,.hubhome,.hubhelp,.hubfull,
+    .build,.quick,.shinahead .shinmore{display:none !important}
+    main,.work,.ask{display:block;overflow:visible;padding:0;margin:0;
+         max-height:none;height:auto;border:0;background:#fff}
+    .shinrep{page-break-inside:auto}
+    .shinhead b{font-size:34pt}
+    .chip{border-color:#999;color:#333;-webkit-print-color-adjust:exact;
+         print-color-adjust:exact}
+    .shinbar{border:1px solid #999}
+    .shinbar i{background:#444}
+  }
 </style>
 </head>
 <body class="showen">
@@ -491,16 +549,16 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261118a"></script>
-<script src="fanfare.js?v=20261118a"></script>
-<script src="welcome.js?v=20261118a" data-ja="VCE漢字" data-en="VCE KANJI"></script>
-<script src="tabs.js?v=20261118a"></script>
-<script src="nyuuryoku.js?v=20261118a"></script>
-<script src="data/kanji.js?v=20261118a"></script>
-<script src="data/levels.js?v=20261118a"></script>
-<script src="data/words-en.js?v=20261118a"></script>
-<script src="data/yomu.js?v=20261118a"></script>
-<script src="app.js?v=20261118a"></script>
-<div class="build" aria-hidden="true">build 2026-11-18a</div>
+<script src="hub.js?v=20261124a"></script>
+<script src="fanfare.js?v=20261124a"></script>
+<script src="welcome.js?v=20261124a" data-ja="VCE漢字" data-en="VCE KANJI"></script>
+<script src="tabs.js?v=20261124a"></script>
+<script src="nyuuryoku.js?v=20261124a"></script>
+<script src="data/kanji.js?v=20261124a"></script>
+<script src="data/levels.js?v=20261124a"></script>
+<script src="data/words-en.js?v=20261124a"></script>
+<script src="data/yomu.js?v=20261124a"></script>
+<script src="app.js?v=20261124a"></script>
+<div class="build" aria-hidden="true">build 2026-11-24a</div>
 </body>
 </html>
