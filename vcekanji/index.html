@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#16375e">
 <title>VCE漢字 · the prescribed kanji</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23eef1f5'/%3E%3Crect x='9' y='9' width='46' height='46' rx='6' fill='%2316375e'/%3E%3Crect x='18' y='20' width='28' height='4' fill='%23fff'/%3E%3Crect x='30' y='20' width='4' height='26' fill='%23fff'/%3E%3Crect x='18' y='33' width='28' height='4' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts.css?v=20261124c">
-<link rel="stylesheet" href="shell.css?v=20261124c">
+<link rel="stylesheet" href="fonts.css?v=20261124d">
+<link rel="stylesheet" href="shell.css?v=20261124d">
 <style>
   /* The same shell as the rest of ジャプリ: one screen, one scrolling
      region, the textbook font stack, and colour that carries meaning
@@ -505,6 +505,16 @@
   .shinfive .tick b{margin-top:2px}
   .tnote{flex-basis:100%;font-style:normal;font-weight:500;font-size:12.5px;
        color:var(--muted);line-height:1.4;padding-left:29px;margin-top:2px}
+  /* The way out of the report and into practice. Bordered like the
+     Quick way in box at the other end, because they are the same kind of
+     thing: the obvious next tap. */
+  .shinhand{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+       border:2px solid var(--deep);border-radius:12px;background:var(--paper);
+       padding:10px 12px;margin:4px 0 13px}
+  .shinhand b{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;
+       color:var(--deep)}
+  .shinhand span{flex-basis:100%;font-size:12.5px;color:var(--muted)}
+  @media (max-width:430px){ .shinhand .btn{flex:1} }
   .shinwrap{display:block}
   .shinband{margin-bottom:12px}
   .shinband .chips{max-height:none;overflow:visible}
@@ -573,16 +583,16 @@
 </div>
 <nav class="steps" id="steps"></nav>
 <main id="main"></main>
-<script src="hub.js?v=20261124c"></script>
-<script src="fanfare.js?v=20261124c"></script>
-<script src="welcome.js?v=20261124c" data-ja="VCE漢字" data-en="VCE KANJI"></script>
-<script src="tabs.js?v=20261124c"></script>
-<script src="nyuuryoku.js?v=20261124c"></script>
-<script src="data/kanji.js?v=20261124c"></script>
-<script src="data/levels.js?v=20261124c"></script>
-<script src="data/words-en.js?v=20261124c"></script>
-<script src="data/yomu.js?v=20261124c"></script>
-<script src="app.js?v=20261124c"></script>
-<div class="build" aria-hidden="true">build 2026-11-24c</div>
+<script src="hub.js?v=20261124d"></script>
+<script src="fanfare.js?v=20261124d"></script>
+<script src="welcome.js?v=20261124d" data-ja="VCE漢字" data-en="VCE KANJI"></script>
+<script src="tabs.js?v=20261124d"></script>
+<script src="nyuuryoku.js?v=20261124d"></script>
+<script src="data/kanji.js?v=20261124d"></script>
+<script src="data/levels.js?v=20261124d"></script>
+<script src="data/words-en.js?v=20261124d"></script>
+<script src="data/yomu.js?v=20261124d"></script>
+<script src="app.js?v=20261124d"></script>
+<div class="build" aria-hidden="true">build 2026-11-24d</div>
 </body>
 </html>

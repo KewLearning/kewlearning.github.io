@@ -906,6 +906,21 @@
               + '</b><span>' + esc(q.ja) + '</span></button>';
           }).join("") + '</div>'
         + '<p class="hint">' + esc(bandLine()) + '</p></div>'
+        /* Andrew: "it would be good if the student can copy and paste the
+           kanji they say they don't know into a window ... I think it
+           needs to be very obvious." So it is a panel of its own, next to
+           Quick start, not a line inside a fold nobody opens. It takes
+           anything: a result page, a worksheet, a sentence. Everything
+           that is not one of the 200 is ignored rather than refused. */
+        + '<div class="panel"><h2>Paste a list of kanji</h2>'
+        + '<div class="find">'
+        + '<input id="cpaste" type="text" placeholder="漢字をここにはる"'
+        + ' autocomplete="off" spellcheck="false">'
+        + '<button class="btn sm" id="cpasteGo">Add these</button></div>'
+        + '<p class="hint" id="cpastesay">Paste kanji from anywhere: your '
+        + 'しんだん result, a worksheet, a message from your teacher. The '
+        + 'ones on the VCE list are ticked below and the rest are ignored.'
+        + '</p></div>'
         + '<details class="fold" id="fcats"' + (C.open.cats ? " open" : "") + '>'
         + '<summary>Choose by category<i id="ncats"></i></summary>'
         + '<div class="cats" id="ccats"></div></details>'
@@ -935,6 +950,28 @@
             + '<b></b>' + esc(f.en) + '<span>' + esc(f.ja) + '</span></button>';
         }).join("");
       });
+      if ($("cpasteGo")) $("cpasteGo").onclick = function(){
+        var raw = ($("cpaste") || {}).value || "";
+        var got = 0, miss = 0, seen = {};
+        Array.prototype.forEach.call(raw, function(ch){
+          if (BYK[ch]){
+            if (!seen[ch]){ seen[ch] = 1; got++; C.pick[ch] = 1; }
+          } else if (/[\u4e00-\u9fff\u3005]/.test(ch)) miss++;
+        });
+        save();
+        if (!got && !miss){
+          $("cpastesay").textContent = "Nothing pasted yet. Copy some kanji, "
+            + "then tap in the box and paste.";
+          return;
+        }
+        C.open.all = 1;
+        DRAW.cards();
+        var say = $("cpastesay");
+        if (say) say.textContent = got + " kanji ticked"
+          + (miss ? ", and " + miss + " that are not on the VCE list were "
+                  + "left out." : ".")
+          + " Scroll down to see them, or change the faces and start.";
+      };
       /* a fold remembers whether it was open, per device */
       ["cats", "all"].forEach(function(which){
         var box = $(which === "cats" ? "fcats" : "fall");
@@ -1276,6 +1313,33 @@
     if (!cat) return pool;
     return pool.filter(function(w){ return w.cat === cat; });
   }
+  /* ---- and a set can be one band ----
+     Andrew asked for カード's easy, medium and hard in these two rungs as
+     well. カード bands a kanji; these rungs deal words, so a word takes
+     the band of the HARDEST kanji in it. 先生 is easy on 先 and easy on
+     生, so it is easy; 病院 is hard because 病 and 院 both are, and a word
+     with one year-1 kanji and one year-4 kanji is hard, because the year-4
+     one is what will stop a student. A word whose kanji carry no year sits
+     in no band and only Everything deals it. */
+  var BANDOF = {};  /* rung id -> "easy" | "medium" | "hard", or "" */
+  function wordBand(w){
+    var top = 0;
+    (w.from || []).forEach(function(c){
+      var lv = LV[c] || 0;
+      if (lv > top) top = lv;
+    });
+    if (!top) return null;
+    return top <= 1 ? "easy" : (top === 2 ? "medium" : "hard");
+  }
+  function bandPool(pool, band){
+    if (!band) return pool;
+    return pool.filter(function(w){ return wordBand(w) === band; });
+  }
+  var BANDS = [
+    { id:"easy",   en:"Easy",   ja:"やさしい" },
+    { id:"medium", en:"Medium", ja:"ふつう" },
+    { id:"hard",   en:"Hard",   ja:"むずかしい" }
+  ];
   function catName(cat){
     var c = null;
     (K.cats || []).forEach(function(x){ if (x.id === cat) c = x; });
@@ -1283,8 +1347,8 @@
   }
   /* the screen a rung shows when no set is running */
   function startPanel(id, lead, pool, keyOf, redraw){
-    var cat = CATOF[id] || "";
-    var mine = catPool(pool, cat);
+    var cat = CATOF[id] || "", band = BANDOF[id] || "";
+    var mine = bandPool(catPool(pool, cat), band);
     var left = mine.filter(function(w){ return !S.won[keyOf(w)]; }).length;
     var cats = (K.cats || []).filter(function(c){
       return pool.some(function(w){ return w.cat === c.id; });
@@ -1300,6 +1364,15 @@
             + '><b>' + esc(c.en) + '</b><span>' + esc(c.ja) + '</span></button>';
         }).join("")
       + '</div>'
+      + '<div class="catrow" id="bandrow">'
+      + '<button data-band=""' + (band ? "" : ' class="on"')
+      + '><b>Any level</b><span>どれでも</span></button>'
+      + BANDS.map(function(x){
+          return '<button data-band="' + esc(x.id) + '"'
+            + (band === x.id ? ' class="on"' : "")
+            + '><b>' + esc(x.en) + '</b><span>' + esc(x.ja) + '</span></button>';
+        }).join("")
+      + '</div>'
       + '<div class="quick" id="sizes">'
       + SIZES.map(function(n){
           var few = mine.length < n;
@@ -1311,18 +1384,23 @@
       + '</div>'
       + '<p class="startnote">' + left + ' of ' + mine.length + ' '
       + (cat ? esc((catName(cat) || {}).en || "") + " words" : "words")
+      + (band ? " at this level" : "")
       + ' still to get right. A set takes the ones you have not had right yet.'
+      + (band ? ' ' + esc(bandLine()) : "")
       + '</p></div></div>';
   }
   function wireStart(id, pool, keyOf, redraw){
     each($("cats") || document.createElement("div"), "[data-cat]", function(b){
       b.onclick = function(){ CATOF[id] = b.dataset.cat; redraw(); };
     });
+    each($("bandrow") || document.createElement("div"), "[data-band]", function(b){
+      b.onclick = function(){ BANDOF[id] = b.dataset.band; redraw(); };
+    });
     var el = $("sizes");
     if (!el) return;
     each(el, "[data-n]", function(b){
       b.onclick = function(){
-        var mine = catPool(pool, CATOF[id] || "");
+        var mine = bandPool(catPool(pool, CATOF[id] || ""), BANDOF[id] || "");
         if (!mine.length) return;
         runStart(id, freshFirst(mine, Math.min(+b.dataset.n, mine.length), keyOf));
         redraw();
@@ -2487,13 +2565,24 @@
     return n;
   }
   /* Eight spread across what they ticked, not eight from the front: a
-     sample taken off the easy end would say everybody can write anything. */
+     sample taken off the easy end would say everybody can write anything.
+
+     Andrew, after two runs: "一 came up both times first." It would have
+     come up every time. The old version took the first kanji of each
+     slice, and the first slice starts at the first kanji on the list. So
+     the slices stay, because they are what makes the sample spread, and
+     the pick inside each slice is now random. The eight are then shuffled
+     so the order asked is not easiest to hardest either. */
   function shinSample(known){
     var yes = SHIN_ORDER.filter(function(k){ return known[k.k]; });
-    if (yes.length <= SHIN_SAMPLE) return yes.slice();
+    if (yes.length <= SHIN_SAMPLE) return shuffle(yes.slice());
     var out = [], step = yes.length / SHIN_SAMPLE;
-    for (var i = 0; i < SHIN_SAMPLE; i++) out.push(yes[Math.floor(i * step)]);
-    return out;
+    for (var i = 0; i < SHIN_SAMPLE; i++){
+      var from = Math.floor(i * step), to = Math.floor((i + 1) * step);
+      if (to <= from) to = from + 1;
+      out.push(yes[from + Math.floor(Math.random() * (to - from))]);
+    }
+    return shuffle(out);
   }
 
   DRAW.shin = function(){
@@ -2734,6 +2823,20 @@
             + esc(weakest.f.en) + '</b> (' + esc(weakest.f.ja) + '). '
             + esc(shinNext(weakest.f.id)) + '</p>'
           : "")
+      /* Andrew asked whether a student could copy the kanji they did not
+         tick and paste them into the app to practise. They can, and the
+         paste box in カード is there for a list from anywhere. But inside
+         the app nothing needs copying at all: the kanji are already here,
+         so this button loads them onto the flashcards and opens them. The
+         copy route is kept for the list that came off a worksheet, or off
+         somebody else's screen. */
+      + (ahead.length
+          ? '<div class="shinhand"><b>Practise these now</b>'
+            + '<button class="btn" id="shincards">Put the ' + ahead.length
+            + ' on flashcards</button>'
+            + '<span>Opens カード with them chosen. Nothing to copy.</span>'
+            + '</div>'
+          : "")
       + '<div class="lvl">Still ahead of you <i>' + ahead.length + '</i></div>'
       + '<div class="chips shinahead">' + ahead.slice(0, 60).map(function(k){
           return '<span class="chip cat-' + esc(k.cat) + '" title="'
@@ -2768,6 +2871,17 @@
       } catch (e){ fallback(); }
     };
     $("shinagain").onclick = function(){ shinState = null; DRAW.shin(); };
+    if ($("shincards")) $("shincards").onclick = function(){
+      var C = cardsState();
+      C.pick = {};
+      ahead.forEach(function(k){ C.pick[k.k] = 1; });
+      C.open = C.open || {};
+      C.open.all = 1;           /* so a student can see what was chosen */
+      save();
+      for (var i = 0; i < STEPS.length; i++)
+        if (STEPS[i].id === "cards"){ at = i; break; }
+      draw();
+    };
   }
   /* The report as plain text. Columns are padded with spaces rather than
      tabs, because a tab lands differently in every editor a student might
