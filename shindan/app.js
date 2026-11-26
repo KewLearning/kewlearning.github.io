@@ -253,15 +253,55 @@
     save();
   }
 
+  /* ---- the kanji half, read from where it already is ----
+     The kanji self-check is a rung in VCE漢字, because the 200 kanji and
+     their readings live there. Both apps sit on one site, so they share
+     this browser's storage, and しんだん can read the run VCE漢字 saved
+     instead of making a student do it twice or asking them to copy a
+     number across. It only ever reads: the kanji rung owns that key.
+
+     If the key is missing, malformed, or from a browser where the kanji
+     check has never been opened, this returns null and the report says
+     so with a link. It never throws: a student who has done the grammar
+     and not the kanji still gets their grammar page. */
+  var KANJI_KEY = "vcekanji-v1";
+  var KANJI_TOTAL = 200;
+  function kanjiRun(){
+    try {
+      var raw = localStorage.getItem(KANJI_KEY);
+      if (!raw) return null;
+      var k = JSON.parse(raw);
+      var runs = k && k.shin && k.shin.runs;
+      if (!runs || !runs.length) return null;
+      var last = runs[runs.length - 1];
+      if (!last || typeof last.n !== "number") return null;
+      return { at: last.at, n: last.n, runs: runs.length };
+    } catch (e){ return null; }
+  }
+  function kanjiCard(){
+    var k = kanjiRun();
+    if (!k)
+      return '<div class="hand"><b>Kanji</b>'
+        + '<p>Not done yet. The kanji check is a tab in VCE漢字, because '
+        + 'the 200 kanji live there. Do it and your result shows up here.</p>'
+        + '<a class="btn" href="../vce-kanji/index.html">Open VCE漢字</a></div>';
+    return '<div class="hand"><b>Kanji</b>'
+      + '<p>' + k.n + ' of ' + KANJI_TOTAL + ' VCE kanji ticked on '
+      + esc(k.at) + '.' + (k.runs > 1 ? ' ' + k.runs + ' runs so far.' : '')
+      + '</p>'
+      + '<a class="btn ghost" href="../vce-kanji/index.html">Open VCE漢字</a></div>';
+  }
+
   /* ================= 2. けっか ================= */
   DRAW.kekka = function(){
     if (!S.runs.length){
       $("main").innerHTML = ruleFor("kekka")
         + '<div class="work"><div class="ask">'
-        + '<p class="lead">Nothing here yet. Go through the grammar first '
-        + 'and press See my result.</p>'
+        + '<p class="lead">No grammar run yet. Go through the grammar and '
+        + 'press See my result.</p>'
         + '<div class="quick"><button id="togram"><b>Start the grammar</b>'
-        + '<span>ぶんぽう</span></button></div></div></div>' + foot("");
+        + '<span>ぶんぽう</span></button></div>'
+        + kanjiCard() + toCome() + '</div></div>' + foot("");
       $("togram").onclick = function(){ at = 0; draw(); };
       return;
     }
@@ -297,11 +337,11 @@
         }).join("") + '</div>'
       + '<div class="hand"><b>What to do next</b>'
       + '<p>Open the Grammar Hub and practise the patterns you understand '
-      + 'but cannot use yet. For kanji, the same kind of check lives in '
-      + 'VCE漢字.</p>'
+      + 'but cannot use yet.</p>'
       + '<a class="btn" href="../../index.html">Grammar Hub</a>'
-      + '<a class="btn ghost" href="../vce-kanji/index.html">VCE漢字</a>'
       + '</div>'
+      + kanjiCard()
+      + toCome()
       + runList()
       + '<p class="note">This page lives in this browser only. Clearing '
       + 'your browser, or using a different device, loses it. Copy it into '
@@ -325,6 +365,11 @@
     };
   };
 
+  /* Say what is not here yet, so a student does not go looking for it. */
+  function toCome(){
+    return '<p class="note">Particles, kana, the map of Japan and your goals '
+      + 'page are still being built. They will show up here.</p>';
+  }
   function runList(){
     if (S.runs.length < 2) return "";
     return '<div class="runs"><b>Every run you have done</b>'
@@ -353,6 +398,10 @@
     ranked.forEach(function(x){
       out.push("  " + pad(x.p.use + " of " + x.p.n, 10) + x.g.en);
     });
+    var k = kanjiRun();
+    out.push("");
+    out.push(k ? "Kanji: " + k.n + " of " + KANJI_TOTAL + " ticked on " + k.at
+               : "Kanji: not done yet");
     if (S.runs.length > 1){
       out.push("");
       out.push("Every run:");
@@ -382,7 +431,8 @@
     },
     ids: function(){ return ALL.map(function(x){ return x.it.id; }); },
     runs: function(){ return S.runs.slice(); },
-    at: function(){ return STEPS[at].id; }
+    at: function(){ return STEPS[at].id; },
+    kanji: function(){ return kanjiRun(); }
   };
 
   draw();
