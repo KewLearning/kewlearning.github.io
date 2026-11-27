@@ -16,7 +16,7 @@
                 worst one, keeps every run beside the last, and copies as
                 plain text.
 
-   The kanji section is built and lives in VCE漢字 as its own しんだん rung,
+   The kanji section is built and lives in もじ as its own しんだん rung,
    because the 200 kanji, their readings and 559 example words are already
    there and a second copy would drift from the first. The report links to
    it rather than repeating it.
@@ -254,9 +254,9 @@
   }
 
   /* ---- the kanji half, read from where it already is ----
-     The kanji self-check is a rung in VCE漢字, because the 200 kanji and
+     The kanji self-check is a rung in もじ, because the 200 kanji and
      their readings live there. Both apps sit on one site, so they share
-     this browser's storage, and しんだん can read the run VCE漢字 saved
+     this browser's storage, and しんだん can read the run もじ saved
      instead of making a student do it twice or asking them to copy a
      number across. It only ever reads: the kanji rung owns that key.
 
@@ -264,6 +264,9 @@
      check has never been opened, this returns null and the report says
      so with a link. It never throws: a student who has done the grammar
      and not the kanji still gets their grammar page. */
+  /* The live site serves this app's sibling from /vcekanji/, which is why
+     the two buttons below point there and not at the dev folder's name.
+     Every cross-app link in ジャプリ is written for the live site. */
   var KANJI_KEY = "vcekanji-v1";
   var KANJI_TOTAL = 200;
   function kanjiRun(){
@@ -282,14 +285,14 @@
     var k = kanjiRun();
     if (!k)
       return '<div class="hand"><b>Kanji</b>'
-        + '<p>Not done yet. The kanji check is a tab in VCE漢字, because '
+        + '<p>Not done yet. The kanji check is a tab in もじ, because '
         + 'the 200 kanji live there. Do it and your result shows up here.</p>'
-        + '<a class="btn" href="../vce-kanji/index.html">Open VCE漢字</a></div>';
+        + '<a class="btn" href="../vcekanji/">Open もじ</a></div>';
     return '<div class="hand"><b>Kanji</b>'
       + '<p>' + k.n + ' of ' + KANJI_TOTAL + ' VCE kanji ticked on '
       + esc(k.at) + '.' + (k.runs > 1 ? ' ' + k.runs + ' runs so far.' : '')
       + '</p>'
-      + '<a class="btn ghost" href="../vce-kanji/index.html">Open VCE漢字</a></div>';
+      + '<a class="btn ghost" href="../vcekanji/">Open もじ</a></div>';
   }
 
   /* ================= 2. けっか ================= */

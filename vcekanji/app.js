@@ -1,4 +1,4 @@
-/* app.js — VCE漢字. The prescribed kanji, used rather than listed.
+/* app.js — もじ. Kana and the prescribed kanji, used rather than listed.
 
    Andrew asked for a VCE kanji app that puts the kanji into what students
    actually do: reading for meaning, writing accurately, the right reading
@@ -220,7 +220,7 @@
   $("saveBtn").onclick = function(){
     var rungs = 0;
     STEPS.forEach(function(st){ if (S.done[st.id]) rungs++; });
-    var line = "VCE漢字 · " + S.pts + " points, " + S.spent
+    var line = "もじ · " + S.pts + " points, " + S.spent
       + " spent on support · " + rungs + " of " + STEPS.length + " rungs done";
     try {
       navigator.clipboard.writeText(line);
@@ -242,6 +242,7 @@
     { id:"yomi",  ja:"よみかた",   en:"Which reading" },
     { id:"kaku",  ja:"かく",       en:"Write it" },
     { id:"ateru", ja:"あてる",     en:"Guess the kanji" },
+    { id:"kana",  ja:"かな",       en:"Hiragana and katakana" },
     { id:"nyuu",  ja:"にゅうりょく", en:"Typing Japanese" }
   ];
   var RULES = {
@@ -278,6 +279,10 @@
          + "answers belong to the four kanji that look most like it. Add "
          + "clues, change how it appears, or set it running on a clock "
          + "before you start.",
+    kana: "Pick a set, then read each character and choose its sound. "
+        + "Tap an answer, then press any key or swipe to go on. Your best "
+        + "score for a set is kept. Turn it around to be given the sound "
+        + "and pick the character.",
     nyuu: "Turn the Japanese keyboard on once and the laptop types かな and "
         + "漢字 all year. The written examination needs it."
   };
@@ -1335,6 +1340,41 @@
     if (!band) return pool;
     return pool.filter(function(w){ return wordBand(w) === band; });
   }
+  /* ---- and a set can be one JLPT level ----
+     Andrew asked for JLPT levels. data/jlpt.js explains at length why
+     this is a filter and not a fact: the JLPT publishes no official kanji
+     list, the two community lists cross-checked there disagree on 33 of
+     his 200, and so the app offers the level as a way to pick a rough
+     difficulty and says on screen that the lists are unofficial. It does
+     not print a level on an individual kanji anywhere.
+
+     A word takes the HARDEST level of the kanji in it, the same rule the
+     easy/medium/hard bands use, because the hardest kanji is the one that
+     stops a student. N1 is kept in the N2 button's pool as "N2 and up":
+     exactly one of his 200 would otherwise sit alone. */
+  var JL = (window.KANJI_JLPT && window.KANJI_JLPT.level) || {};
+  var JORDER = ["N5", "N4", "N3", "N2", "N1"];
+  function wordJlpt(w){
+    var top = -1;
+    (w.from || []).forEach(function(c){
+      var i = JORDER.indexOf(JL[c] || "");
+      if (i > top) top = i;
+    });
+    return top < 0 ? null : JORDER[top];
+  }
+  function jlptPool(pool, lv){
+    if (!lv) return pool;
+    return pool.filter(function(w){
+      var j = wordJlpt(w);
+      if (!j) return false;
+      return lv === "N2" ? (j === "N2" || j === "N1") : j === lv;
+    });
+  }
+  var JLPTOF = {};   /* rung id -> "N5".."N2", or "" */
+  var JLPTS = [
+    { id:"N5", en:"N5" }, { id:"N4", en:"N4" },
+    { id:"N3", en:"N3" }, { id:"N2", en:"N2 and up" }
+  ];
   var BANDS = [
     { id:"easy",   en:"Easy",   ja:"やさしい" },
     { id:"medium", en:"Medium", ja:"ふつう" },
@@ -1347,8 +1387,8 @@
   }
   /* the screen a rung shows when no set is running */
   function startPanel(id, lead, pool, keyOf, redraw){
-    var cat = CATOF[id] || "", band = BANDOF[id] || "";
-    var mine = bandPool(catPool(pool, cat), band);
+    var cat = CATOF[id] || "", band = BANDOF[id] || "", lv = JLPTOF[id] || "";
+    var mine = jlptPool(bandPool(catPool(pool, cat), band), lv);
     var left = mine.filter(function(w){ return !S.won[keyOf(w)]; }).length;
     var cats = (K.cats || []).filter(function(c){
       return pool.some(function(w){ return w.cat === c.id; });
@@ -1373,6 +1413,15 @@
             + '><b>' + esc(x.en) + '</b><span>' + esc(x.ja) + '</span></button>';
         }).join("")
       + '</div>'
+      + '<div class="catrow" id="jlptrow">'
+      + '<button data-jl=""' + (lv ? "" : ' class="on"')
+      + '><b>Any JLPT</b><span>どれでも</span></button>'
+      + JLPTS.map(function(x){
+          return '<button data-jl="' + esc(x.id) + '"'
+            + (lv === x.id ? ' class="on"' : "")
+            + '><b>' + esc(x.en) + '</b><span>JLPT</span></button>';
+        }).join("")
+      + '</div>'
       + '<div class="quick" id="sizes">'
       + SIZES.map(function(n){
           var few = mine.length < n;
@@ -1387,6 +1436,10 @@
       + (band ? " at this level" : "")
       + ' still to get right. A set takes the ones you have not had right yet.'
       + (band ? ' ' + esc(bandLine()) : "")
+      + (lv ? ' JLPT levels are not official: the exam has published no '
+            + 'kanji list since 2010 and the lists in circulation disagree. '
+            + 'Use the level to pick a rough difficulty, not to tell '
+            + 'yourself a kanji is N4.' : "")
       + '</p></div></div>';
   }
   function wireStart(id, pool, keyOf, redraw){
@@ -1396,11 +1449,15 @@
     each($("bandrow") || document.createElement("div"), "[data-band]", function(b){
       b.onclick = function(){ BANDOF[id] = b.dataset.band; redraw(); };
     });
+    each($("jlptrow") || document.createElement("div"), "[data-jl]", function(b){
+      b.onclick = function(){ JLPTOF[id] = b.dataset.jl; redraw(); };
+    });
     var el = $("sizes");
     if (!el) return;
     each(el, "[data-n]", function(b){
       b.onclick = function(){
-        var mine = bandPool(catPool(pool, CATOF[id] || ""), BANDOF[id] || "");
+        var mine = jlptPool(bandPool(catPool(pool, CATOF[id] || ""),
+                                     BANDOF[id] || ""), JLPTOF[id] || "");
         if (!mine.length) return;
         runStart(id, freshFirst(mine, Math.min(+b.dataset.n, mine.length), keyOf));
         redraw();
@@ -2926,6 +2983,213 @@
     return "カード puts the ones you did not tick on flashcards.";
   }
 
+  /* ================= かな =================
+     The one thing the app had no answer for. Andrew asked for a quizzer
+     covering hiragana and katakana as well as kanji, and renamed the app
+     away from VCE so a Year 7 would open it.
+
+     Four choices, immediate feedback, and the next card on any key or any
+     swipe, which is what makes it quick enough to do on a bus. The wrong
+     answers come from the same set, so a student choosing between あ, お,
+     ぬ and め is choosing between characters that actually look alike in
+     a beginner's eye rather than between a kana and a kanji.
+
+     A best score per set, which is the one place this app keeps a score
+     rather than a point: the ledger pays for getting something right the
+     first time and never again, and a set you can redo needs something
+     that can go up. The two live side by side and the points are still
+     the app's currency.                                                */
+  var KANA = window.KANA || { groups: [] };
+  var kanaOn = null;   /* the set being quizzed, or null for the menu */
+  var kanaBack = false;  /* false: character to sound. true: sound to character */
+
+  function kanaBest(gid, back){
+    var k = "kana:best:" + gid + (back ? ":back" : "");
+    return (S.best && S.best[k]) || 0;
+  }
+  function kanaSetBest(gid, back, n){
+    var k = "kana:best:" + gid + (back ? ":back" : "");
+    if (!S.best) S.best = {};
+    if (n > (S.best[k] || 0)){ S.best[k] = n; save(); return true; }
+    return false;
+  }
+  function kanaStart(g){
+    kanaOn = { g: g, list: shuffle(g.cards.slice()), i: 0, right: 0,
+               back: kanaBack, answered: false, missed: [] };
+  }
+  function kanaOpts(card, list, back){
+    var field = back ? "c" : "r";
+    var pool = list.filter(function(x){ return x[field] !== card[field]; });
+    var out = shuffle(pool.slice()).slice(0, 3).map(function(x){ return x[field]; });
+    /* a short set can run out of distractors; top up from the whole script */
+    if (out.length < 3){
+      var all = [];
+      KANA.groups.forEach(function(g){
+        if (g.script === kanaOn.g.script) all = all.concat(g.cards);
+      });
+      shuffle(all).forEach(function(x){
+        if (out.length < 3 && x[field] !== card[field] && out.indexOf(x[field]) < 0)
+          out.push(x[field]);
+      });
+    }
+    out.push(card[field]);
+    return shuffle(out);
+  }
+
+  DRAW.kana = function(){
+    if (!kanaOn) return kanaMenu();
+    if (kanaOn.i >= kanaOn.list.length) return kanaEnd();
+    return kanaCard();
+  };
+
+  function kanaMenu(){
+    var scripts = [];
+    KANA.groups.forEach(function(g){
+      if (scripts.indexOf(g.script) < 0) scripts.push(g.script);
+    });
+    $("main").innerHTML = ruleFor("kana")
+      + '<div class="work"><div class="ask">'
+      + '<div class="catrow" id="kdir">'
+      + '<button data-b="0"' + (kanaBack ? "" : ' class="on"')
+      + '><b>See the character</b><span>もじ → おと</span></button>'
+      + '<button data-b="1"' + (kanaBack ? ' class="on"' : "")
+      + '><b>See the sound</b><span>おと → もじ</span></button>'
+      + '</div>'
+      + scripts.map(function(sc){
+          var gs = KANA.groups.filter(function(g){ return g.script === sc; });
+          return '<div class="lvl">' + esc(sc) + ' <i>' + esc(gs[0].script_ja)
+            + '</i></div><div class="quick kanaq">'
+            + gs.map(function(g){
+                var b = kanaBest(g.id, kanaBack);
+                return '<button data-g="' + esc(g.id) + '"><b>' + esc(g.name)
+                  + '</b><span>' + g.cards.length + ' cards'
+                  + (b ? ' · best ' + b : '') + '</span></button>';
+              }).join("") + '</div>';
+        }).join("")
+      + '</div></div>' + foot("");
+    each($("kdir"), "[data-b]", function(b){
+      b.onclick = function(){ kanaBack = b.dataset.b === "1"; DRAW.kana(); };
+    });
+    each($("main"), "[data-g]", function(b){
+      b.onclick = function(){
+        var g = null;
+        KANA.groups.forEach(function(x){ if (x.id === b.dataset.g) g = x; });
+        if (g){ kanaStart(g); DRAW.kana(); }
+      };
+    });
+  }
+
+  function kanaCard(){
+    var r = kanaOn, card = r.list[r.i];
+    var opts = kanaOpts(card, r.list, r.back);
+    var shown = r.back ? card.r : card.c;
+    var want = r.back ? card.c : card.r;
+    r.answered = false;
+    $("main").innerHTML = ruleFor("kana")
+      + '<div class="runbar"><div class="runfill" style="width:'
+      + Math.round((r.i / r.list.length) * 100) + '%"></div>'
+      + '<span class="runsay">' + (r.i + 1) + ' of ' + r.list.length
+      + ' · ' + r.right + ' right</span></div>'
+      + '<div class="work"><div class="ask">'
+      + '<div class="qtag">' + (r.back ? "which character" : "how is it read")
+      + '</div>'
+      + '<div class="' + (r.back ? "kprompt roma" : "kprompt") + '">'
+      + esc(shown) + '</div>'
+      + '<div class="opts kopts" id="opts">' + opts.map(function(o, i){
+          return '<button class="opt' + (r.back ? " jp" : "")
+            + '" data-o="' + i + '">' + esc(o) + '</button>';
+        }).join("") + '</div>'
+      + '<div id="fb"></div></div></div>'
+      + foot('<button class="btn ghost sm" id="kquit">Back to the sets</button>');
+    $("kquit").onclick = function(){ kanaOn = null; DRAW.kana(); };
+
+    function go(){
+      if (!r.answered) return;
+      r.i++;
+      document.onkeydown = null;
+      DRAW.kana();
+    }
+    each($("opts"), "[data-o]", function(b){
+      b.onclick = function(){
+        if (r.answered) return;
+        r.answered = true;
+        var pick = opts[+b.dataset.o], ok = pick === want;
+        if (ok) r.right++; else r.missed.push(card);
+        each($("opts"), "[data-o]", function(x){
+          var v = opts[+x.dataset.o];
+          if (v === want) x.classList.add("yes");
+          else if (x === b) x.classList.add("no");
+          x.disabled = true;
+        });
+        $("fb").innerHTML = '<div class="kfb ' + (ok ? "yes" : "no") + '">'
+          + (ok ? "Yes" : "No, it is " + esc(want))
+          + '<i>press any key or swipe to go on</i></div>';
+        /* any key, and any swipe: the brief's way of keeping it quick */
+        document.onkeydown = function(e){
+          if (e.key === "Tab") return;
+          e.preventDefault(); go();
+        };
+      };
+    });
+    /* swipe anywhere, and a plain tap on the feedback also moves on */
+    var x0 = null, y0 = null;
+    var main = $("main");
+    main.ontouchstart = function(e){
+      if (!e.touches || !e.touches[0]) return;
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    };
+    main.ontouchend = function(e){
+      if (x0 === null || !e.changedTouches || !e.changedTouches[0]) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      var dy = e.changedTouches[0].clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) go();
+    };
+    var fb = $("fb");
+    if (fb) fb.onclick = go;
+  }
+
+  function kanaEnd(){
+    var r = kanaOn;
+    var fresh = kanaSetBest(r.g.id, r.back, r.right);
+    var best = kanaBest(r.g.id, r.back);
+    sfx("ki");
+    $("main").innerHTML = ruleFor("kana")
+      + '<div class="work"><div class="ask">'
+      + '<div class="mark ' + (r.right === r.list.length ? "yes" : "") + '">'
+      + '<b>' + r.right + ' of ' + r.list.length + '</b></div>'
+      + '<p class="startlead">' + esc(r.g.script) + ' · ' + esc(r.g.name)
+      + (fresh ? '. A new best.' : '. Your best is ' + best + '.') + '</p>'
+      + (r.missed.length
+          ? '<p class="startlead">Look at these again:</p>'
+            + '<div class="misslist">' + r.missed.map(function(c){
+                return '<span class="missw">' + esc(c.c) + '<i>' + esc(c.r)
+                  + '</i></span>';
+              }).join("") + '</div>'
+          : '<p class="startlead">Every one of them.</p>')
+      + '<div class="quick endq">'
+      + (r.missed.length
+          ? '<button data-again="1"><b>Do the ' + r.missed.length
+            + ' I missed</b><span>もう一度</span></button>' : "")
+      + '<button data-same="1"><b>This set again</b><span>もういちど</span></button>'
+      + '<button data-menu="1"><b>Another set</b><span>ほかのセット</span></button>'
+      + '</div></div></div>' + foot("");
+    done("kana");
+    each($("main"), "[data-again]", function(b){
+      b.onclick = function(){
+        kanaOn = { g: r.g, list: shuffle(r.missed.slice()), i: 0, right: 0,
+                   back: r.back, answered: false, missed: [] };
+        DRAW.kana();
+      };
+    });
+    each($("main"), "[data-same]", function(b){
+      b.onclick = function(){ kanaStart(r.g); DRAW.kana(); };
+    });
+    each($("main"), "[data-menu]", function(b){
+      b.onclick = function(){ kanaOn = null; DRAW.kana(); };
+    });
+  }
+
   DRAW.nyuu = function(){
     $("main").innerHTML = ruleFor("nyuu")
       + '<div class="work">' + NYUURYOKU.html() + '</div>' + foot("");
@@ -2971,6 +3235,20 @@
                                 testing: !!cardTest }; },
     english: function(){ return kakuAsksEnglish(); },
     read: function(i){ yomuOn = i; draw(); },
+    kana: function(){
+      return { groups: KANA.groups.map(function(g){
+                 return { id: g.id, script: g.script, n: g.cards.length,
+                          best: kanaBest(g.id, false) }; }),
+               on: kanaOn ? { id: kanaOn.g.id, i: kanaOn.i, right: kanaOn.right,
+                              n: kanaOn.list.length, back: kanaOn.back } : null,
+               back: kanaBack };
+    },
+    kanaStart: function(gid){
+      var g = null;
+      KANA.groups.forEach(function(x){ if (x.id === gid) g = x; });
+      if (!g) return false;
+      kanaStart(g); draw(); return true;
+    },
     shin: function(){
       var st = shinState;
       return { phase: st ? st.phase : null,
