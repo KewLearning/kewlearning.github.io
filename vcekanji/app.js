@@ -25,6 +25,8 @@
                 set. Flipping is unmarked; the spinner is the marked part.
      よみかた   which reading a kanji takes in which word, drilled across
                 all 559. The thing the examiners' reports name every year.
+                Runs the other way round as well: an English meaning, and
+                the word picked out of four.
      かく       the student produces the kanji, prompted by the reading one
                 turn and by the English meaning the next. Andrew's reading
                 of the build before this one: kana plus an IME that offers
@@ -263,10 +265,12 @@
     find: "Search the whole list: type a kanji, a reading, a meaning or a "
         + "word. Filter by group with the buttons. Keep this open while you "
         + "write.",
-    yomi: "Pick how many words, then read each one and choose its reading. "
-        + "The wrong answers are the readings the same kanji takes in other "
-        + "words, which is where the marks go. At the end of the set you "
-        + "get your score and the ones to look at again.",
+    yomi: "Pick which way round you want it, then how many words. Word, "
+        + "then its reading: read each word and choose its reading, where "
+        + "the wrong answers are the readings the same kanji takes in other "
+        + "words. Meaning, then the word: read the English and pick the "
+        + "word out of four. At the end of the set you get your score and "
+        + "the ones to look at again.",
     kaku: "Pick how many words, then write each one in kanji and type it. "
         + "The prompt alternates: the reading one turn, the English meaning "
         + "the next, so it asks what the word means as well as how it is "
@@ -1386,7 +1390,7 @@
     return c;
   }
   /* the screen a rung shows when no set is running */
-  function startPanel(id, lead, pool, keyOf, redraw){
+  function startPanel(id, lead, pool, keyOf, extra){
     var cat = CATOF[id] || "", band = BANDOF[id] || "", lv = JLPTOF[id] || "";
     var mine = jlptPool(bandPool(catPool(pool, cat), band), lv);
     var left = mine.filter(function(w){ return !S.won[keyOf(w)]; }).length;
@@ -1395,6 +1399,7 @@
     });
     return '<div class="work"><div class="ask">'
       + '<p class="startlead">' + esc(lead) + '</p>'
+      + (extra || "")
       + '<div class="catrow" id="cats">'
       + '<button data-cat=""' + (cat ? "" : ' class="on"')
       + '><b>Everything</b><span>ぜんぶ</span></button>'
@@ -1583,14 +1588,78 @@
     }
     return near.slice(0, 3);
   }
+  /* ---- which way round よみかた asks ----
+     Reading a word is half of knowing it. A student who can read 病院 and
+     cannot pick it out of four words when shown "hospital" knows the
+     sound and not the word, and the examination asks for both. So よみかた
+     now runs in two directions, and the student picks.
+
+     Word to reading is first and is still the default, because it is the
+     one the examiners' reports name. Meaning to word is recognition, not
+     production: it is four words to choose from, where かく asks the
+     student to type one. A junior with no Japanese keyboard can do this
+     rung and cannot do that one.
+
+     The English is the drafted gloss in data/words-en.js, nobody has
+     checked it, and the prompt says so. A word with no gloss never takes
+     a turn in this direction.                                          */
+  var YDIRS = [
+    { id:"read", ja:"よみかた", en:"Word, then its reading" },
+    { id:"mean", ja:"いみ",     en:"Meaning, then the word" }
+  ];
+  var YDIR = "read";
   var YKEY = function(w){ return "yomi:" + w.w + w.y; };
+  var MKEY = function(w){ return "ymean:" + w.w + w.y; };
+  function yomiKey(){ return YDIR === "mean" ? MKEY : YKEY; }
+  function yomiPool(){
+    return YDIR === "mean" ? WORDS.filter(function(w){ return !!w.en; }) : WORDS;
+  }
+  function yomiDirRow(){
+    return '<div class="catrow" id="ydir">'
+      + YDIRS.map(function(d){
+          return '<button data-yd="' + esc(d.id) + '"'
+            + (YDIR === d.id ? ' class="on"' : "")
+            + '><b>' + esc(d.en) + '</b><span>' + esc(d.ja) + '</span></button>';
+        }).join("")
+      + '</div>';
+  }
+  /* three wrong words for a meaning question: words that share a kanji
+     with the answer first, because those are the ones worth telling
+     apart, then words of the same length. Never a word with the same
+     gloss, which would make the question unanswerable. */
+  function wordsNear(word){
+    var seen = {}, out = [];
+    function add(w){
+      if (w.w === word.w || seen[w.w]) return;
+      if (w.en && word.en && w.en === word.en) return;
+      seen[w.w] = 1; out.push(w);
+    }
+    var share = [];
+    (word.from || []).forEach(function(ch){
+      var k = BYK[ch];
+      if (!k) return;
+      (k.words || []).forEach(function(w){ share.push(w); });
+    });
+    shuffle(share).forEach(add);
+    if (out.length < 3){
+      shuffle(WORDS.filter(function(w){ return w.w.length === word.w.length; }))
+        .forEach(add);
+    }
+    if (out.length < 3) shuffle(WORDS.slice()).forEach(add);
+    return out.slice(0, 3);
+  }
   DRAW.yomi = function(){
     /* no set running: ask how many, and say how many are left */
+    var pool = yomiPool(), keyOf = yomiKey();
     if (!runOf("yomi")){
       $("main").innerHTML = ruleFor("yomi")
-        + startPanel("yomi", "How many words this time?", WORDS, YKEY)
+        + startPanel("yomi", "Which way round, and how many words?",
+                     pool, keyOf, yomiDirRow())
         + foot("");
-      wireStart("yomi", WORDS, YKEY, DRAW.yomi);
+      wireStart("yomi", pool, keyOf, DRAW.yomi);
+      each($("ydir"), "[data-yd]", function(b){
+        b.onclick = function(){ YDIR = b.dataset.yd; DRAW.yomi(); };
+      });
       paintScore();
       return;
     }
@@ -1604,14 +1673,26 @@
     }
     var run = runOf("yomi");
     var word = run.list[run.i];
-    var opts = shuffle(readingsNear(word).concat([word.y]));
+    var asksMean = YDIR === "mean";
+    /* one shape, two directions: the prompt and the four answers swap
+       over, and the right answer is the word itself rather than its
+       reading. */
+    var right = asksMean ? word.w : word.y;
+    var opts = shuffle(asksMean
+      ? wordsNear(word).map(function(w){ return w.w; }).concat([word.w])
+      : readingsNear(word).concat([word.y]));
     var answered = false;
     $("main").innerHTML = ruleFor("yomi")
       + runBar("yomi")
       + '<div class="work"><div class="ask">'
-      + '<div class="qtag">how is it read</div>'
-      + '<div class="prompt">' + esc(word.w) + '</div>'
-      + '<div class="opts" id="opts">' + opts.map(function(o, i){
+      + '<div class="qtag">' + (asksMean ? "which word is this"
+                                         : "how is it read") + '</div>'
+      + '<div class="prompt' + (asksMean ? " lat" : "") + '">'
+      + esc(asksMean ? word.en : word.w) + '</div>'
+      + (asksMean ? '<p class="qnote">The English is a draft, not from the '
+                  + 'kanji list.</p>' : "")
+      + '<div class="opts" id="opts">'
+      + opts.map(function(o, i){
           return '<button class="opt" data-o="' + i + '">' + esc(o) + '</button>';
         }).join("") + '</div>'
       + '<div id="fb"></div></div></div>'
@@ -1623,35 +1704,36 @@
     each($("opts"), "[data-o]", function(b){
       b.onclick = function(){
         if (answered) return;
-        var pick = opts[+b.dataset.o], right = pick === word.y;
-        b.classList.add(right ? "yes" : "no");
-        if (!right){
+        var pick = opts[+b.dataset.o], got = pick === right;
+        b.classList.add(got ? "yes" : "no");
+        if (!got){
           /* show the right one as well: a wrong answer with no answer
              beside it teaches nothing */
           each($("opts"), "[data-o]", function(x){
-            if (opts[+x.dataset.o] === word.y) x.classList.add("yes");
+            if (opts[+x.dataset.o] === right) x.classList.add("yes");
           });
         }
         answered = true;
         each($("opts"), "[data-o]", function(x){ x.disabled = true; });
-        if (right) first(YKEY(word), 1, "reading");
-        runMark("yomi", word, right);
-        $("fb").innerHTML = '<div class="mark ' + (right ? "yes" : "no") + '">'
-          + '<b>' + (right ? "Yes" : "Not that one") + '</b>'
+        if (got) first(keyOf(word), 1, asksMean ? "word" : "reading");
+        runMark("yomi", word, got);
+        $("fb").innerHTML = '<div class="mark ' + (got ? "yes" : "no") + '">'
+          + '<b>' + (got ? "Yes" : "Not that one") + '</b>'
           + '<span class="jp">' + ruby(word.w, word.y) + '</span>'
-          + meaning(word)
+          + (asksMean ? "" : meaning(word))
           + '</div>' + breakdown(word);
         paintScore();
         $("skip").textContent = "Next word";
-        $("skip").onclick = function(){ nextKaku(); runNext("kaku"); DRAW.kaku(); };
         $("skip").onclick = function(){ runNext("yomi"); DRAW.yomi(); };
       };
     });
     function paintScore(){
-      var got = WORDS.filter(function(w){ return S.won[YKEY(w)]; }).length;
-      $("sc").innerHTML = '<b>' + got + '</b> of ' + WORDS.length
-        + ' words read, all time';
-      if (got >= WORDS.length) done("yomi");
+      var mine = yomiPool(), k = yomiKey();
+      var got = mine.filter(function(w){ return S.won[k(w)]; }).length;
+      $("sc").innerHTML = '<b>' + got + '</b> of ' + mine.length
+        + (YDIR === "mean" ? ' words picked from their meaning, all time'
+                           : ' words read, all time');
+      if (got >= mine.length) done("yomi");
     }
   };
   /* Andrew, on かく: you can get the word right from the kana and still
@@ -3207,7 +3289,8 @@
        than asking the app the same sum twice */
     wordlist: function(){
       return WORDS.map(function(w){
-        return { w: w.w, y: w.y, cat: w.cat, from: w.from.slice() };
+        return { w: w.w, y: w.y, cat: w.cat, en: w.en || "",
+                 from: w.from.slice() };
       });
     },
     at: function(){ return STEPS[at].id; },
